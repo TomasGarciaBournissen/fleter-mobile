@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/cliente/HomeScreen';
 import CrearViajeScreen from '../screens/cliente/CrearViajeScreen';
+import ConfirmacionViajeScreen from '../screens/cliente/ConfirmacionViajeScreen';
 import ViajeActivoScreen from '../screens/cliente/ViajeActivoScreen';
 import HistorialScreen from '../screens/cliente/HistorialScreen';
 import PerfilScreen from '../screens/cliente/PerfilScreen';
@@ -13,6 +14,7 @@ export default function ClienteStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="CrearViaje" component={CrearViajeScreen} />
+      <Stack.Screen name="ConfirmacionViaje" component={ConfirmacionViajeScreen} />
       <Stack.Screen name="ViajeActivo" component={ViajeActivoScreen} />
       <Stack.Screen name="Historial" component={HistorialScreen} />
       <Stack.Screen name="Perfil" component={PerfilScreen} />

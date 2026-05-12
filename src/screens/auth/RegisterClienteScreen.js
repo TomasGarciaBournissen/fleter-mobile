@@ -86,7 +86,7 @@ export default function RegisterClienteScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -221,7 +221,7 @@ export default function RegisterClienteScreen({ navigation }) {
               activeOpacity={0.8}
             >
               {loading
-                ? <ActivityIndicator color="#000" />
+                ? <ActivityIndicator color={colors.textPrimary} />
                 : <Text style={styles.btnPrimaryText}>Crear cuenta</Text>
               }
             </TouchableOpacity>
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   btnPrimaryText: {
-    color: '#000',
+    color: colors.textPrimary,
     fontSize: fontSize.h3,
     fontWeight: '700',
   },

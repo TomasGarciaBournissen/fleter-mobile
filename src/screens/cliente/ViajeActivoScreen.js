@@ -63,7 +63,7 @@ export default function ViajeActivoScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center', justifyContent: 'center',
   },
-  fleteroAvatarText: { fontSize: fontSize.h2, fontWeight: '800', color: '#000' },
+  fleteroAvatarText: { fontSize: fontSize.h2, fontWeight: '800', color: colors.textPrimary },
   fleteroNombre: { fontSize: fontSize.body, fontWeight: '700', color: colors.textPrimary },
   fleteroInfo: { fontSize: fontSize.caption, color: colors.textSecondary, marginTop: 2 },
   puntajeChip: {

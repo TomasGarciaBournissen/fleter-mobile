@@ -15,7 +15,7 @@ export default function CuentaPendienteScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <View style={styles.container}>
         {/* Ícono de estado */}

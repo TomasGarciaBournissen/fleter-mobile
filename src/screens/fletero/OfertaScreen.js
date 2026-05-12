@@ -75,7 +75,7 @@ export default function OfertaScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
   },
-  btnAceptarText: { fontSize: fontSize.h3, fontWeight: '800', color: '#000' },
+  btnAceptarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
 
   expiradoBanner: {
     backgroundColor: `${colors.error}22`,

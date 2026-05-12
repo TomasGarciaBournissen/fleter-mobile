@@ -11,7 +11,7 @@ export async function conectarSocket() {
   const idToken = await currentUser.getIdToken();
 
   socket = io(process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000', {
-    auth: { token: idToken },
+    auth: { token: `Bearer ${idToken}` },
     transports: ['websocket'],
   });
 

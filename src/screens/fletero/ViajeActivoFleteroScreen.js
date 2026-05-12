@@ -43,7 +43,7 @@ export default function ViajeActivoFleteroScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Viaje en curso</Text>
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   timelineDotHecho: { backgroundColor: colors.primary, borderColor: colors.primary },
   timelineDotActivo: { borderColor: colors.primary, backgroundColor: `${colors.primary}22` },
-  checkmark: { fontSize: 10, color: '#000', fontWeight: '800' },
+  checkmark: { fontSize: 10, color: colors.textPrimary, fontWeight: '800' },
   timelineLinea: { width: 2, flex: 1, minHeight: 16, backgroundColor: colors.surface3, marginVertical: 2 },
   timelineLineaHecha: { backgroundColor: colors.primary },
   timelineContent: { flex: 1, paddingBottom: spacing.md },
@@ -243,5 +243,5 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
   },
-  btnAvanzarText: { fontSize: fontSize.h3, fontWeight: '800', color: '#000' },
+  btnAvanzarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
 });

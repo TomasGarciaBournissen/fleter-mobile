@@ -51,7 +51,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -109,7 +109,7 @@ export default function LoginScreen({ navigation }) {
               activeOpacity={0.8}
             >
               {loading
-                ? <ActivityIndicator color="#000" />
+                ? <ActivityIndicator color={colors.textPrimary} />
                 : <Text style={styles.btnPrimaryText}>Entrar</Text>
               }
             </TouchableOpacity>
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   btnPrimaryText: {
-    color: '#000',
+    color: colors.textPrimary,
     fontSize: fontSize.h3,
     fontWeight: '700',
   },
@@ -290,12 +290,12 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: radius.sm,
     borderWidth: 1,
-    borderColor: '#F5A623',
-    backgroundColor: 'rgba(245,166,35,0.08)',
+    borderColor: colors.warning,
+    backgroundColor: 'rgba(229,151,0,0.08)',
     alignItems: 'center',
   },
   devTitle: {
-    color: '#F5A623',
+    color: colors.warning,
     fontSize: fontSize.caption,
     fontWeight: '700',
     letterSpacing: 1,
@@ -304,13 +304,13 @@ const styles = StyleSheet.create({
   devBtn: {
     width: '100%',
     borderWidth: 1,
-    borderColor: '#F5A623',
+    borderColor: colors.warning,
     borderRadius: radius.sm,
     paddingVertical: spacing.sm + 2,
     alignItems: 'center',
   },
   devBtnText: {
-    color: '#F5A623',
+    color: colors.warning,
     fontSize: fontSize.body,
     fontWeight: '600',
   },

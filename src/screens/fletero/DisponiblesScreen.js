@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,79 +7,50 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { colors, fontSize, spacing, radius } from '../../theme';
+import api from '../../services/api';
 
-const VIAJES_MOCK = [
-  {
-    id: 'v-001',
-    origen: 'Palermo Hollywood',
-    destino: 'San Telmo',
-    paradas: 1,
-    distanciaKm: 8.4,
-    precio: 14500,
-    requisitos: ['Frágil'],
-    descripcion: 'Mueble de 3 cajones, bien embalado.',
-    publicadoHace: '2 min',
-  },
-  {
-    id: 'v-002',
-    origen: 'Recoleta',
-    destino: 'Belgrano',
-    paradas: 0,
-    distanciaKm: 5.1,
-    precio: 9800,
-    requisitos: [],
-    descripcion: 'Cajas de ropa, 4 bultos medianos.',
-    publicadoHace: '5 min',
-  },
-  {
-    id: 'v-003',
-    origen: 'Villa Urquiza',
-    destino: 'Microcentro',
-    paradas: 2,
-    distanciaKm: 14.2,
-    precio: 22000,
-    requisitos: ['Carga pesada', 'Refrigerado'],
-    descripcion: 'Heladera y lavarropas.',
-    publicadoHace: '8 min',
-  },
-  {
-    id: 'v-004',
-    origen: 'Caballito',
-    destino: 'Flores',
-    paradas: 0,
-    distanciaKm: 3.8,
-    precio: 7500,
-    requisitos: ['Documentos'],
-    descripcion: 'Sobre cerrado, documentación legal.',
-    publicadoHace: '12 min',
-  },
-  {
-    id: 'v-005',
-    origen: 'Núñez',
-    destino: 'San Isidro',
-    paradas: 1,
-    distanciaKm: 18.5,
-    precio: 28000,
-    requisitos: ['Frágil'],
-    descripcion: 'Cuadros y objetos de arte.',
-    publicadoHace: '15 min',
-  },
-];
+function mapViaje(v) {
+  const sorted = [...v.paradas].sort((a, b) => a.orden - b.orden);
+  return {
+    id: v.id_viaje,
+    origen: sorted[0]?.direccion ?? '',
+    destino: sorted[sorted.length - 1]?.direccion ?? '',
+    paradas: Math.max(0, sorted.length - 2),
+    distanciaKm: null,
+    precio: v.precio_estimado,
+    requisitos: (v.condiciones_req ?? []).map(c => c.condicion),
+    descripcion: '',
+    publicadoHace: new Date(v.fecha_programada).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
+    zona: v.zona,
+    cliente: `${v.cliente?.usuario?.nombre ?? ''} ${v.cliente?.usuario?.apellido ?? ''}`.trim(),
+  };
+}
+
+const TAG_LABELS = {
+  FRAGIL: 'Frágil',
+  REFRIGERADO: 'Refrigerado',
+  CARGA_PESADA: 'Carga pesada',
+  PELIGROSO: 'Peligroso',
+  VOLUMINOSO: 'Voluminoso',
+};
 
 const TAG_COLORS = {
-  'Frágil': colors.warning,
-  'Refrigerado': '#4FC3F7',
-  'Carga pesada': colors.textSecondary,
-  'Documentos': colors.textSecondary,
+  FRAGIL: colors.warning,
+  REFRIGERADO: '#4FC3F7',
+  CARGA_PESADA: colors.textSecondary,
+  PELIGROSO: colors.error,
+  VOLUMINOSO: colors.textSecondary,
 };
 
 function TagRequisito({ label }) {
-  const color = TAG_COLORS[label] || colors.textSecondary;
+  const color = TAG_COLORS[label] ?? colors.textSecondary;
   return (
     <View style={[styles.tag, { borderColor: `${color}66`, backgroundColor: `${color}18` }]}>
-      <Text style={[styles.tagText, { color }]}>{label}</Text>
+      <Text style={[styles.tagText, { color }]}>{TAG_LABELS[label] ?? label}</Text>
     </View>
   );
 }
@@ -127,16 +98,33 @@ function ViajeCard({ viaje, onPress }) {
 }
 
 export default function DisponiblesScreen({ navigation }) {
-  const [viajes] = useState(VIAJES_MOCK);
+  const [viajes,   setViajes]   = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  const fetchViajes = useCallback(async () => {
+    setCargando(true);
+    try {
+      const { data } = await api.get('/api/viajes/disponibles');
+      setViajes(data.map(mapViaje));
+    } catch (e) {
+      Alert.alert('Error', e?.response?.data?.error ?? 'No se pudieron cargar los viajes');
+    } finally {
+      setCargando(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchViajes(); }, [fetchViajes]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>Disponibles</Text>
-          <Text style={styles.headerSub}>{viajes.length} viajes cerca tuyo</Text>
+          <Text style={styles.headerSub}>
+            {cargando ? 'Buscando viajes...' : `${viajes.length} viajes cerca tuyo`}
+          </Text>
         </View>
         <View style={styles.activoBadge}>
           <View style={styles.activoDot} />
@@ -144,24 +132,32 @@ export default function DisponiblesScreen({ navigation }) {
         </View>
       </View>
 
-      <FlatList
-        data={viajes}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
-        renderItem={({ item }) => (
-          <ViajeCard
-            viaje={item}
-            onPress={() => navigation.navigate('Oferta', { viaje: item })}
-          />
-        )}
-        ListEmptyComponent={
-          <View style={styles.vacio}>
-            <Text style={styles.vacioText}>No hay viajes disponibles por ahora</Text>
-          </View>
-        }
-      />
+      {cargando ? (
+        <View style={styles.vacio}>
+          <ActivityIndicator color={colors.primary} size="large" />
+        </View>
+      ) : (
+        <FlatList
+          data={viajes}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          onRefresh={fetchViajes}
+          refreshing={cargando}
+          ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
+          renderItem={({ item }) => (
+            <ViajeCard
+              viaje={item}
+              onPress={() => navigation.navigate('DetalleViaje', { viaje: item })}
+            />
+          )}
+          ListEmptyComponent={
+            <View style={styles.vacio}>
+              <Text style={styles.vacioText}>No hay viajes disponibles por ahora</Text>
+            </View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }

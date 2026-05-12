@@ -29,7 +29,7 @@ export default function QREntregaScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -225,5 +225,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btnConfirmado: { backgroundColor: colors.success, opacity: 0.8 },
-  btnConfirmarText: { fontSize: fontSize.h3, fontWeight: '800', color: '#000' },
+  btnConfirmarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
 });

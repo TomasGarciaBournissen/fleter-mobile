@@ -34,7 +34,7 @@ export default function CobroScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Resumen del viaje</Text>
@@ -214,5 +214,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btnFinalizadoStyle: { backgroundColor: colors.success, opacity: 0.8 },
-  btnFinalizarText: { fontSize: fontSize.h3, fontWeight: '800', color: '#000' },
+  btnFinalizarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
 });

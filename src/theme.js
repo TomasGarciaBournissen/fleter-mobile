@@ -1,24 +1,23 @@
 export const colors = {
   // Fondos
-  background:   '#0A0A0A',
-  surface1:     '#181818',
-  surface2:     '#242424',
-  surface3:     '#2E2E2E',
+  background:   '#E8F8EF',
+  surface1:     '#FFFFFF',
+  surface2:     '#F4FAF6',
+  surface3:     '#D4EDDE',
 
   // Verdes
   primary:      '#10B954',
-  primaryDark:  '#148840',
-  primaryNight: '#0A1A0F',
+  primaryDark:  '#0D9444',
 
-  // Texto
-  textPrimary:   '#FFFFFF',
-  textSecondary: 'rgba(255,255,255,0.65)',
-  textHint:      'rgba(255,255,255,0.35)',
+  // Texto (verde oscuro sobre fondo claro)
+  textPrimary:   '#0B3D20',
+  textSecondary: 'rgba(11,61,32,0.65)',
+  textHint:      'rgba(11,61,32,0.35)',
 
   // Estados
-  success:  '#1DB954',
-  error:    '#F14444',
-  warning:  '#F5A623',
+  success:  '#10B954',
+  error:    '#D93025',
+  warning:  '#E59700',
 };
 
 export const fontSize = {

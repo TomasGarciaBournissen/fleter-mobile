@@ -148,7 +148,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   fleteroAvatarText: {
     fontSize: fontSize.body,
     fontWeight: '800',
-    color: '#000',
+    color: colors.textPrimary,
   },
   fleteroNombre: {
     fontSize: fontSize.body,
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
   fabText: {
     fontSize: fontSize.h3,
     fontWeight: '800',
-    color: '#000000',
+    color: colors.textPrimary,
     letterSpacing: 0.3,
   },
 });

@@ -61,7 +61,7 @@ export default function PerfilScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     marginBottom: spacing.sm,
   },
-  avatarText: { fontSize: 36, fontWeight: '800', color: '#000' },
+  avatarText: { fontSize: 36, fontWeight: '800', color: colors.textPrimary },
   avatarNombre: { fontSize: fontSize.h2, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.md },
   statsRow: {
     flexDirection: 'row',
