@@ -8,20 +8,10 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { colors, fontSize, spacing, radius } from '../../theme';
-import { useAuth, DEV_MODE } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function CuentaPendienteScreen() {
   const { logout } = useAuth();
-
-  const handleLogout = async () => {
-    if (DEV_MODE) {
-      logout(); // mock: limpia el estado local
-      return;
-    }
-    const { logout: firebaseLogout } = await import('../../services/auth');
-    await firebaseLogout();
-    // RootNavigator detecta que no hay sesión y vuelve al AuthStack automáticamente
-  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -55,7 +45,7 @@ export default function CuentaPendienteScreen() {
         {/* Botón de salir */}
         <TouchableOpacity
           style={styles.btnLogout}
-          onPress={handleLogout}
+          onPress={logout}
           activeOpacity={0.7}
         >
           <Text style={styles.btnLogoutText}>Cerrar sesión</Text>

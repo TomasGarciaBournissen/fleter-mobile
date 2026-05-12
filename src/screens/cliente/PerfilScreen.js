@@ -11,6 +11,7 @@ import {
   Switch,
 } from 'react-native';
 import { colors, fontSize, spacing, radius } from '../../theme';
+import { useAuth } from '../../context/AuthContext';
 
 const USUARIO_MOCK = {
   nombre: 'Tomás García',
@@ -50,6 +51,7 @@ function SeccionCard({ titulo, children }) {
 }
 
 export default function PerfilScreen({ navigation }) {
+  const { logout } = useAuth();
   const [usuario, setUsuario] = useState(USUARIO_MOCK);
   const [notifViajes, setNotifViajes] = useState(true);
   const [notifPromos, setNotifPromos] = useState(false);
@@ -161,7 +163,7 @@ export default function PerfilScreen({ navigation }) {
         </SeccionCard>
 
         {/* Cerrar sesión */}
-        <TouchableOpacity style={styles.btnCerrarSesion} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.btnCerrarSesion} onPress={logout} activeOpacity={0.8}>
           <Text style={styles.btnCerrarSesionText}>Cerrar sesión</Text>
         </TouchableOpacity>
       </ScrollView>

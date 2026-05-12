@@ -1,7 +1,11 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../services/firebase';
+import { logout as firebaseLogout } from '../services/auth';
+import api from '../services/api';
 
 // ─── CONFIG DEV ───────────────────────────────────────────────────────────────
-export const DEV_MODE = true;
+export const DEV_MODE = process.env.EXPO_PUBLIC_DEV_MODE !== 'false';
 const DEV_ROL = null; // null = Login, 'CLIENTE', 'CONDUCTOR'
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -26,13 +30,32 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(DEV_MODE && DEV_ROL ? DEV_USERS[DEV_ROL] : null);
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(!DEV_MODE);
+
+  useEffect(() => {
+    if (DEV_MODE) return;
+    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        try {
+          const { data } = await api.post('/api/auth/login');
+          setUser(data);
+        } catch {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
 
   const mockLogin = useCallback((rol = 'CLIENTE') => {
     setUser(DEV_USERS[rol]);
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    if (!DEV_MODE) await firebaseLogout();
     setUser(null);
   }, []);
 
