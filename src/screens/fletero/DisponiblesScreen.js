@@ -12,18 +12,19 @@ import {
 } from 'react-native';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import api from '../../services/api';
+import { useSocket } from '../../context/SocketContext';
+import NuevoViajeModal from './NuevoViajeModal';
 
 function mapViaje(v) {
   const sorted = [...v.paradas].sort((a, b) => a.orden - b.orden);
   return {
+    _raw: v,
     id: v.id_viaje,
     origen: sorted[0]?.direccion ?? '',
     destino: sorted[sorted.length - 1]?.direccion ?? '',
     paradas: Math.max(0, sorted.length - 2),
-    distanciaKm: null,
     precio: v.precio_estimado,
     requisitos: (v.condiciones_req ?? []).map(c => c.condicion),
-    descripcion: '',
     publicadoHace: new Date(v.fecha_programada).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
     zona: v.zona,
     cliente: `${v.cliente?.usuario?.nombre ?? ''} ${v.cliente?.usuario?.apellido ?? ''}`.trim(),
@@ -98,8 +99,11 @@ function ViajeCard({ viaje, onPress }) {
 }
 
 export default function DisponiblesScreen({ navigation }) {
-  const [viajes,   setViajes]   = useState([]);
-  const [cargando, setCargando] = useState(true);
+  const [viajes,        setViajes]        = useState([]);
+  const [cargando,      setCargando]      = useState(true);
+  const [viajeOferta,   setViajeOferta]   = useState(null);
+  const [aceptando,     setAceptando]     = useState(false);
+  const { socket } = useSocket();
 
   const fetchViajes = useCallback(async () => {
     setCargando(true);
@@ -115,8 +119,63 @@ export default function DisponiblesScreen({ navigation }) {
 
   useEffect(() => { fetchViajes(); }, [fetchViajes]);
 
+  // Socket: escuchar viajes nuevos en tiempo real
+  useEffect(() => {
+    if (!socket) return;
+
+    const onDisponible = (data) => {
+      setViajeOferta(data);
+      setViajes(prev => {
+        if (prev.some(v => v.id === data.id_viaje)) return prev;
+        return [mapViaje({ ...data, condiciones_req: data.condiciones_req ?? [] }), ...prev];
+      });
+    };
+
+    const onConductorAsignado = (data) => {
+      setViajeOferta(null);
+      setAceptando(false);
+      // Quitar el viaje asignado de la lista
+      setViajes(prev => prev.filter(v => v.id !== data.id_viaje));
+      navigation.navigate('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
+    };
+
+    const onYaAsignado = (data) => {
+      setViajeOferta(null);
+      setAceptando(false);
+      // Quitar el viaje ya tomado de la lista
+      setViajes(prev => prev.filter(v => v.id !== data.id_viaje));
+      Alert.alert('Llegaste tarde', 'Otro conductor aceptó este viaje primero.');
+    };
+
+    socket.on('viaje:disponible',         onDisponible);
+    socket.on('viaje:conductor_asignado', onConductorAsignado);
+    socket.on('viaje:ya_asignado',        onYaAsignado);
+
+    return () => {
+      socket.off('viaje:disponible',         onDisponible);
+      socket.off('viaje:conductor_asignado', onConductorAsignado);
+      socket.off('viaje:ya_asignado',        onYaAsignado);
+    };
+  }, [socket, navigation]);
+
+  const handleAceptar = () => {
+    if (!socket || !viajeOferta) return;
+    setAceptando(true);
+    socket.emit('viaje:aceptar', { id_viaje: viajeOferta.id_viaje });
+  };
+
+  const handleRechazar = () => {
+    setViajeOferta(null);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
+      <NuevoViajeModal
+        visible={!!viajeOferta && !aceptando}
+        viaje={viajeOferta}
+        onAceptar={handleAceptar}
+        onRechazar={handleRechazar}
+      />
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <View style={styles.header}>
@@ -148,7 +207,7 @@ export default function DisponiblesScreen({ navigation }) {
           renderItem={({ item }) => (
             <ViajeCard
               viaje={item}
-              onPress={() => navigation.navigate('DetalleViaje', { viaje: item })}
+              onPress={() => navigation.navigate('DetalleViaje', { viaje: item._raw })}
             />
           )}
           ListEmptyComponent={

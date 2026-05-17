@@ -25,16 +25,30 @@ function CondTag({ id }) {
   );
 }
 
+function mapViaje(v) {
+  const sorted = [...(v.paradas ?? [])].sort((a, b) => a.orden - b.orden);
+  return {
+    id: v.id_viaje,
+    origen: sorted[0]?.direccion ?? '',
+    destino: sorted[sorted.length - 1]?.direccion ?? '',
+    paradasIntermedias: sorted.slice(1, -1),
+    precio: v.precio_estimado,
+    requisitos: (v.condiciones_req ?? []).map(c => c.condicion),
+    publicadoHace: new Date(v.fecha_programada).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
+    zona: v.zona,
+    cliente: `${v.cliente?.usuario?.nombre ?? ''} ${v.cliente?.usuario?.apellido ?? ''}`.trim(),
+  };
+}
+
 export default function DetalleViajeScreen({ navigation, route }) {
-  const viaje = route?.params?.viaje ?? {
+  const raw = route?.params?.viaje;
+  const viaje = raw ? mapViaje(raw) : {
     id: 'v-001',
     origen: 'Palermo Hollywood',
     destino: 'San Telmo',
-    paradas: 1,
-    distanciaKm: 8.4,
+    paradasIntermedias: [],
     precio: 14500,
     requisitos: ['FRAGIL'],
-    descripcion: 'Mueble de 3 cajones. Cuidado con las esquinas.',
     publicadoHace: '2 min',
     zona: 'CABA',
     cliente: 'Tomás G.',
@@ -43,7 +57,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
   const handleAceptar = () => {
     // TODO Fase 3: emitir viaje:aceptar via WebSocket antes de navegar
     // socket.emit('viaje:aceptar', { id_viaje: viaje.id });
-    navigation.navigate('ViajeActivo', { viaje });
+    navigation.navigate('ViajeActivo', { viaje: raw });
   };
 
   return (
@@ -68,9 +82,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
           <Text style={styles.precioLabel}>Ganás</Text>
           <Text style={styles.precioValor}>${viaje.precio.toLocaleString('es-AR')}</Text>
           <View style={styles.precioDetalleRow}>
-            <Text style={styles.precioDet}>{viaje.distanciaKm} km</Text>
-            <Text style={styles.precioSep}>·</Text>
-            <Text style={styles.precioDet}>{viaje.paradas} parada{viaje.paradas !== 1 ? 's' : ''}</Text>
+            <Text style={styles.precioDet}>{viaje.paradasIntermedias.length} parada{viaje.paradasIntermedias.length !== 1 ? 's' : ''}</Text>
             <Text style={styles.precioSep}>·</Text>
             <Text style={styles.precioDet}>{ZONA_LABELS[viaje.zona] ?? viaje.zona}</Text>
           </View>
@@ -101,9 +113,9 @@ export default function DetalleViajeScreen({ navigation, route }) {
                 <Text style={styles.rutaSubLabel}>Origen</Text>
                 <Text style={styles.rutaValor}>{viaje.origen}</Text>
               </View>
-              {viaje.paradas > 0 && (
+              {viaje.paradasIntermedias.length > 0 && (
                 <Text style={styles.rutaParadas}>
-                  + {viaje.paradas} parada{viaje.paradas !== 1 ? 's' : ''} intermedia{viaje.paradas !== 1 ? 's' : ''}
+                  + {viaje.paradasIntermedias.length} parada{viaje.paradasIntermedias.length !== 1 ? 's' : ''} intermedia{viaje.paradasIntermedias.length !== 1 ? 's' : ''}
                 </Text>
               )}
               <View>

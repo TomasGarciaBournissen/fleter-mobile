@@ -29,7 +29,9 @@ export default function CobroScreen({ navigation }) {
 
   const handleFinalizar = () => {
     setCobrado(true);
-    setTimeout(() => navigation.navigate('Disponibles'), 1500);
+    setTimeout(() => {
+      navigation.reset({ index: 0, routes: [{ name: 'DisponiblesHome' }] });
+    }, 1500);
   };
 
   return (

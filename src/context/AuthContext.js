@@ -38,8 +38,10 @@ export function AuthProvider({ children }) {
       if (fbUser) {
         try {
           const { data } = await api.post('/api/auth/login');
+          console.log('[Auth] login response:', JSON.stringify(data));
           setUser(data);
-        } catch {
+        } catch (err) {
+          console.error('[Auth] login error:', err?.response?.status, err?.response?.data ?? err?.message);
           setUser(null);
         }
       } else {

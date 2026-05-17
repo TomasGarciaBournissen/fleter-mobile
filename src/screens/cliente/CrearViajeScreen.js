@@ -101,13 +101,8 @@ export default function CrearViajeScreen({ navigation }) {
   const [descripcion, setDescripcion] = useState('');
   const [paradas,     setParadas]     = useState([]);
   const [condiciones, setCondiciones] = useState([]);
-  const [tarifaHora,  setTarifaHora]  = useState('');
-  const [tarifaKm,    setTarifaKm]    = useState('');
   const [estimado,    setEstimado]    = useState(null);
   const [calculando,  setCalculando]  = useState(false);
-
-  const needsHora = zona === 'CABA' || zona === 'MIXTO';
-  const needsKm   = zona === 'PROVINCIA' || zona === 'MIXTO';
 
   const handleZona = (z) => { setZona(z); setEstimado(null); };
 
@@ -139,12 +134,9 @@ export default function CrearViajeScreen({ navigation }) {
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
     );
 
-  const tarifasCompletas =
-    (!needsHora || tarifaHora.trim()) && (!needsKm || tarifaKm.trim());
-
   const fechaValida   = fechaHora > MIN_DATE();
-  const puedeCalcular = origen.trim() && destino.trim() && tarifasCompletas;
-  const puedePublicar = puedeCalcular && fechaValida && !!estimado;
+  const puedeCalcular = origen.trim() && destino.trim() && fechaValida;
+  const puedePublicar = puedeCalcular && !!estimado;
 
   const handleCalcular = async () => {
     setCalculando(true);
@@ -158,8 +150,7 @@ export default function CrearViajeScreen({ navigation }) {
       const body = {
         zona,
         paradas: todasParadas,
-        ...(needsHora && { tarifa_hora: Number(tarifaHora) }),
-        ...(needsKm   && { tarifa_km:   Number(tarifaKm) }),
+        fecha_programada: fechaHora.toISOString(),
       };
       const { data } = await api.post('/api/viajes/estimar-costo', body);
       setEstimado(data);
@@ -181,8 +172,6 @@ export default function CrearViajeScreen({ navigation }) {
       zona,
       paradas: todasParadas,
       fecha_programada: fechaHora.toISOString(),
-      ...(needsHora && { tarifa_hora: Number(tarifaHora) }),
-      ...(needsKm   && { tarifa_km:   Number(tarifaKm) }),
       ...(condiciones.length > 0 && { condiciones_requeridas: condiciones }),
     };
     navigation.navigate('ConfirmacionViaje', { payload, estimado });
@@ -316,39 +305,6 @@ export default function CrearViajeScreen({ navigation }) {
           </Modal>
         )}
 
-        {/* ── Tarifas ────────────────────────────────────────── */}
-        <View style={styles.seccion}>
-          <Text style={styles.seccionLabel}>TARIFAS</Text>
-          <View style={styles.filaDos}>
-            {needsHora && (
-              <View style={{ flex: 1 }}>
-                <Text style={styles.campoLabel}>Por hora ($)</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ej: 5000"
-                  placeholderTextColor={colors.textHint}
-                  value={tarifaHora}
-                  onChangeText={v => { setTarifaHora(v); setEstimado(null); }}
-                  keyboardType="number-pad"
-                />
-              </View>
-            )}
-            {needsKm && (
-              <View style={{ flex: 1 }}>
-                <Text style={styles.campoLabel}>Por km ($)</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ej: 800"
-                  placeholderTextColor={colors.textHint}
-                  value={tarifaKm}
-                  onChangeText={v => { setTarifaKm(v); setEstimado(null); }}
-                  keyboardType="number-pad"
-                />
-              </View>
-            )}
-          </View>
-        </View>
-
         {/* ── Carga y requisitos ─────────────────────────────── */}
         <View style={styles.seccion}>
           <Text style={styles.seccionLabel}>CARGA</Text>
@@ -393,9 +349,9 @@ export default function CrearViajeScreen({ navigation }) {
               ${estimado.precio_estimado.toLocaleString('es-AR')}
             </Text>
             <View style={styles.estimadoDetRow}>
-              <Text style={styles.estimadoDet}>{estimado.distancia_total_km} km</Text>
+              <Text style={styles.estimadoDet}>{estimado.desglose?.distancia_km} km</Text>
               <Text style={styles.estimadoSep}>·</Text>
-              <Text style={styles.estimadoDet}>{estimado.tiempo_total_horas} h estimadas</Text>
+              <Text style={styles.estimadoDet}>{estimado.desglose?.tiempo_horas} h estimadas</Text>
             </View>
           </View>
         )}

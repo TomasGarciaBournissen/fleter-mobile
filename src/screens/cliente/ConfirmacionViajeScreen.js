@@ -27,8 +27,7 @@ function FilaInfo({ label, value }) {
 
 export default function ConfirmacionViajeScreen({ navigation, route }) {
   const { payload, estimado } = route.params;
-  const [cargando,  setCargando]  = useState(false);
-  const [resultado, setResultado] = useState(null);
+  const [cargando, setCargando] = useState(false);
 
   const paradas = payload.paradas ?? [];
   const origen  = paradas[0]?.direccion ?? '';
@@ -39,44 +38,12 @@ export default function ConfirmacionViajeScreen({ navigation, route }) {
     setCargando(true);
     try {
       const { data } = await api.post('/api/viajes', payload);
-      setResultado(data);
+      navigation.replace('BuscandoFletero', { idViaje: data.id_viaje });
     } catch (e) {
       Alert.alert('Error', e?.response?.data?.error ?? 'No se pudo publicar el viaje');
-    } finally {
       setCargando(false);
     }
   };
-
-  // ── Pantalla de éxito ──────────────────────────────────────
-  if (resultado) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
-        <View style={styles.exitoWrap}>
-          <View style={styles.exitoIcono}>
-            <Text style={{ fontSize: 36, color: colors.primary, fontWeight: '800' }}>✓</Text>
-          </View>
-          <Text style={styles.exitoTitulo}>¡Viaje publicado!</Text>
-          <Text style={styles.exitoSub}>
-            Tu solicitud fue enviada a los fleteros disponibles.{'\n'}
-            El primero en aceptar quedará asignado.
-          </Text>
-          <View style={styles.exitoIdCard}>
-            <Text style={styles.exitoIdLabel}>Número de viaje</Text>
-            <Text style={styles.exitoId}>#{resultado.id_viaje}</Text>
-          </View>
-          <Text style={styles.exitoNota}>Te avisamos en cuanto un fletero acepte.</Text>
-          <TouchableOpacity
-            style={styles.btnHome}
-            onPress={() => navigation.navigate('Home')}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.btnHomeText}>Ir al inicio</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   // ── Pantalla de confirmación ───────────────────────────────
   return (
@@ -103,7 +70,7 @@ export default function ConfirmacionViajeScreen({ navigation, route }) {
             ${estimado.precio_estimado.toLocaleString('es-AR')}
           </Text>
           <Text style={styles.precioDetalle}>
-            {estimado.distancia_total_km} km · {estimado.tiempo_total_horas} h
+            {estimado.desglose?.distancia_km} km · {estimado.desglose?.tiempo_horas} h
           </Text>
         </View>
 
