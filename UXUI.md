@@ -1,60 +1,60 @@
-# UX/UI Reference ó Movix
+# UX/UI Reference ‚Äî Movix
 
 ## Paleta de colores
-- Verde primario:    #10B954  (acciones, activos, precios, pin mapa)
-- Verde oscuro:      #148840  (header fletero, pressed state)
-- Verde noche:       #0A1A0F  (header exclusivo modo fletero)
-- Negro base:        #0A0A0A  (fondo de todas las pantallas)
-- Superficie 1:      #181818  (cards, bottom bar, status bar)
-- Superficie 2:      #242424  (fields, cards anidadas, inputs)
-- Superficie 3:      #2E2E2E  (bordes, hover states, separadores)
-- Blanco 100%:       #FFFFFF  (tÌtulos, valores, precios)
-- Blanco 65%:        rgba(255,255,255,0.65)  (subtÌtulos, info secundaria)
-- Blanco 35%:        rgba(255,255,255,0.35)  (labels, placeholders, hints)
-- Rojo:              #F14444  (desvÌo, cancelar, error, destino en mapa)
-- ¡mbar:             #F5A623  (advertencia, fr·gil, en espera)
-- Verde estado:      #1DB954  (entregado, activo, confirmado)
+- Naranja primario:   #F4711A  (acciones, activos, precios, pin mapa)
+- Naranja oscuro:     #D4601A  (header fletero, pressed state)
+- Naranja noche:      #4A1E00  (header exclusivo modo fletero)
+- Crema base:         #FFF8F2  (fondo de todas las pantallas)
+- Superficie 1:       #FFFFFF  (cards, bottom bar, status bar)
+- Superficie 2:       #FFF3EA  (fields, cards anidadas, inputs)
+- Superficie 3:       #FFE4CC  (bordes, hover states, separadores)
+- Marr√≥n 100%:        #1A1207  (t√≠tulos, valores, precios)
+- Marr√≥n 65%:         rgba(26,18,7,0.65)  (subt√≠tulos, info secundaria)
+- Marr√≥n 35%:         rgba(26,18,7,0.35)  (labels, placeholders, hints)
+- Rojo:               #D93025  (desv√≠o, cancelar, error, destino en mapa)
+- √Åmbar:              #E59700  (advertencia, fr√°gil, en espera)
+- Verde estado:       #22A45D  (entregado, activo, confirmado)
 
-## TipografÌa
+## Tipograf√≠a
 - Fuentes candidatas: Archivo Black, Manrope, Josefin Sans
-- H1: grande, bold ó tÌtulos de pantalla
-- H2: medium ó secciones
+- H1: grande, bold ‚Äî t√≠tulos de pantalla
+- H2: medium ‚Äî secciones
 - Texto normal: regular
-- Captions: pequeÒo, 65% opacity
+- Captions: peque√±o, 65% opacity
 
 ## Personalidad de marca
-- Segura ∑ Simple ∑ Control
+- Segura ‚Äî Simple ‚Äî Control
 
-## NavegaciÛn ó Cliente (Bottom Tabs)
+## Navegaci√≥n ‚Äî Cliente (Bottom Tabs)
 - Inicio
 - Nuevo (crear viaje)
 - Historial
 - Perfil
 
-## NavegaciÛn ó Fletero (Bottom Tabs)
+## Navegaci√≥n ‚Äî Fletero (Bottom Tabs)
 - Disponibles
 - Activo
 - Historial
 
 ## Pantallas Cliente
-1. Home: stats (activos, gasto mes, puntaje) + viaje activo + ˙ltimos viajes
+1. Home: stats (activos, gasto mes, puntaje) + viaje activo + √∫ltimos viajes
 2. Crear viaje: origen, destino, fecha/hora, paradas, requisitos, precio estimado
-3. Tracking: mapa + datos fletero + timeline de estados + alertas de desvÌo
+3. Tracking: mapa + datos fletero + timeline de estados + alertas de desv√≠o
 4. Historial: lista agrupada por mes con estados y montos
-5. Perfil: datos, mÈtodo de pago, direcciÛn frecuente, notificaciones
+5. Perfil: datos, m√©todo de pago, direcci√≥n frecuente, notificaciones
 
 ## Pantallas Fletero
 1. Disponibles: lista de viajes con precio, distancia, requisitos
 2. Oferta: detalle del viaje + countdown + Aceptar/Rechazar
-3. Viaje activo: mapa + prÛxima parada + timeline + botÛn confirmar entrega
-4. QR entrega: esc·ner + datos del destinatario
-5. Cobro: resumen final + pago acreditado + calificaciÛn recibida
+3. Viaje activo: mapa + pr√≥xima parada + timeline + bot√≥n confirmar entrega
+4. QR entrega: esc√°ner + datos del destinatario
+5. Cobro: resumen final + pago acreditado + calificaci√≥n recibida
 
 ## Componentes clave
-- Cards: fondo #181818, bordes #2E2E2E
-- BotÛn primario: fondo #10B954, texto negro, bold
-- BotÛn secundario: borde #2E2E2E, texto blanco
-- Tags/chips: Fr·gil=#F5A623, Refrigerado=#2E2E2E, Carga pesada=#2E2E2E
-- Alertas: fondo rojo transl˙cido, texto #F14444
-- Estados activos: badge verde #10B954
-- Estados cancelados: badge rojo #F14444
+- Cards: fondo #FFFFFF, bordes #FFE4CC
+- Bot√≥n primario: fondo #F4711A, texto blanco, bold
+- Bot√≥n secundario: borde #FFE4CC, texto #1A1207
+- Tags/chips: Fr√°gil=#E59700, Refrigerado=#FFF3EA, Carga pesada=#FFF3EA
+- Alertas: fondo rojo transl√∫cido, texto #D93025
+- Estados activos: badge naranja #F4711A
+- Estados cancelados: badge rojo #D93025

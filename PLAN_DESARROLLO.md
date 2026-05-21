@@ -97,6 +97,8 @@ El cliente puede crear una solicitud de viaje especificando todos los requisitos
 - [ ] **ConfirmacionViajeScreen** — resumen antes de confirmar, botón de confirmar que llama al endpoint, pantalla de éxito con ID
 - [ ] **DisponiblesScreen** (fletero) — lista de viajes compatibles, cada item con origen/destino/fecha/precio/requisitos
 - [ ] **DetalleViajeScreen** (fletero) — mapa con origen y destino, distancia/tiempo/precio estimado, botón "Aceptar viaje" (se activa en Fase 3)
+- [ ] **HistorialClienteScreen** — lista de viajes del cliente agrupada por mes (`GET /api/viajes/mis-viajes`), badge de estado con color (buscando/asignado/en curso/finalizado/cancelado), precio estimado vs real, tap para ver detalle del viaje
+- [ ] **HistorialFleteroScreen** — lista de viajes completados/cancelados del conductor agrupada por mes, monto cobrado por viaje, calificación recibida ⚠️ *endpoint pendiente en API — backend debe agregar `GET /api/viajes/mis-viajes-conductor`*
 
 ### Web (Persona 3)
 - [ ] Formulario de creación de viaje con mapa interactivo de Google Maps
