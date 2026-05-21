@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar,
+  SafeAreaView, StatusBar, Alert, ActivityIndicator,
 } from 'react-native';
 import { colors, fontSize, spacing, radius } from '../../theme';
+import { useSocket } from '../../context/SocketContext';
+import { useAuth } from '../../context/AuthContext';
 
 const ZONA_LABELS = { CABA: 'CABA', PROVINCIA: 'Provincia', MIXTO: 'CABA + Prov.' };
 
@@ -54,10 +56,47 @@ export default function DetalleViajeScreen({ navigation, route }) {
     cliente: 'Tomás G.',
   };
 
+  const { socket } = useSocket();
+  const { user } = useAuth();
+  const [aceptando, setAceptando] = useState(false);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const onAsignado = (data) => {
+      if (data.id_viaje !== viaje.id) return;
+      setAceptando(false);
+      if (data.id_usuario_conductor === user?.id_usuario) {
+        navigation.replace('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
+      } else {
+        // Otro conductor fue asignado — volver a la lista
+        Alert.alert('Viaje tomado', 'Otro conductor fue asignado a este viaje.', [
+          { text: 'OK', onPress: () => navigation.goBack() },
+        ]);
+      }
+    };
+
+    const onYaAsignado = (data) => {
+      if (data.id_viaje !== viaje.id) return;
+      setAceptando(false);
+      Alert.alert('Llegaste tarde', 'Otro conductor aceptó este viaje primero.', [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    };
+
+    socket.on('viaje:conductor_asignado', onAsignado);
+    socket.on('viaje:ya_asignado',        onYaAsignado);
+
+    return () => {
+      socket.off('viaje:conductor_asignado', onAsignado);
+      socket.off('viaje:ya_asignado',        onYaAsignado);
+    };
+  }, [socket, viaje.id, navigation]);
+
   const handleAceptar = () => {
-    // TODO Fase 3: emitir viaje:aceptar via WebSocket antes de navegar
-    // socket.emit('viaje:aceptar', { id_viaje: viaje.id });
-    navigation.navigate('ViajeActivo', { viaje: raw });
+    if (!socket || aceptando) return;
+    setAceptando(true);
+    socket.emit('viaje:aceptar', { id_viaje: viaje.id });
   };
 
   return (
@@ -164,8 +203,16 @@ export default function DetalleViajeScreen({ navigation, route }) {
         >
           <Text style={styles.btnRechazarText}>Rechazar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.btnAceptar} onPress={handleAceptar} activeOpacity={0.85}>
-          <Text style={styles.btnAceptarText}>Aceptar viaje</Text>
+        <TouchableOpacity
+          style={[styles.btnAceptar, aceptando && styles.btnDisabled]}
+          onPress={handleAceptar}
+          disabled={aceptando}
+          activeOpacity={0.85}
+        >
+          {aceptando
+            ? <ActivityIndicator color={colors.surface1} />
+            : <Text style={styles.btnAceptarText}>Aceptar viaje</Text>
+          }
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -271,4 +318,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg, paddingVertical: spacing.md, alignItems: 'center',
   },
   btnAceptarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnDisabled: { opacity: 0.6 },
 });

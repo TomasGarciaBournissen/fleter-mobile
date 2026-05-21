@@ -13,6 +13,7 @@ import {
 import { colors, fontSize, spacing, radius } from '../../theme';
 import api from '../../services/api';
 import { useSocket } from '../../context/SocketContext';
+import { useAuth } from '../../context/AuthContext';
 import NuevoViajeModal from './NuevoViajeModal';
 
 function mapViaje(v) {
@@ -104,6 +105,7 @@ export default function DisponiblesScreen({ navigation }) {
   const [viajeOferta,   setViajeOferta]   = useState(null);
   const [aceptando,     setAceptando]     = useState(false);
   const { socket } = useSocket();
+  const { user } = useAuth();
 
   const fetchViajes = useCallback(async () => {
     setCargando(true);
@@ -132,11 +134,15 @@ export default function DisponiblesScreen({ navigation }) {
     };
 
     const onConductorAsignado = (data) => {
-      setViajeOferta(null);
-      setAceptando(false);
-      // Quitar el viaje asignado de la lista
       setViajes(prev => prev.filter(v => v.id !== data.id_viaje));
-      navigation.navigate('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
+      if (data.id_usuario_conductor === user?.id_usuario) {
+        setViajeOferta(null);
+        setAceptando(false);
+        navigation.navigate('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
+      } else {
+        // Otro conductor ganó la carrera — solo sacar el viaje de la lista
+        if (viajeOferta?.id_viaje === data.id_viaje) setViajeOferta(null);
+      }
     };
 
     const onYaAsignado = (data) => {
