@@ -83,3 +83,12 @@ src/
 ## Dos roles con experiencias completamente distintas
 - CLIENTE: empresa PyME que pide el flete, ve el mapa, recibe alertas
 - FLETERO: conductor que acepta viajes, activa GPS, escanea QR
+
+## Registro de progreso — PROGRESO.md
+El archivo `PROGRESO.md` en la raíz del proyecto documenta el estado actual de cada pantalla, los commits históricos, los eventos WebSocket implementados, los problemas conocidos y los próximos pasos por fase.
+
+**Regla:** cada vez que se completa una tarea, se agrega una pantalla, se resuelve un bug o se hace un commit significativo, actualizar `PROGRESO.md` reflejando el nuevo estado. Específicamente:
+- Cambiar el estado de una pantalla (🔧 → ✅, o agregar ❌)
+- Agregar la fila del commit en la tabla de historial
+- Mover items de "Próximos pasos" a completados si corresponde
+- Registrar nuevos problemas conocidos si aparecen
