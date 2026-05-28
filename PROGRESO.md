@@ -9,6 +9,7 @@
 
 | Commit | Fecha | Descripción |
 |--------|-------|-------------|
+| `8b43895` | 28 May 2026 | Docs — PROGRESO.md + regla de actualización en CLAUDE.md |
 | `8b3e4d6` | 26 Apr 2026 | Initial commit — scaffold Expo vacío |
 | `44e3b35` | 07 May 2026 | Auth screens + context + DEV_MODE + estructura completa del proyecto |
 | `eaf05c6` | 07 May 2026 | Habilitar Firebase Auth real (reemplaza mock de hooks/useAuth.js) |
@@ -35,7 +36,7 @@
 | Pantalla | Estado | Notas |
 |----------|--------|-------|
 | `HomeScreen` | ✅ Funcional | Stats, viaje activo card, últimos viajes |
-| `CrearViajeScreen` | ✅ Funcional | Selector de zona, fecha/hora con DatePicker nativo, POST /api/viajes/estimar-costo en tiempo real |
+| `CrearViajeScreen` | ✅ Funcional | Google Places Autocomplete para origen/destino/paradas (modal), coords reales en payload, POST /api/viajes/estimar-costo |
 | `ConfirmacionViajeScreen` | ✅ Funcional | Resumen + POST /api/viajes, navega a BuscandoFletero |
 | `BuscandoFleteroScreen` | ✅ Funcional | Animación de búsqueda, escucha `viaje:conductor_asignado` via socket |
 | `ViajeActivoScreen` | 🔧 Placeholder | Pantalla existe pero sin GPS real ni tracking (Fase 4) |

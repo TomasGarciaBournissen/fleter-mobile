@@ -6,6 +6,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import api from '../../services/api';
+import LocationPickerModal from '../../components/LocationPickerModal';
 
 const ZONAS = [
   { id: 'CABA',      label: 'CABA',      sub: '$/hora' },
@@ -14,11 +15,11 @@ const ZONAS = [
 ];
 
 const CONDICIONES = [
-  { id: 'FRAGIL',      label: 'Frágil',       color: colors.warning },
-  { id: 'REFRIGERADO', label: 'Refrigerado',  color: '#4FC3F7' },
-  { id: 'CARGA_PESADA',label: 'Carga pesada', color: colors.textSecondary },
-  { id: 'PELIGROSO',   label: 'Peligroso',    color: colors.error },
-  { id: 'VOLUMINOSO',  label: 'Voluminoso',   color: colors.textSecondary },
+  { id: 'FRAGIL',       label: 'Frágil',       color: colors.warning },
+  { id: 'REFRIGERADO',  label: 'Refrigerado',  color: '#4FC3F7' },
+  { id: 'CARGA_PESADA', label: 'Carga pesada', color: colors.textSecondary },
+  { id: 'PELIGROSO',    label: 'Peligroso',    color: colors.error },
+  { id: 'VOLUMINOSO',   label: 'Voluminoso',   color: colors.textSecondary },
 ];
 
 function formatFechaHora(d) {
@@ -28,6 +29,22 @@ function formatFechaHora(d) {
 }
 
 const MIN_DATE = () => new Date(Date.now() + 60 * 60 * 1000);
+
+// { lat, lng, direccion } | null
+function LocationField({ label, value, placeholder, onPress, dotColor }) {
+  return (
+    <TouchableOpacity style={styles.locationField} onPress={onPress} activeOpacity={0.7}>
+      <View style={[styles.locationDot, { backgroundColor: dotColor }]} />
+      <View style={{ flex: 1 }}>
+        {value
+          ? <Text style={styles.locationValor} numberOfLines={1}>{value.direccion}</Text>
+          : <Text style={styles.locationPlaceholder}>{placeholder}</Text>
+        }
+      </View>
+      <Text style={styles.locationChevron}>›</Text>
+    </TouchableOpacity>
+  );
+}
 
 function ZonaSelector({ value, onChange }) {
   return (
@@ -39,12 +56,8 @@ function ZonaSelector({ value, onChange }) {
           onPress={() => onChange(z.id)}
           activeOpacity={0.8}
         >
-          <Text style={[styles.zonaLabel, value === z.id && styles.zonaLabelActivo]}>
-            {z.label}
-          </Text>
-          <Text style={[styles.zonaSub, value === z.id && styles.zonaSubActivo]}>
-            {z.sub}
-          </Text>
+          <Text style={[styles.zonaLabel, value === z.id && styles.zonaLabelActivo]}>{z.label}</Text>
+          <Text style={[styles.zonaSub,   value === z.id && styles.zonaSubActivo]}>{z.sub}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -63,50 +76,40 @@ function CondChip({ item, activo, onPress }) {
   );
 }
 
-function Parada({ numero, value, onChangeText, onRemove }) {
-  return (
-    <View style={styles.paradaRow}>
-      <View style={styles.paradaBadge}>
-        <Text style={styles.paradaBadgeText}>{numero}</Text>
-      </View>
-      <TextInput
-        style={[styles.input, { flex: 1 }]}
-        placeholder="Dirección de parada"
-        placeholderTextColor={colors.textHint}
-        value={value}
-        onChangeText={onChangeText}
-      />
-      <TouchableOpacity
-        onPress={onRemove}
-        style={styles.paradaRemove}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      >
-        <Text style={{ fontSize: 16, color: colors.error }}>✕</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
 export default function CrearViajeScreen({ navigation }) {
-  const [origen,      setOrigen]      = useState('');
-  const [destino,     setDestino]     = useState('');
+  const [origen,      setOrigen]      = useState(null); // { lat, lng, direccion }
+  const [destino,     setDestino]     = useState(null);
+  const [paradas,     setParadas]     = useState([]);   // array de { lat, lng, direccion }
   const [zona,        setZona]        = useState('CABA');
   const [fechaHora,   setFechaHora]   = useState(() => {
-    const d = new Date();
-    d.setHours(d.getHours() + 2, 0, 0, 0);
-    return d;
+    const d = new Date(); d.setHours(d.getHours() + 2, 0, 0, 0); return d;
   });
-  const [mostrarPicker, setMostrarPicker] = useState(false);
-  const [modoPicker,    setModoPicker]    = useState('date');
-  const [descripcion, setDescripcion] = useState('');
-  const [paradas,     setParadas]     = useState([]);
-  const [condiciones, setCondiciones] = useState([]);
-  const [estimado,    setEstimado]    = useState(null);
-  const [calculando,  setCalculando]  = useState(false);
+  const [mostrarPicker,  setMostrarPicker]  = useState(false);
+  const [modoPicker,     setModoPicker]     = useState('date');
+  const [descripcion,    setDescripcion]    = useState('');
+  const [condiciones,    setCondiciones]    = useState([]);
+  const [estimado,       setEstimado]       = useState(null);
+  const [calculando,     setCalculando]     = useState(false);
+  const [pickerTarget,   setPickerTarget]   = useState(null); // 'origen' | 'destino' | index
+
+  const abrirPicker = (target) => setPickerTarget(target);
+
+  const handleLocationSelected = (loc) => {
+    if (pickerTarget === 'origen')  setOrigen(loc);
+    else if (pickerTarget === 'destino') setDestino(loc);
+    else if (typeof pickerTarget === 'number') {
+      setParadas(prev => prev.map((p, i) => i === pickerTarget ? loc : p));
+    }
+    setPickerTarget(null);
+    setEstimado(null);
+  };
+
+  const agregarParada = () => setParadas(prev => [...prev, null]);
+  const quitarParada  = (i) => setParadas(prev => prev.filter((_, j) => j !== i));
 
   const handleZona = (z) => { setZona(z); setEstimado(null); };
 
-  const abrirPicker = () => { setModoPicker('date'); setMostrarPicker(true); };
+  const abrirDatePicker = () => { setModoPicker('date'); setMostrarPicker(true); };
 
   const onChangePicker = (event, selected) => {
     if (Platform.OS === 'android') {
@@ -130,29 +133,27 @@ export default function CrearViajeScreen({ navigation }) {
   };
 
   const toggleCond = (id) =>
-    setCondiciones(prev =>
-      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
-    );
+    setCondiciones(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
 
   const fechaValida   = fechaHora > MIN_DATE();
-  const puedeCalcular = origen.trim() && destino.trim() && fechaValida;
+  const puedeCalcular = !!origen && !!destino && fechaValida;
   const puedePublicar = puedeCalcular && !!estimado;
+
+  const buildParadas = () => [
+    origen,
+    ...paradas.filter(Boolean),
+    destino,
+  ].map(p => ({ lat: p.lat, lng: p.lng, direccion: p.direccion }));
 
   const handleCalcular = async () => {
     setCalculando(true);
     setEstimado(null);
     try {
-      const todasParadas = [
-        { lat: 0, lng: 0, direccion: origen.trim() },
-        ...paradas.filter(Boolean).map(p => ({ lat: 0, lng: 0, direccion: p })),
-        { lat: 0, lng: 0, direccion: destino.trim() },
-      ];
-      const body = {
+      const { data } = await api.post('/api/viajes/estimar-costo', {
         zona,
-        paradas: todasParadas,
+        paradas: buildParadas(),
         fecha_programada: fechaHora.toISOString(),
-      };
-      const { data } = await api.post('/api/viajes/estimar-costo', body);
+      });
       setEstimado(data);
     } catch (e) {
       Alert.alert('Error', e?.response?.data?.error ?? 'No se pudo calcular el precio');
@@ -162,24 +163,30 @@ export default function CrearViajeScreen({ navigation }) {
   };
 
   const handlePublicar = () => {
-    // Payload para POST /api/viajes — lat/lng se reemplazarán con Google Places en el futuro
-    const todasParadas = [
-      { lat: 0, lng: 0, direccion: origen.trim() },
-      ...paradas.filter(Boolean).map(p => ({ lat: 0, lng: 0, direccion: p })),
-      { lat: 0, lng: 0, direccion: destino.trim() },
-    ];
     const payload = {
       zona,
-      paradas: todasParadas,
+      paradas: buildParadas(),
       fecha_programada: fechaHora.toISOString(),
       ...(condiciones.length > 0 && { condiciones_requeridas: condiciones }),
     };
     navigation.navigate('ConfirmacionViaje', { payload, estimado });
   };
 
+  const tituloModal = pickerTarget === 'origen' ? 'Seleccionar origen'
+    : pickerTarget === 'destino' ? 'Seleccionar destino'
+    : typeof pickerTarget === 'number' ? `Parada ${pickerTarget + 1}`
+    : '';
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+
+      <LocationPickerModal
+        visible={pickerTarget !== null}
+        titulo={tituloModal}
+        onSelect={handleLocationSelected}
+        onClose={() => setPickerTarget(null)}
+      />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -195,13 +202,13 @@ export default function CrearViajeScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* ── Zona ───────────────────────────────────────────── */}
+        {/* ── Zona ─────────────────────────────────────────── */}
         <View style={styles.seccion}>
           <Text style={styles.seccionLabel}>ZONA</Text>
           <ZonaSelector value={zona} onChange={handleZona} />
         </View>
 
-        {/* ── Ruta ───────────────────────────────────────────── */}
+        {/* ── Ruta ─────────────────────────────────────────── */}
         <View style={styles.seccion}>
           <Text style={styles.seccionLabel}>RUTA</Text>
           <View style={styles.card}>
@@ -211,50 +218,58 @@ export default function CrearViajeScreen({ navigation }) {
                 <View style={styles.rutaLinea} />
                 <View style={styles.dotDestino} />
               </View>
-              <View style={{ flex: 1, gap: spacing.sm }}>
-                <TextInput
-                  style={styles.inputRuta}
-                  placeholder="Origen"
-                  placeholderTextColor={colors.textHint}
+              <View style={{ flex: 1 }}>
+                <LocationField
                   value={origen}
-                  onChangeText={v => { setOrigen(v); setEstimado(null); }}
+                  placeholder="Origen"
+                  dotColor={colors.primary}
+                  onPress={() => abrirPicker('origen')}
                 />
                 <View style={styles.separador} />
-                <TextInput
-                  style={styles.inputRuta}
-                  placeholder="Destino"
-                  placeholderTextColor={colors.textHint}
+                <LocationField
                   value={destino}
-                  onChangeText={v => { setDestino(v); setEstimado(null); }}
+                  placeholder="Destino"
+                  dotColor={colors.error}
+                  onPress={() => abrirPicker('destino')}
                 />
               </View>
             </View>
           </View>
 
           {paradas.map((p, i) => (
-            <Parada
-              key={i}
-              numero={i + 1}
-              value={p}
-              onChangeText={v =>
-                setParadas(prev => prev.map((x, j) => j === i ? v : x))
-              }
-              onRemove={() => setParadas(prev => prev.filter((_, j) => j !== i))}
-            />
+            <View key={i} style={styles.paradaRow}>
+              <View style={styles.paradaBadge}>
+                <Text style={styles.paradaBadgeText}>{i + 1}</Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.paradaField, { flex: 1 }]}
+                onPress={() => abrirPicker(i)}
+                activeOpacity={0.7}
+              >
+                {p
+                  ? <Text style={styles.locationValor} numberOfLines={1}>{p.direccion}</Text>
+                  : <Text style={styles.locationPlaceholder}>Toca para elegir parada</Text>
+                }
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => quitarParada(i)}
+                style={styles.paradaRemove}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={{ fontSize: 16, color: colors.error }}>✕</Text>
+              </TouchableOpacity>
+            </View>
           ))}
 
-          <TouchableOpacity
-            style={styles.btnSecundario}
-            onPress={() => setParadas(prev => [...prev, ''])}
-          >
+          <TouchableOpacity style={styles.btnSecundario} onPress={agregarParada}>
             <Text style={styles.btnSecundarioText}>+ Agregar parada intermedia</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ── Cuándo ─────────────────────────────────────────── */}
+        {/* ── Cuándo ───────────────────────────────────────── */}
         <View style={styles.seccion}>
           <Text style={styles.seccionLabel}>CUÁNDO</Text>
-          <TouchableOpacity style={styles.fechaBtn} onPress={abrirPicker} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.fechaBtn} onPress={abrirDatePicker} activeOpacity={0.8}>
             <Text style={styles.fechaBtnIcono}>📅</Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.campoLabel}>Fecha y hora</Text>
@@ -269,7 +284,6 @@ export default function CrearViajeScreen({ navigation }) {
           )}
         </View>
 
-        {/* DateTimePicker Android */}
         {mostrarPicker && Platform.OS === 'android' && (
           <DateTimePicker
             value={fechaHora}
@@ -280,7 +294,6 @@ export default function CrearViajeScreen({ navigation }) {
           />
         )}
 
-        {/* DateTimePicker iOS — modal */}
         {Platform.OS === 'ios' && (
           <Modal visible={mostrarPicker} transparent animationType="slide">
             <View style={styles.pickerOverlay}>
@@ -305,7 +318,7 @@ export default function CrearViajeScreen({ navigation }) {
           </Modal>
         )}
 
-        {/* ── Carga y requisitos ─────────────────────────────── */}
+        {/* ── Carga y requisitos ────────────────────────────── */}
         <View style={styles.seccion}>
           <Text style={styles.seccionLabel}>CARGA</Text>
           <TextInput
@@ -320,17 +333,12 @@ export default function CrearViajeScreen({ navigation }) {
           <Text style={styles.campoLabel}>Requisitos del vehículo</Text>
           <View style={styles.chipsRow}>
             {CONDICIONES.map(c => (
-              <CondChip
-                key={c.id}
-                item={c}
-                activo={condiciones.includes(c.id)}
-                onPress={() => toggleCond(c.id)}
-              />
+              <CondChip key={c.id} item={c} activo={condiciones.includes(c.id)} onPress={() => toggleCond(c.id)} />
             ))}
           </View>
         </View>
 
-        {/* ── Calcular precio ────────────────────────────────── */}
+        {/* ── Calcular precio ──────────────────────────────── */}
         <TouchableOpacity
           style={[styles.btnCalcular, (!puedeCalcular || calculando) && styles.btnOff]}
           onPress={handleCalcular}
@@ -385,30 +393,30 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface1, borderWidth: 1, borderColor: colors.surface3,
     alignItems: 'center', justifyContent: 'center',
   },
-  backIcon: { fontSize: 20, color: colors.textPrimary },
+  backIcon:    { fontSize: 20, color: colors.textPrimary },
   headerTitle: { fontSize: fontSize.h2, fontWeight: '700', color: colors.textPrimary },
 
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: spacing.md, paddingBottom: 120 },
 
-  seccion: { marginBottom: spacing.lg },
+  seccion:      { marginBottom: spacing.lg },
   seccionLabel: {
     fontSize: 11, fontWeight: '700', color: colors.textHint,
     letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.sm,
   },
 
   // Zona
-  zonaRow: { flexDirection: 'row', gap: spacing.sm },
-  zonaChip: {
+  zonaRow:      { flexDirection: 'row', gap: spacing.sm },
+  zonaChip:     {
     flex: 1, alignItems: 'center', paddingVertical: spacing.sm,
     borderRadius: radius.md, borderWidth: 1, borderColor: colors.surface3,
     backgroundColor: colors.surface1,
   },
-  zonaChipActivo: { borderColor: colors.primary, backgroundColor: `${colors.primary}15` },
-  zonaLabel: { fontSize: fontSize.body, fontWeight: '700', color: colors.textSecondary },
+  zonaChipActivo:  { borderColor: colors.primary, backgroundColor: `${colors.primary}15` },
+  zonaLabel:       { fontSize: fontSize.body, fontWeight: '700', color: colors.textSecondary },
   zonaLabelActivo: { color: colors.primary },
-  zonaSub: { fontSize: 10, color: colors.textHint, marginTop: 2 },
-  zonaSubActivo: { color: `${colors.primary}99` },
+  zonaSub:         { fontSize: 10, color: colors.textHint, marginTop: 2 },
+  zonaSubActivo:   { color: `${colors.primary}99` },
 
   // Ruta card
   card: {
@@ -416,24 +424,36 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.surface3,
     padding: spacing.md, marginBottom: spacing.sm,
   },
-  rutaRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  rutaDots: { alignItems: 'center', width: 12 },
-  dotOrigen: { width: 10, height: 10, borderRadius: radius.full, backgroundColor: colors.primary },
-  rutaLinea: { width: 2, height: 32, backgroundColor: colors.surface3, marginVertical: 3 },
+  rutaRow:    { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  rutaDots:   { alignItems: 'center', width: 12 },
+  dotOrigen:  { width: 10, height: 10, borderRadius: radius.full, backgroundColor: colors.primary },
+  rutaLinea:  { width: 2, height: 44, backgroundColor: colors.surface3, marginVertical: 3 },
   dotDestino: { width: 10, height: 10, borderRadius: radius.full, backgroundColor: colors.error },
-  separador: { height: 1, backgroundColor: colors.surface3 },
-  inputRuta: { fontSize: fontSize.body, color: colors.textPrimary, paddingVertical: spacing.xs },
+  separador:  { height: 1, backgroundColor: colors.surface3 },
+
+  // Location field
+  locationField: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
+    paddingVertical: spacing.sm,
+  },
+  locationDot:         { width: 8, height: 8, borderRadius: 4 },
+  locationValor:       { fontSize: fontSize.body, color: colors.textPrimary, fontWeight: '600' },
+  locationPlaceholder: { fontSize: fontSize.body, color: colors.textHint },
+  locationChevron:     { fontSize: 18, color: colors.textHint },
 
   // Paradas
-  paradaRow: {
-    flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm,
-  },
+  paradaRow:   { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
   paradaBadge: {
     width: 22, height: 22, borderRadius: radius.full,
     backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.surface3,
     alignItems: 'center', justifyContent: 'center',
   },
   paradaBadgeText: { fontSize: 10, fontWeight: '700', color: colors.textSecondary },
+  paradaField:     {
+    borderWidth: 1, borderColor: colors.surface3, borderRadius: radius.md,
+    paddingHorizontal: spacing.sm, paddingVertical: spacing.sm,
+    backgroundColor: colors.surface1,
+  },
   paradaRemove: { padding: spacing.xs },
 
   // Inputs
@@ -445,9 +465,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.body, color: colors.textPrimary,
   },
   inputMultiline: { height: 72, textAlignVertical: 'top', paddingTop: spacing.sm },
-  filaDos: { flexDirection: 'row', gap: spacing.sm },
 
-  // Fecha picker
+  // Fecha
   fechaBtn: {
     flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
     backgroundColor: colors.surface1, borderRadius: radius.lg,
@@ -459,30 +478,24 @@ const styles = StyleSheet.create({
   fechaBtnChevron: { fontSize: 22, color: colors.textHint, fontWeight: '300' },
   fechaError:      { fontSize: fontSize.caption, color: colors.error, marginTop: 4, marginLeft: 4 },
 
-  pickerOverlay: {
-    flex: 1, justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  pickerSheet: {
+  pickerOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.3)' },
+  pickerSheet:   {
     backgroundColor: colors.background,
-    borderTopLeftRadius: radius.xl ?? 24,
-    borderTopRightRadius: radius.xl ?? 24,
+    borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl,
     paddingBottom: spacing.xl,
   },
-  pickerHeader: {
+  pickerHeader:  {
     flexDirection: 'row', justifyContent: 'flex-end',
     paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
     borderBottomWidth: 1, borderBottomColor: colors.surface3,
   },
   pickerListo: { fontSize: fontSize.body, fontWeight: '700', color: colors.primary },
 
-  // Condiciones chips
+  // Condiciones
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: 4 },
   chip: {
-    borderWidth: 1, borderColor: colors.surface3,
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.sm, paddingVertical: 4,
-    backgroundColor: colors.surface1,
+    borderWidth: 1, borderColor: colors.surface3, borderRadius: radius.full,
+    paddingHorizontal: spacing.sm, paddingVertical: 4, backgroundColor: colors.surface1,
   },
   chipText: { fontSize: fontSize.caption, color: colors.textSecondary, fontWeight: '600' },
 
@@ -501,8 +514,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md, backgroundColor: colors.surface1,
   },
   btnCalcularText: { fontSize: fontSize.h3, fontWeight: '700', color: colors.primary },
-
-  btnOff: { opacity: 0.45 },
+  btnOff:          { opacity: 0.45 },
 
   // Estimado
   estimadoCard: {
@@ -510,11 +522,11 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: `${colors.primary}44`,
     padding: spacing.lg, alignItems: 'center', marginBottom: spacing.lg,
   },
-  estimadoSub: { fontSize: fontSize.caption, fontWeight: '600', color: colors.textSecondary },
-  estimadoValor: { fontSize: 40, fontWeight: '800', color: colors.primary, marginVertical: 4 },
+  estimadoSub:    { fontSize: fontSize.caption, fontWeight: '600', color: colors.textSecondary },
+  estimadoValor:  { fontSize: 40, fontWeight: '800', color: colors.primary, marginVertical: 4 },
   estimadoDetRow: { flexDirection: 'row', gap: spacing.xs, alignItems: 'center' },
-  estimadoDet: { fontSize: fontSize.body, color: colors.textSecondary },
-  estimadoSep: { color: colors.textHint },
+  estimadoDet:    { fontSize: fontSize.body, color: colors.textSecondary },
+  estimadoSep:    { color: colors.textHint },
 
   // Footer
   footer: {
