@@ -6,6 +6,7 @@ import {
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
+import { formatPrecio } from '../../utils/format';
 
 const ZONA_LABELS = { CABA: 'CABA', PROVINCIA: 'Provincia', MIXTO: 'CABA + Prov.' };
 
@@ -119,7 +120,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
         {/* Precio */}
         <View style={styles.precioCard}>
           <Text style={styles.precioLabel}>Ganás</Text>
-          <Text style={styles.precioValor}>${viaje.precio.toLocaleString('es-AR')}</Text>
+          <Text style={styles.precioValor}>${formatPrecio(viaje.precio)}</Text>
           <View style={styles.precioDetalleRow}>
             <Text style={styles.precioDet}>{viaje.paradasIntermedias.length} parada{viaje.paradasIntermedias.length !== 1 ? 's' : ''}</Text>
             <Text style={styles.precioSep}>·</Text>

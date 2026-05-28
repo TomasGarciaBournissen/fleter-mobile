@@ -15,6 +15,7 @@ import api from '../../services/api';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import NuevoViajeModal from './NuevoViajeModal';
+import { formatKm, formatPrecio } from '../../utils/format';
 
 function mapViaje(v) {
   const sorted = [...v.paradas].sort((a, b) => a.orden - b.orden);
@@ -80,8 +81,8 @@ function ViajeCard({ viaje, onPress }) {
           </View>
         </View>
         <View style={styles.precioBlock}>
-          <Text style={styles.precio}>${viaje.precio.toLocaleString('es-AR')}</Text>
-          <Text style={styles.distancia}>{viaje.distanciaKm} km</Text>
+          <Text style={styles.precio}>${formatPrecio(viaje.precio)}</Text>
+          <Text style={styles.distancia}>{formatKm(viaje.distanciaKm)}</Text>
         </View>
       </View>
 

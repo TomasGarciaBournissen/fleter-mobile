@@ -3,6 +3,7 @@ import {
   View, Text, Modal, TouchableOpacity, StyleSheet, Animated,
 } from 'react-native';
 import { colors, fontSize, spacing, radius } from '../../theme';
+import { formatPrecio } from '../../utils/format';
 
 const COUNTDOWN_SEG = 30;
 const ZONA_LABELS = { CABA: 'CABA', PROVINCIA: 'Provincia', MIXTO: 'CABA + Prov.' };
@@ -78,7 +79,7 @@ export default function NuevoViajeModal({ viaje, visible, onAceptar, onRechazar 
           <View style={styles.precioRow}>
             <Text style={styles.precioLabel}>Ganás</Text>
             <Text style={styles.precioValor}>
-              ${viaje.precio_estimado?.toLocaleString('es-AR') ?? '—'}
+              ${formatPrecio(viaje.precio_estimado) ?? '—'}
             </Text>
             <Text style={styles.zonaChip}>{ZONA_LABELS[viaje.zona] ?? viaje.zona}</Text>
           </View>

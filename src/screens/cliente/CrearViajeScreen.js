@@ -7,6 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import api from '../../services/api';
 import LocationPickerModal from '../../components/LocationPickerModal';
+import { formatKm, formatHoras, formatPrecio } from '../../utils/format';
 
 const ZONAS = [
   { id: 'CABA',      label: 'CABA',      sub: '$/hora' },
@@ -354,12 +355,12 @@ export default function CrearViajeScreen({ navigation }) {
           <View style={styles.estimadoCard}>
             <Text style={styles.estimadoSub}>Precio estimado</Text>
             <Text style={styles.estimadoValor}>
-              ${estimado.precio_estimado.toLocaleString('es-AR')}
+              ${formatPrecio(estimado.precio_estimado)}
             </Text>
             <View style={styles.estimadoDetRow}>
-              <Text style={styles.estimadoDet}>{estimado.desglose?.distancia_km} km</Text>
+              <Text style={styles.estimadoDet}>{formatKm(estimado.desglose?.distancia_km)}</Text>
               <Text style={styles.estimadoSep}>·</Text>
-              <Text style={styles.estimadoDet}>{estimado.desglose?.tiempo_horas} h estimadas</Text>
+              <Text style={styles.estimadoDet}>{formatHoras(estimado.desglose?.tiempo_horas)} estimadas</Text>
             </View>
           </View>
         )}

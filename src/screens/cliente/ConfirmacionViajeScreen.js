@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import api from '../../services/api';
+import { formatKm, formatHoras, formatPrecio } from '../../utils/format';
 
 const ZONA_LABELS = { CABA: 'CABA', PROVINCIA: 'Provincia', MIXTO: 'CABA + Provincia' };
 const COND_LABELS = {
@@ -67,10 +68,10 @@ export default function ConfirmacionViajeScreen({ navigation, route }) {
         <View style={styles.precioCard}>
           <Text style={styles.precioLabel}>Precio estimado</Text>
           <Text style={styles.precioValor}>
-            ${estimado.precio_estimado.toLocaleString('es-AR')}
+            ${formatPrecio(estimado.precio_estimado)}
           </Text>
           <Text style={styles.precioDetalle}>
-            {estimado.desglose?.distancia_km} km · {estimado.desglose?.tiempo_horas} h
+            {formatKm(estimado.desglose?.distancia_km)} · {formatHoras(estimado.desglose?.tiempo_horas)}
           </Text>
         </View>
 
