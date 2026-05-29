@@ -87,8 +87,11 @@ src/
 ## Registro de progreso — PROGRESO.md
 El archivo `PROGRESO.md` en la raíz del proyecto documenta el estado actual de cada pantalla, los commits históricos, los eventos WebSocket implementados, los problemas conocidos y los próximos pasos por fase.
 
-**Regla:** cada vez que se completa una tarea, se agrega una pantalla, se resuelve un bug o se hace un commit significativo, actualizar `PROGRESO.md` reflejando el nuevo estado. Específicamente:
+**OBLIGATORIO — actualizar PROGRESO.md antes de dar una tarea por terminada.** No es opcional. Cada vez que se completa una tarea, se agrega una pantalla, se resuelve un bug o se hace un commit significativo, PROGRESO.md debe reflejar el nuevo estado. Específicamente:
 - Cambiar el estado de una pantalla (🔧 → ✅, o agregar ❌)
-- Agregar la fila del commit en la tabla de historial
+- Agregar la fila del commit en la tabla de historial (hash, fecha, descripción)
+- Actualizar "Última actualización" y "Commits totales" en el encabezado
 - Mover items de "Próximos pasos" a completados si corresponde
 - Registrar nuevos problemas conocidos si aparecen
+
+**El commit de PROGRESO.md va siempre incluido junto con los cambios de código, o inmediatamente después.**
