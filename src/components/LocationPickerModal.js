@@ -19,7 +19,6 @@ async function autocomplete(input) {
     `https://maps.googleapis.com/maps/api/place/autocomplete/json?${params}`
   );
   const json = await res.json();
-  console.log('[Places] respuesta:', JSON.stringify(json));
   if (json.status !== 'OK' && json.status !== 'ZERO_RESULTS') {
     throw new Error(json.error_message ?? json.status);
   }
@@ -76,11 +75,13 @@ export default function LocationPickerModal({ visible, titulo, onSelect, onClose
     try {
       const details = await fetchDetails(placeId);
       const result = details.result;
-      onSelect({
+      const ubicacion = {
         direccion: result?.formatted_address ?? sugerencia.description ?? '',
         lat: result?.geometry?.location?.lat ?? 0,
         lng: result?.geometry?.location?.lng ?? 0,
-      });
+      };
+      console.log('[Places] ubicación seleccionada:', JSON.stringify(ubicacion));
+      onSelect(ubicacion);
     } catch (e) {
       setError('No se pudo obtener la dirección');
     } finally {

@@ -51,8 +51,12 @@ function SeccionCard({ titulo, children }) {
 }
 
 export default function PerfilScreen({ navigation }) {
-  const { logout } = useAuth();
-  const [usuario, setUsuario] = useState(USUARIO_MOCK);
+  const { logout, user } = useAuth();
+  const [usuario, setUsuario] = useState({
+    ...USUARIO_MOCK,
+    nombre: user ? `${user.nombre} ${user.apellido}`.trim() : USUARIO_MOCK.nombre,
+    email:  user?.email ?? USUARIO_MOCK.email,
+  });
   const [notifViajes, setNotifViajes] = useState(true);
   const [notifPromos, setNotifPromos] = useState(false);
   const [editando, setEditando] = useState(false);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   SafeAreaView, StatusBar, Alert, ActivityIndicator,
@@ -7,6 +7,7 @@ import { colors, fontSize, spacing, radius } from '../../theme';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import { formatPrecio } from '../../utils/format';
+import api from '../../services/api';
 
 const ZONA_LABELS = { CABA: 'CABA', PROVINCIA: 'Provincia', MIXTO: 'CABA + Prov.' };
 
@@ -44,33 +45,57 @@ function mapViaje(v) {
 }
 
 export default function DetalleViajeScreen({ navigation, route }) {
-  const raw = route?.params?.viaje;
-  const viaje = raw ? mapViaje(raw) : {
-    id: 'v-001',
-    origen: 'Palermo Hollywood',
-    destino: 'San Telmo',
-    paradasIntermedias: [],
-    precio: 14500,
-    requisitos: ['FRAGIL'],
-    publicadoHace: '2 min',
-    zona: 'CABA',
-    cliente: 'Tomás G.',
-  };
+  const rawParams = route?.params?.viaje;
+  const [viaje, setViaje] = useState(rawParams ? mapViaje(rawParams) : null);
+  const [cargandoDetalle, setCargandoDetalle] = useState(!rawParams);
 
   const { socket } = useSocket();
   const { user } = useAuth();
   const [aceptando, setAceptando] = useState(false);
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    const idViaje = rawParams?.id_viaje;
+    if (!idViaje) return;
+    api.get(`/api/viajes/${idViaje}`)
+      .then(({ data }) => setViaje(mapViaje(data)))
+      .catch(() => {})
+      .finally(() => setCargandoDetalle(false));
+  }, [rawParams?.id_viaje]);
+
+  if (!viaje && cargandoDetalle) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ActivityIndicator style={{ marginTop: 80 }} color={colors.primary} size="large" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!viaje) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={{ padding: spacing.md }}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <Text style={styles.backIcon}>←</Text>
+          </TouchableOpacity>
+          <Text style={{ color: colors.textHint, marginTop: spacing.xl, textAlign: 'center' }}>
+            No se pudo cargar el viaje
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   useEffect(() => {
     if (!socket) return;
 
     const onAsignado = (data) => {
       if (data.id_viaje !== viaje.id) return;
+      clearTimeout(timeoutRef.current);
       setAceptando(false);
       if (data.id_usuario_conductor === user?.id_usuario) {
         navigation.replace('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
       } else {
-        // Otro conductor fue asignado — volver a la lista
         Alert.alert('Viaje tomado', 'Otro conductor fue asignado a este viaje.', [
           { text: 'OK', onPress: () => navigation.goBack() },
         ]);
@@ -79,6 +104,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
 
     const onYaAsignado = (data) => {
       if (data.id_viaje !== viaje.id) return;
+      clearTimeout(timeoutRef.current);
       setAceptando(false);
       Alert.alert('Llegaste tarde', 'Otro conductor aceptó este viaje primero.', [
         { text: 'OK', onPress: () => navigation.goBack() },
@@ -89,15 +115,20 @@ export default function DetalleViajeScreen({ navigation, route }) {
     socket.on('viaje:ya_asignado',        onYaAsignado);
 
     return () => {
+      clearTimeout(timeoutRef.current);
       socket.off('viaje:conductor_asignado', onAsignado);
       socket.off('viaje:ya_asignado',        onYaAsignado);
     };
-  }, [socket, viaje.id, navigation]);
+  }, [socket, viaje.id, navigation, user]);
 
   const handleAceptar = () => {
     if (!socket || aceptando) return;
     setAceptando(true);
     socket.emit('viaje:aceptar', { id_viaje: viaje.id });
+    timeoutRef.current = setTimeout(() => {
+      setAceptando(false);
+      Alert.alert('Sin respuesta', 'El servidor no respondió. Intentá de nuevo.');
+    }, 10000);
   };
 
   return (

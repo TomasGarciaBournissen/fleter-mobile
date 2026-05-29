@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -107,6 +107,7 @@ export default function DisponiblesScreen({ navigation }) {
   const [aceptando,     setAceptando]     = useState(false);
   const { socket } = useSocket();
   const { user } = useAuth();
+  const timeoutRef = useRef(null);
 
   const fetchViajes = useCallback(async () => {
     setCargando(true);
@@ -135,21 +136,22 @@ export default function DisponiblesScreen({ navigation }) {
     };
 
     const onConductorAsignado = (data) => {
+      clearTimeout(timeoutRef.current);
       setViajes(prev => prev.filter(v => v.id !== data.id_viaje));
       if (data.id_usuario_conductor === user?.id_usuario) {
         setViajeOferta(null);
         setAceptando(false);
         navigation.navigate('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
       } else {
-        // Otro conductor ganó la carrera — solo sacar el viaje de la lista
-        if (viajeOferta?.id_viaje === data.id_viaje) setViajeOferta(null);
+        setAceptando(false);
+        setViajeOferta(prev => prev?.id_viaje === data.id_viaje ? null : prev);
       }
     };
 
     const onYaAsignado = (data) => {
+      clearTimeout(timeoutRef.current);
       setViajeOferta(null);
       setAceptando(false);
-      // Quitar el viaje ya tomado de la lista
       setViajes(prev => prev.filter(v => v.id !== data.id_viaje));
       Alert.alert('Llegaste tarde', 'Otro conductor aceptó este viaje primero.');
     };
@@ -159,16 +161,21 @@ export default function DisponiblesScreen({ navigation }) {
     socket.on('viaje:ya_asignado',        onYaAsignado);
 
     return () => {
+      clearTimeout(timeoutRef.current);
       socket.off('viaje:disponible',         onDisponible);
       socket.off('viaje:conductor_asignado', onConductorAsignado);
       socket.off('viaje:ya_asignado',        onYaAsignado);
     };
-  }, [socket, navigation]);
+  }, [socket, navigation, user]);
 
   const handleAceptar = () => {
     if (!socket || !viajeOferta) return;
     setAceptando(true);
     socket.emit('viaje:aceptar', { id_viaje: viajeOferta.id_viaje });
+    timeoutRef.current = setTimeout(() => {
+      setAceptando(false);
+      Alert.alert('Sin respuesta', 'El servidor no respondió. Intentá de nuevo.');
+    }, 10000);
   };
 
   const handleRechazar = () => {
