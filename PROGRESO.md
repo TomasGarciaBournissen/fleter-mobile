@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-05-28  
-> Branch: master | Commits totales: 9
+> Última actualización: 2026-05-29  
+> Branch: master | Commits totales: 13
 
 ---
 
@@ -19,6 +19,10 @@
 | `4a1bdaa` | 17 May 2026 | Docs — api.md actualizado con contrato completo de Fase 3 |
 | `aadb6a0` | 21 May 2026 | Design — paleta naranja/crema, tareas de historial en plan |
 | `dc02329` | 21 May 2026 | Fix — check de id_usuario_conductor en viaje:conductor_asignado |
+| `46b5ab9` | 29 May 2026 | Feat — Google Places Autocomplete para creación de viaje |
+| `8345c79` | 29 May 2026 | Feat — Places legacy API + utils formatKm/formatHoras/formatPrecio |
+| `95b0640` | 29 May 2026 | Docs — api.md actualizado |
+| `0499806` | 29 May 2026 | Feat — polish de pantallas con API real y bug fixes de acceptance flow |
 
 ---
 
@@ -35,21 +39,22 @@
 ### Cliente
 | Pantalla | Estado | Notas |
 |----------|--------|-------|
-| `HomeScreen` | ✅ Funcional | Stats, viaje activo card, últimos viajes |
-| `CrearViajeScreen` | ✅ Funcional | Google Places Autocomplete para origen/destino/paradas (modal), coords reales en payload, POST /api/viajes/estimar-costo |
+| `HomeScreen` | ✅ Funcional | Últimos 3 viajes reales vía GET /api/viajes/mis-viajes, pull-to-refresh, FAB nuevo viaje |
+| `CrearViajeScreen` | ✅ Funcional | Google Places Legacy API para origen/destino/paradas, coords reales en payload, POST /api/viajes/estimar-costo |
 | `ConfirmacionViajeScreen` | ✅ Funcional | Resumen + POST /api/viajes, navega a BuscandoFletero |
 | `BuscandoFleteroScreen` | ✅ Funcional | Animación de búsqueda, escucha `viaje:conductor_asignado` via socket |
 | `ViajeActivoScreen` | 🔧 Placeholder | Pantalla existe pero sin GPS real ni tracking (Fase 4) |
-| `HistorialScreen` | 🔧 Placeholder | Estructura visual lista, sin llamada API real |
+| `HistorialScreen` | ✅ Funcional | GET /api/viajes/mis-viajes, agrupado por mes, filtros (Todos/Finalizados/Cancelados/En curso), back button |
+| `PerfilScreen` | ✅ Funcional | Nombre y email reales del AuthContext, edición local, logout |
 
 ### Fletero
 | Pantalla | Estado | Notas |
 |----------|--------|-------|
-| `DisponiblesScreen` | ✅ Funcional | GET /api/viajes/disponibles + socket `viaje:disponible` en tiempo real, pull-to-refresh |
+| `DisponiblesScreen` | ✅ Funcional | GET /api/viajes/disponibles + socket `viaje:disponible`, bug fix stale closure en acceptance flow |
 | `NuevoViajeModal` | ✅ Funcional | Bottom sheet con countdown 30s, barra animada, Aceptar/Rechazar |
-| `DetalleViajeScreen` | ✅ Funcional | Socket wiring completo, distingue conductor asignado via `id_usuario_conductor` |
+| `DetalleViajeScreen` | ✅ Funcional | Fetch /api/viajes/:id para nombre real del cliente, bug fix stale closure, timeout 10s en handleAceptar |
 | `ViajeActivoFleteroScreen` | 🔧 Placeholder | Pantalla existe, sin GPS background real (Fase 4) |
-| `HistorialFleteroScreen` | 🔧 Placeholder | UI básica, endpoint pendiente en backend |
+| `HistorialFleteroScreen` | ✅ Funcional | UI completa con filtros y totales, mock data lista para swap a /api/viajes/mis-viajes-conductor |
 | `PerfilFleteroScreen` | ✅ Funcional | Muestra datos del usuario, botón logout |
 | `CobroScreen` | 🔧 Placeholder | UI básica, sin lógica de pago real (Fase 6) |
 | `QREntregaScreen` | 🔧 Placeholder | Scanner preparado, sin lógica de confirmación (Fase 5) |
@@ -101,6 +106,7 @@
 | Conductor no ve viajes con requisitos | `RegisterFleteroScreen` no registra vehículo ni condiciones → backend filtra por elegibilidad | ❌ Pendiente Fase 1 completa |
 | `viaje:ya_asignado` + `viaje:conductor_asignado` doble alert | Conductor que pierde en `DetalleViajeScreen` puede recibir dos alerts | ⚠️ Menor, sin resolver |
 | `OfertaScreen` legada | Existía antes de NuevoViajeModal, posiblemente sin uso | ⚠️ Revisar si eliminar |
+| Acceptance flow no responde | Backend no procesa `viaje:aceptar` — frontend ya tiene timeout 10s como safety net | ❌ Requiere fix en backend |
 
 ---
 
@@ -110,9 +116,9 @@
 - [ ] Agregar sección de vehículo + condiciones a `RegisterFleteroScreen`
 - [ ] Backend: endpoint para registrar vehículo (POST /api/vehiculos o similar)
 
-### Fase 2 (incompleto)
-- [ ] `HistorialClienteScreen` — GET /api/viajes/mis-viajes, estados con colores, agrupado por mes
-- [ ] `HistorialFleteroScreen` — endpoint pendiente en backend (GET /api/viajes/mis-viajes-conductor)
+### Fase 2 (casi completo)
+- [x] `HistorialScreen` (cliente) — GET /api/viajes/mis-viajes, estados con colores, agrupado por mes
+- [ ] `HistorialFleteroScreen` — endpoint pendiente en backend (GET /api/viajes/mis-viajes-conductor); UI ya lista
 
 ### Fase 3 (casi completo)
 - [ ] Pantalla de espera del cliente con animación (`BuscandoFleteroScreen` existe pero básica)
