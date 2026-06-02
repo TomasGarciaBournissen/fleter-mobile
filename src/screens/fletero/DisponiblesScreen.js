@@ -16,6 +16,7 @@ import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import NuevoViajeModal from './NuevoViajeModal';
 import { formatKm, formatPrecio } from '../../utils/format';
+import { getOrCreateVehiculo } from '../../utils/vehiculo';
 
 function mapViaje(v) {
   const sorted = [...v.paradas].sort((a, b) => a.orden - b.orden);
@@ -179,15 +180,21 @@ export default function DisponiblesScreen({ navigation }) {
     };
   }, [socket, navigation, user]);
 
-  const handleAceptar = () => {
+  const handleAceptar = async () => {
     if (!socket || !viajeOferta) return;
     setAceptando(true);
-    socket.emit('viaje:aceptar', { id_viaje: viajeOferta.id_viaje });
-    timeoutRef.current = setTimeout(() => {
+    try {
+      const id_vehiculo = await getOrCreateVehiculo();
+      socket.emit('viaje:aceptar', { id_viaje: viajeOferta.id_viaje, id_vehiculo });
+      timeoutRef.current = setTimeout(() => {
+        setAceptando(false);
+        setViajeOferta(null);
+        Alert.alert('Sin respuesta', 'El servidor no respondió. Intentá de nuevo.');
+      }, 10000);
+    } catch {
       setAceptando(false);
-      setViajeOferta(null);
-      Alert.alert('Sin respuesta', 'El backend no respondió. Verificá que el servidor esté activo e intentá de nuevo.');
-    }, 8000);
+      Alert.alert('Error', 'No se pudo obtener el vehículo. Intentá de nuevo.');
+    }
   };
 
   const handleRechazar = () => {

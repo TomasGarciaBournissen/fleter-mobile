@@ -8,6 +8,7 @@ import { colors, fontSize, spacing, radius } from '../../theme';
 import { useSocket } from '../../context/SocketContext';
 import { formatPrecio } from '../../utils/format';
 import api from '../../services/api';
+import { getOrCreateVehiculo } from '../../utils/vehiculo';
 
 const ZONA_LABELS = { CABA: 'CABA', PROVINCIA: 'Provincia', MIXTO: 'CABA + Prov.' };
 
@@ -123,14 +124,20 @@ export default function DetalleViajeScreen({ navigation, route }) {
     };
   }, [socket, viaje.id, navigation]);
 
-  const handleAceptar = () => {
+  const handleAceptar = async () => {
     if (!socket || aceptando) return;
     setAceptando(true);
-    socket.emit('viaje:aceptar', { id_viaje: viaje.id });
-    timeoutRef.current = setTimeout(() => {
+    try {
+      const id_vehiculo = await getOrCreateVehiculo();
+      socket.emit('viaje:aceptar', { id_viaje: viaje.id, id_vehiculo });
+      timeoutRef.current = setTimeout(() => {
+        setAceptando(false);
+        Alert.alert('Sin respuesta', 'El servidor no respondió. Intentá de nuevo.');
+      }, 10000);
+    } catch {
       setAceptando(false);
-      Alert.alert('Sin respuesta', 'El servidor no respondió. Intentá de nuevo.');
-    }, 10000);
+      Alert.alert('Error', 'No se pudo obtener el vehículo. Intentá de nuevo.');
+    }
   };
 
   return (
