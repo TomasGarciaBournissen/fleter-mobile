@@ -106,9 +106,15 @@ export default function DisponiblesScreen({ navigation }) {
   const [cargando,      setCargando]      = useState(true);
   const [viajeOferta,   setViajeOferta]   = useState(null);
   const [aceptando,     setAceptando]     = useState(false);
+  const aceptandoRef = useRef(false);
   const { socket } = useSocket();
   const { user } = useAuth();
   const timeoutRef = useRef(null);
+
+  const setAceptandoSync = (val) => {
+    aceptandoRef.current = val;
+    setAceptando(val);
+  };
 
   const fetchViajes = useCallback(async () => {
     setCargando(true);
@@ -139,30 +145,27 @@ export default function DisponiblesScreen({ navigation }) {
     const onConductorAsignado = (data) => {
       clearTimeout(timeoutRef.current);
       setViajes(prev => prev.filter(v => v.id !== data.id_viaje));
-      setAceptando(prev => {
-        if (prev) {
-          // este conductor fue el que aceptó y ganó
-          setViajeOferta(null);
-          navigation.navigate('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
-        } else {
-          // otro conductor aceptó, solo sacamos el viaje de la lista
-          setViajeOferta(cur => cur?.id_viaje === data.id_viaje ? null : cur);
-        }
-        return false;
-      });
+      if (aceptandoRef.current) {
+        setViajeOferta(null);
+        setAceptandoSync(false);
+        navigation.navigate('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
+      } else {
+        setAceptandoSync(false);
+        setViajeOferta(cur => cur?.id_viaje === data.id_viaje ? null : cur);
+      }
     };
 
     const onYaAsignado = (data) => {
       clearTimeout(timeoutRef.current);
       setViajeOferta(null);
-      setAceptando(false);
+      setAceptandoSync(false);
       setViajes(prev => prev.filter(v => v.id !== data.id_viaje));
       Alert.alert('Llegaste tarde', 'Otro conductor aceptó este viaje primero.');
     };
 
     const onError = (data) => {
       clearTimeout(timeoutRef.current);
-      setAceptando(false);
+      setAceptandoSync(false);
       Alert.alert('No se pudo aceptar', data?.mensaje ?? 'Error del servidor');
     };
 
@@ -182,17 +185,17 @@ export default function DisponiblesScreen({ navigation }) {
 
   const handleAceptar = async () => {
     if (!socket || !viajeOferta) return;
-    setAceptando(true);
+    setAceptandoSync(true);
     try {
       const id_vehiculo = await getOrCreateVehiculo();
       socket.emit('viaje:aceptar', { id_viaje: viajeOferta.id_viaje, id_vehiculo });
       timeoutRef.current = setTimeout(() => {
-        setAceptando(false);
+        setAceptandoSync(false);
         setViajeOferta(null);
         Alert.alert('Sin respuesta', 'El servidor no respondió. Intentá de nuevo.');
       }, 10000);
     } catch {
-      setAceptando(false);
+      setAceptandoSync(false);
       Alert.alert('Error', 'No se pudo obtener el vehículo. Intentá de nuevo.');
     }
   };
