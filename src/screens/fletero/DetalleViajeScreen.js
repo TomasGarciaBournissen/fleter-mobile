@@ -6,7 +6,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { useSocket } from '../../context/SocketContext';
-import { useAuth } from '../../context/AuthContext';
 import { formatPrecio } from '../../utils/format';
 import api from '../../services/api';
 
@@ -51,7 +50,6 @@ export default function DetalleViajeScreen({ navigation, route }) {
   const [cargandoDetalle, setCargandoDetalle] = useState(!rawParams);
 
   const { socket } = useSocket();
-  const { user } = useAuth();
   const [aceptando, setAceptando] = useState(false);
   const timeoutRef = useRef(null);
 
@@ -88,27 +86,17 @@ export default function DetalleViajeScreen({ navigation, route }) {
   }
 
   useEffect(() => {
-    console.log('[DetalleViaje] socket en useEffect:', socket ? `conectado (id: ${socket.id})` : 'NULL');
     if (!socket) return;
 
     const onAsignado = (data) => {
-      console.log('[Socket] viaje:conductor_asignado recibido:', JSON.stringify(data));
-      console.log('[Socket] data.id_viaje:', data.id_viaje, '| viaje.id:', viaje.id, '| match:', data.id_viaje === viaje.id);
-      console.log('[Socket] data.id_usuario_conductor:', data.id_usuario_conductor, '| user.id_usuario:', user?.id_usuario, '| es mío:', data.id_usuario_conductor === user?.id_usuario);
       if (data.id_viaje !== viaje.id) return;
       clearTimeout(timeoutRef.current);
       setAceptando(false);
-      if (data.id_usuario_conductor === user?.id_usuario) {
-        navigation.replace('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
-      } else {
-        Alert.alert('Viaje tomado', 'Otro conductor fue asignado a este viaje.', [
-          { text: 'OK', onPress: () => navigation.goBack() },
-        ]);
-      }
+      // si llegamos acá, este conductor ganó (el perdedor recibe viaje:ya_asignado)
+      navigation.replace('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
     };
 
     const onYaAsignado = (data) => {
-      console.log('[Socket] viaje:ya_asignado recibido:', JSON.stringify(data));
       if (data.id_viaje !== viaje.id) return;
       clearTimeout(timeoutRef.current);
       setAceptando(false);
@@ -119,31 +107,22 @@ export default function DetalleViajeScreen({ navigation, route }) {
 
     socket.on('viaje:conductor_asignado', onAsignado);
     socket.on('viaje:ya_asignado',        onYaAsignado);
-    console.log('[DetalleViaje] listeners registrados para viaje.id:', viaje.id);
 
     return () => {
       clearTimeout(timeoutRef.current);
       socket.off('viaje:conductor_asignado', onAsignado);
       socket.off('viaje:ya_asignado',        onYaAsignado);
     };
-  }, [socket, viaje.id, navigation, user]);
+  }, [socket, viaje.id, navigation]);
 
   const handleAceptar = () => {
-    console.log('[Aceptar] socket:', socket ? `conectado (id: ${socket.id})` : 'NULL');
-    console.log('[Aceptar] viaje.id:', viaje?.id);
-    console.log('[Aceptar] user.id_usuario:', user?.id_usuario);
-    if (!socket || aceptando) {
-      console.warn('[Aceptar] bloqueado — socket:', !!socket, '| aceptando:', aceptando);
-      return;
-    }
+    if (!socket || aceptando) return;
     setAceptando(true);
-    console.log('[Aceptar] emitiendo viaje:aceptar →', { id_viaje: viaje.id });
     socket.emit('viaje:aceptar', { id_viaje: viaje.id });
     timeoutRef.current = setTimeout(() => {
-      console.warn('[Aceptar] TIMEOUT — no llegó respuesta del servidor en 8s');
       setAceptando(false);
-      Alert.alert('Sin respuesta', 'El backend no respondió. Verificá que el servidor esté activo e intentá de nuevo.');
-    }, 8000);
+      Alert.alert('Sin respuesta', 'El servidor no respondió. Intentá de nuevo.');
+    }, 10000);
   };
 
   return (

@@ -138,14 +138,17 @@ export default function DisponiblesScreen({ navigation }) {
     const onConductorAsignado = (data) => {
       clearTimeout(timeoutRef.current);
       setViajes(prev => prev.filter(v => v.id !== data.id_viaje));
-      if (data.id_usuario_conductor === user?.id_usuario) {
-        setViajeOferta(null);
-        setAceptando(false);
-        navigation.navigate('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
-      } else {
-        setAceptando(false);
-        setViajeOferta(prev => prev?.id_viaje === data.id_viaje ? null : prev);
-      }
+      setAceptando(prev => {
+        if (prev) {
+          // este conductor fue el que aceptó y ganó
+          setViajeOferta(null);
+          navigation.navigate('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor });
+        } else {
+          // otro conductor aceptó, solo sacamos el viaje de la lista
+          setViajeOferta(cur => cur?.id_viaje === data.id_viaje ? null : cur);
+        }
+        return false;
+      });
     };
 
     const onYaAsignado = (data) => {

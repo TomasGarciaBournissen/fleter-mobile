@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-05-29  
-> Branch: master | Commits totales: 13
+> Última actualización: 2026-06-02  
+> Branch: master | Commits totales: 14
 
 ---
 
@@ -23,6 +23,8 @@
 | `8345c79` | 29 May 2026 | Feat — Places legacy API + utils formatKm/formatHoras/formatPrecio |
 | `95b0640` | 29 May 2026 | Docs — api.md actualizado |
 | `0499806` | 29 May 2026 | Feat — polish de pantallas con API real y bug fixes de acceptance flow |
+| `ca53be1` | 29 May 2026 | Feat — reemplaza emojis con Ionicons, fix socket timeout, fix double dot en location |
+| *(próximo)* | 02 Jun 2026 | Fix — acceptance flow adaptado a nuevo payload de viaje:conductor_asignado (sin id_usuario_conductor) |
 
 ---
 
@@ -107,6 +109,7 @@
 | `viaje:ya_asignado` + `viaje:conductor_asignado` doble alert | Conductor que pierde en `DetalleViajeScreen` puede recibir dos alerts | ⚠️ Menor, sin resolver |
 | `OfertaScreen` legada | Existía antes de NuevoViajeModal, posiblemente sin uso | ⚠️ Revisar si eliminar |
 | Acceptance flow no responde | Backend no procesa `viaje:aceptar` — frontend ya tiene timeout 10s como safety net | ❌ Requiere fix en backend |
+| `id_usuario_conductor` removido del payload | API nueva no incluye ese campo en `viaje:conductor_asignado` — lógica de navegación actualizada para no depender de él | ✅ Resuelto |
 
 ---
 
