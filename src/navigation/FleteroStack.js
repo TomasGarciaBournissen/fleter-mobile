@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../theme';
 
 import DisponiblesScreen       from '../screens/fletero/DisponiblesScreen';
@@ -54,8 +55,8 @@ export default function FleteroStack() {
         name="Disponibles"
         component={DisponiblesStack}
         options={{
-          tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>🚚</Text>
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'car' : 'car-outline'} size={22} color={color} />
           ),
         }}
       />
@@ -63,8 +64,8 @@ export default function FleteroStack() {
         name="Historial"
         component={HistorialFleteroScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>📋</Text>
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'receipt' : 'receipt-outline'} size={22} color={color} />
           ),
         }}
       />
@@ -72,8 +73,8 @@ export default function FleteroStack() {
         name="Perfil"
         component={PerfilFleteroScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>👤</Text>
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} />
           ),
         }}
       />

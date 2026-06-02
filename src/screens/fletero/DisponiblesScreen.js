@@ -174,8 +174,9 @@ export default function DisponiblesScreen({ navigation }) {
     socket.emit('viaje:aceptar', { id_viaje: viajeOferta.id_viaje });
     timeoutRef.current = setTimeout(() => {
       setAceptando(false);
-      Alert.alert('Sin respuesta', 'El servidor no respondió. Intentá de nuevo.');
-    }, 10000);
+      setViajeOferta(null);
+      Alert.alert('Sin respuesta', 'El backend no respondió. Verificá que el servidor esté activo e intentá de nuevo.');
+    }, 8000);
   };
 
   const handleRechazar = () => {

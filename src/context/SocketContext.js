@@ -15,11 +15,11 @@ export function SocketProvider({ children }) {
       return;
     }
     conectarSocket().then(s => {
-      if (!s) return;
-      s.on('connect',    () => setSocket(s));
-      s.on('disconnect', () => setSocket(null));
-      // If already connected (fast connect), set immediately
-      if (s.connected) setSocket(s);
+      if (!s) { console.warn('[Socket] conectarSocket() devolvió null/undefined'); return; }
+      s.on('connect',    () => { console.log('[Socket] conectado, id:', s.id); setSocket(s); });
+      s.on('disconnect', (reason) => { console.warn('[Socket] desconectado, razón:', reason); setSocket(null); });
+      s.on('connect_error', (err) => console.error('[Socket] error de conexión:', err.message));
+      if (s.connected) { console.log('[Socket] ya estaba conectado, id:', s.id); setSocket(s); }
     });
     return () => {
       desconectarSocket();

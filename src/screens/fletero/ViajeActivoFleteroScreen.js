@@ -8,6 +8,7 @@ import {
   StatusBar,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 
 const VIAJE_MOCK = {
@@ -63,7 +64,8 @@ export default function ViajeActivoFleteroScreen({ navigation }) {
 
         {/* Mapa placeholder */}
         <View style={styles.mapaPlaceholder}>
-          <Text style={styles.mapaText}>🗺 Navegación GPS</Text>
+          <Ionicons name="map-outline" size={20} color={colors.textHint} />
+          <Text style={styles.mapaText}> Navegación GPS</Text>
           <Text style={styles.mapaSubText}>Integración con maps pendiente</Text>
         </View>
 
@@ -114,7 +116,8 @@ export default function ViajeActivoFleteroScreen({ navigation }) {
               <Text style={styles.clienteTel}>{VIAJE_MOCK.cliente.telefono}</Text>
             </View>
             <TouchableOpacity style={styles.btnLlamar}>
-              <Text style={styles.btnLlamarText}>📞 Llamar</Text>
+              <Ionicons name="call-outline" size={16} color={colors.textPrimary} />
+              <Text style={styles.btnLlamarText}> Llamar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -124,7 +127,7 @@ export default function ViajeActivoFleteroScreen({ navigation }) {
       <View style={styles.footer}>
         <TouchableOpacity style={styles.btnAvanzar} onPress={handleAvanzar} activeOpacity={0.85}>
           <Text style={styles.btnAvanzarText}>
-            {pasoActual === PASOS.length - 1 ? '📷 Escanear QR' : paso.accion + ' →'}
+            {pasoActual === PASOS.length - 1 ? 'Escanear QR' : paso.accion + ' →'}
           </Text>
         </TouchableOpacity>
       </View>

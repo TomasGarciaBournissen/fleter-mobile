@@ -4,6 +4,7 @@ import {
   Modal, SafeAreaView, StatusBar, TextInput,
   FlatList, ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../theme';
 
 const PLACES_KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY ?? '';
@@ -107,7 +108,7 @@ export default function LocationPickerModal({ visible, titulo, onSelect, onClose
 
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.cerrarBtn}>
-            <Text style={styles.cerrarText}>✕</Text>
+            <Ionicons name="close" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
           <Text style={styles.titulo}>{titulo}</Text>
           <View style={{ width: 40 }} />

@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
   TouchableOpacity, Animated, Easing,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { useSocket } from '../../context/SocketContext';
 
@@ -54,7 +55,7 @@ export default function BuscandoFleteroScreen({ navigation, route }) {
             />
           ))}
           <View style={styles.icono}>
-            <Text style={styles.iconoText}>🚚</Text>
+            <Ionicons name="car" size={32} color={colors.primary} />
           </View>
         </View>
 

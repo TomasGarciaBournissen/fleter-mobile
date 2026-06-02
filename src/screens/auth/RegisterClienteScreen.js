@@ -12,6 +12,7 @@ import {
   StatusBar,
   SafeAreaView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { useAuth, DEV_MODE } from '../../context/AuthContext';
 
@@ -99,7 +100,8 @@ export default function RegisterClienteScreen({ navigation }) {
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-              <Text style={styles.backText}>← Volver</Text>
+              <Ionicons name="arrow-back" size={20} color={colors.primary} />
+              <Text style={styles.backText}>Volver</Text>
             </TouchableOpacity>
             <Text style={styles.title}>Crear cuenta</Text>
             <Text style={styles.subtitle}>Registrate como cliente para solicitar fletes</Text>
@@ -279,6 +281,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
     marginBottom: spacing.md,
   },
   backText: {

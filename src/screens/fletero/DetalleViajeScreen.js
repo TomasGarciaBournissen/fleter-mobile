@@ -3,6 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   SafeAreaView, StatusBar, Alert, ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
@@ -76,7 +77,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
       <SafeAreaView style={styles.safeArea}>
         <View style={{ padding: spacing.md }}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Text style={styles.backIcon}>←</Text>
+            <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
           </TouchableOpacity>
           <Text style={{ color: colors.textHint, marginTop: spacing.xl, textAlign: 'center' }}>
             No se pudo cargar el viaje
@@ -87,9 +88,13 @@ export default function DetalleViajeScreen({ navigation, route }) {
   }
 
   useEffect(() => {
+    console.log('[DetalleViaje] socket en useEffect:', socket ? `conectado (id: ${socket.id})` : 'NULL');
     if (!socket) return;
 
     const onAsignado = (data) => {
+      console.log('[Socket] viaje:conductor_asignado recibido:', JSON.stringify(data));
+      console.log('[Socket] data.id_viaje:', data.id_viaje, '| viaje.id:', viaje.id, '| match:', data.id_viaje === viaje.id);
+      console.log('[Socket] data.id_usuario_conductor:', data.id_usuario_conductor, '| user.id_usuario:', user?.id_usuario, '| es mío:', data.id_usuario_conductor === user?.id_usuario);
       if (data.id_viaje !== viaje.id) return;
       clearTimeout(timeoutRef.current);
       setAceptando(false);
@@ -103,6 +108,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
     };
 
     const onYaAsignado = (data) => {
+      console.log('[Socket] viaje:ya_asignado recibido:', JSON.stringify(data));
       if (data.id_viaje !== viaje.id) return;
       clearTimeout(timeoutRef.current);
       setAceptando(false);
@@ -113,6 +119,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
 
     socket.on('viaje:conductor_asignado', onAsignado);
     socket.on('viaje:ya_asignado',        onYaAsignado);
+    console.log('[DetalleViaje] listeners registrados para viaje.id:', viaje.id);
 
     return () => {
       clearTimeout(timeoutRef.current);
@@ -122,13 +129,21 @@ export default function DetalleViajeScreen({ navigation, route }) {
   }, [socket, viaje.id, navigation, user]);
 
   const handleAceptar = () => {
-    if (!socket || aceptando) return;
+    console.log('[Aceptar] socket:', socket ? `conectado (id: ${socket.id})` : 'NULL');
+    console.log('[Aceptar] viaje.id:', viaje?.id);
+    console.log('[Aceptar] user.id_usuario:', user?.id_usuario);
+    if (!socket || aceptando) {
+      console.warn('[Aceptar] bloqueado — socket:', !!socket, '| aceptando:', aceptando);
+      return;
+    }
     setAceptando(true);
+    console.log('[Aceptar] emitiendo viaje:aceptar →', { id_viaje: viaje.id });
     socket.emit('viaje:aceptar', { id_viaje: viaje.id });
     timeoutRef.current = setTimeout(() => {
+      console.warn('[Aceptar] TIMEOUT — no llegó respuesta del servidor en 8s');
       setAceptando(false);
-      Alert.alert('Sin respuesta', 'El servidor no respondió. Intentá de nuevo.');
-    }, 10000);
+      Alert.alert('Sin respuesta', 'El backend no respondió. Verificá que el servidor esté activo e intentá de nuevo.');
+    }, 8000);
   };
 
   return (
@@ -137,7 +152,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Detalle del viaje</Text>
         <Text style={styles.tiempo}>{viaje.publicadoHace}</Text>
@@ -161,7 +176,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
 
         {/* Mapa placeholder */}
         <View style={styles.mapaCard}>
-          <Text style={styles.mapaIcono}>🗺</Text>
+          <Ionicons name="map-outline" size={24} color={colors.textHint} />
           <View style={styles.mapaRuta}>
             <Text style={styles.mapaOrigen}>{viaje.origen}</Text>
             <View style={styles.mapaLinea} />

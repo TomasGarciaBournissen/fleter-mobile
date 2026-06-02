@@ -10,6 +10,7 @@ import {
   StatusBar,
   Switch,
 } from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
 
@@ -70,7 +71,7 @@ export default function PerfilScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Mi perfil</Text>
         <TouchableOpacity onPress={() => setEditando((v) => !v)} style={styles.editBtn}>
@@ -98,7 +99,7 @@ export default function PerfilScreen({ navigation }) {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValor}>★ {usuario.puntaje}</Text>
+              <Text style={styles.statValor}><Ionicons name="star" size={14} color={colors.warning} /> {usuario.puntaje}</Text>
               <Text style={styles.statLabel}>Puntaje</Text>
             </View>
           </View>

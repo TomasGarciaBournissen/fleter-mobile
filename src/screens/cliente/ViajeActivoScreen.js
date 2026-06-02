@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 
 const VIAJE_MOCK = {
@@ -68,7 +69,7 @@ export default function ViajeActivoScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Viaje en curso</Text>
         <View style={{ width: 40 }} />
@@ -82,7 +83,8 @@ export default function ViajeActivoScreen({ navigation }) {
         {/* Alerta desvío */}
         {alertaDesvioPendiente && (
           <View style={styles.alertaDesvioBanner}>
-            <Text style={styles.alertaDesvioText}>⚠ Desvío detectado — el fletero se alejó de la ruta</Text>
+            <Ionicons name="warning-outline" size={16} color={colors.error} />
+            <Text style={styles.alertaDesvioText}> Desvío detectado — el fletero se alejó de la ruta</Text>
           </View>
         )}
 
@@ -102,7 +104,8 @@ export default function ViajeActivoScreen({ navigation }) {
 
         {/* Mapa placeholder */}
         <View style={styles.mapaPlaceholder}>
-          <Text style={styles.mapaText}>🗺 Mapa en tiempo real</Text>
+          <Ionicons name="map-outline" size={20} color={colors.textHint} />
+          <Text style={styles.mapaText}> Mapa en tiempo real</Text>
           <Text style={styles.mapaSubText}>Integración con maps pendiente</Text>
         </View>
 
@@ -143,16 +146,19 @@ export default function ViajeActivoScreen({ navigation }) {
               <Text style={styles.fleteroInfo}>{viaje.fletero.vehiculo} · {viaje.fletero.patente}</Text>
             </View>
             <View style={styles.puntajeChip}>
-              <Text style={styles.puntajeText}>★ {viaje.fletero.puntaje}</Text>
+              <Ionicons name="star" size={13} color={colors.warning} />
+              <Text style={styles.puntajeText}> {viaje.fletero.puntaje}</Text>
             </View>
           </View>
           <View style={styles.divider} />
           <View style={styles.accionesRow}>
             <TouchableOpacity style={styles.btnAccion}>
-              <Text style={styles.btnAccionText}>📞 Llamar</Text>
+              <Ionicons name="call-outline" size={16} color={colors.primary} />
+              <Text style={styles.btnAccionText}> Llamar</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.btnAccion}>
-              <Text style={styles.btnAccionText}>💬 Mensaje</Text>
+              <Ionicons name="chatbubble-outline" size={16} color={colors.primary} />
+              <Text style={styles.btnAccionText}> Mensaje</Text>
             </TouchableOpacity>
           </View>
         </View>

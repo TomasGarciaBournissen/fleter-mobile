@@ -7,6 +7,7 @@ import {
   StatusBar,
   SafeAreaView,
 } from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
 
@@ -20,7 +21,7 @@ export default function CuentaPendienteScreen() {
       <View style={styles.container}>
         {/* Ícono de estado */}
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>⏳</Text>
+          <Ionicons name="time-outline" size={36} color={colors.warning} />
         </View>
 
         {/* Mensaje principal */}
@@ -32,9 +33,9 @@ export default function CuentaPendienteScreen() {
 
         {/* Tarjeta de info */}
         <View style={styles.card}>
-          <InfoRow icon="📋" text="Verificación de identidad y DNI" />
-          <InfoRow icon="🪪" text="Validación de licencia de conducir" />
-          <InfoRow icon="✅" text="Aprobación del equipo Fleter" />
+          <InfoRow icon={<Ionicons name="id-card-outline" size={20} color={colors.textSecondary} />} text="Verificación de identidad y DNI" />
+          <InfoRow icon={<MaterialIcons name="drive-eta" size={20} color={colors.textSecondary} />} text="Validación de licencia de conducir" />
+          <InfoRow icon={<Ionicons name="checkmark-circle-outline" size={20} color={colors.success} />} text="Aprobación del equipo Fleter" />
         </View>
 
         <Text style={styles.timeText}>
@@ -58,7 +59,7 @@ export default function CuentaPendienteScreen() {
 function InfoRow({ icon, text }) {
   return (
     <View style={styles.infoRow}>
-      <Text style={styles.infoIcon}>{icon}</Text>
+      <View style={styles.infoIcon}>{icon}</View>
       <Text style={styles.infoText}>{text}</Text>
     </View>
   );
@@ -119,7 +120,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   infoIcon: {
-    fontSize: 20,
+    width: 24,
+    alignItems: 'center',
   },
   infoText: {
     fontSize: fontSize.body,

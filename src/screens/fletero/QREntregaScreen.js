@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 
 const DESTINATARIO_MOCK = {
@@ -33,7 +34,7 @@ export default function QREntregaScreen({ navigation }) {
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Entrega QR</Text>
         <View style={{ width: 40 }} />
@@ -51,7 +52,7 @@ export default function QREntregaScreen({ navigation }) {
                 <View style={[styles.qrCorner, styles.qrCornerBL]} />
                 <View style={[styles.qrCorner, styles.qrCornerBR]} />
                 <View style={styles.qrLinea} />
-                <Text style={styles.qrPlaceholderText}>📷</Text>
+                <Ionicons name="qr-code-outline" size={48} color={colors.textHint} />
                 <Text style={styles.qrPlaceholderSub}>Tocar para simular escaneo</Text>
               </TouchableOpacity>
             </View>

@@ -8,6 +8,7 @@ import {
   StatusBar,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 
 const RESUMEN_MOCK = {
@@ -47,7 +48,7 @@ export default function CobroScreen({ navigation }) {
         {/* Pago acreditado */}
         <View style={styles.pagoCard}>
           <View style={styles.pagoIcono}>
-            <Text style={styles.pagoIconoText}>💸</Text>
+            <Ionicons name="cash-outline" size={32} color={colors.success} />
           </View>
           <Text style={styles.pagoLabel}>Pago acreditado</Text>
           <Text style={styles.pagoValor}>${RESUMEN_MOCK.precio.toLocaleString('es-AR')}</Text>
@@ -90,7 +91,7 @@ export default function CobroScreen({ navigation }) {
           <Text style={styles.cardTitle}>Calificación recibida</Text>
           <View style={styles.estrellasRecibidas}>
             {ESTRELLAS.map((e) => (
-              <Text key={e} style={[styles.estrellaRecibida, e <= 5 && styles.estrellaRecibidaActiva]}>★</Text>
+              <Ionicons key={e} name="star" size={20} color={e <= 5 ? colors.warning : colors.surface3} />
             ))}
           </View>
           <Text style={styles.calificacionLabel}>El cliente te dio 5 estrellas</Text>
@@ -103,7 +104,7 @@ export default function CobroScreen({ navigation }) {
           <View style={styles.estrellasRow}>
             {ESTRELLAS.map((e) => (
               <TouchableOpacity key={e} onPress={() => setCalificacion(e)} activeOpacity={0.7}>
-                <Text style={[styles.estrellaBtn, e <= calificacion && styles.estrellaBtnActiva]}>★</Text>
+                <Ionicons name={e <= calificacion ? 'star' : 'star-outline'} size={28} color={e <= calificacion ? colors.warning : colors.surface3} />
               </TouchableOpacity>
             ))}
           </View>

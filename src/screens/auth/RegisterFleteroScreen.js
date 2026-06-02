@@ -11,7 +11,10 @@ import {
   ActivityIndicator,
   StatusBar,
   SafeAreaView,
+  Modal,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { DEV_MODE } from '../../context/AuthContext';
 
@@ -24,19 +27,18 @@ export default function RegisterFleteroScreen({ navigation }) {
     contrasena: '',
     telefono: '',
     nro_licencia: '',
-    licencia_vencimiento: '', // ISO 8601 — ej: "2027-12-31"
   });
+  const [licenciaVenc, setLicenciaVenc] = useState(null); // Date object
+  const [mostrarPicker, setMostrarPicker] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Refs para avanzar entre campos con el teclado
-  const apellidoRef = useRef();
-  const dniRef = useRef();
-  const telefonoRef = useRef();
-  const emailRef = useRef();
+  const apellidoRef   = useRef();
+  const dniRef        = useRef();
+  const telefonoRef   = useRef();
+  const emailRef      = useRef();
   const contrasenaRef = useRef();
-  const licenciaRef = useRef();
-  const vencimientoRef = useRef();
+  const licenciaRef   = useRef();
 
   const set = (field) => (value) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -47,11 +49,8 @@ export default function RegisterFleteroScreen({ navigation }) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return 'El email no es válido.';
     if (form.contrasena.length < 6) return 'La contraseña debe tener al menos 6 caracteres.';
     if (!form.nro_licencia.trim()) return 'El número de licencia es requerido.';
-    if (!form.licencia_vencimiento.trim()) return 'La fecha de vencimiento de licencia es requerida.';
-    // Validar formato de fecha YYYY-MM-DD
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(form.licencia_vencimiento.trim())) {
-      return 'La fecha de vencimiento debe tener el formato AAAA-MM-DD (ej: 2027-12-31).';
-    }
+    if (!licenciaVenc) return 'La fecha de vencimiento de licencia es requerida.';
+    if (licenciaVenc <= new Date()) return 'La licencia debe estar vigente.';
     return null;
   };
 
@@ -80,8 +79,7 @@ export default function RegisterFleteroScreen({ navigation }) {
         email: form.email.trim().toLowerCase(),
         contrasena: form.contrasena,
         nro_licencia: form.nro_licencia.trim(),
-        // El backend espera ISO 8601 datetime
-        licencia_vencimiento: `${form.licencia_vencimiento.trim()}T00:00:00.000Z`,
+        licencia_vencimiento: licenciaVenc.toISOString(),
         ...(form.telefono.trim() && { telefono: form.telefono.trim() }),
       };
       await registroConductor(datos);
@@ -109,7 +107,8 @@ export default function RegisterFleteroScreen({ navigation }) {
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-              <Text style={styles.backText}>← Volver</Text>
+              <Ionicons name="arrow-back" size={20} color={colors.primary} />
+              <Text style={styles.backText}>Volver</Text>
             </TouchableOpacity>
             <Text style={styles.title}>Ser conductor</Text>
             <Text style={styles.subtitle}>Registrate para recibir viajes y generar ingresos</Text>
@@ -117,7 +116,7 @@ export default function RegisterFleteroScreen({ navigation }) {
 
           {/* Banner informativo */}
           <View style={styles.infoBanner}>
-            <Text style={styles.infoIcon}>⏳</Text>
+            <Ionicons name="time-outline" size={18} color={colors.warning} />
             <Text style={styles.infoText}>
               Tu cuenta será revisada por el equipo de Fleter antes de que puedas recibir viajes.
             </Text>
@@ -200,20 +199,59 @@ export default function RegisterFleteroScreen({ navigation }) {
               />
             </Field>
 
-            <Field label="Vencimiento de licencia * (AAAA-MM-DD)">
-              <TextInput
-                ref={vencimientoRef}
-                style={styles.input}
-                placeholder="2027-12-31"
-                placeholderTextColor={colors.textHint}
-                value={form.licencia_vencimiento}
-                onChangeText={set('licencia_vencimiento')}
-                keyboardType="numbers-and-punctuation"
-                maxLength={10}
-                returnKeyType="next"
-                onSubmitEditing={() => emailRef.current?.focus()}
-              />
+            <Field label="Vencimiento de licencia *">
+              <TouchableOpacity
+                style={styles.dateBtn}
+                onPress={() => setMostrarPicker(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={licenciaVenc ? styles.dateBtnValor : styles.dateBtnPlaceholder}>
+                  {licenciaVenc
+                    ? licenciaVenc.toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })
+                    : 'Seleccioná la fecha'}
+                </Text>
+                <Ionicons name="calendar-outline" size={18} color={colors.textHint} />
+              </TouchableOpacity>
             </Field>
+
+            {/* DateTimePicker Android */}
+            {mostrarPicker && Platform.OS === 'android' && (
+              <DateTimePicker
+                value={licenciaVenc ?? new Date()}
+                mode="date"
+                display="default"
+                minimumDate={new Date()}
+                onChange={(e, selected) => {
+                  setMostrarPicker(false);
+                  if (e.type !== 'dismissed' && selected) setLicenciaVenc(selected);
+                }}
+              />
+            )}
+
+            {/* DateTimePicker iOS — modal spinner */}
+            {Platform.OS === 'ios' && (
+              <Modal visible={mostrarPicker} transparent animationType="slide">
+                <View style={styles.pickerOverlay}>
+                  <View style={styles.pickerSheet}>
+                    <View style={styles.pickerHeader}>
+                      <TouchableOpacity onPress={() => setMostrarPicker(false)}>
+                        <Text style={styles.pickerListo}>Listo</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={licenciaVenc ?? new Date()}
+                      mode="date"
+                      display="spinner"
+                      minimumDate={new Date()}
+                      onChange={(_, selected) => { if (selected) setLicenciaVenc(selected); }}
+                      locale="es-AR"
+                      textColor={colors.textPrimary}
+                      style={{ width: '100%', backgroundColor: colors.background }}
+                    />
+                  </View>
+                </View>
+              </Modal>
+            )}
 
             <View style={styles.divider} />
             <Text style={styles.sectionLabel}>Acceso a la cuenta</Text>
@@ -314,6 +352,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
   backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
     marginBottom: spacing.md,
   },
   backText: {
@@ -381,6 +422,36 @@ const styles = StyleSheet.create({
     fontSize: fontSize.body,
     color: colors.textPrimary,
   },
+  dateBtn: {
+    backgroundColor: colors.surface2,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.surface3,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateBtnValor: { fontSize: fontSize.body, color: colors.textPrimary, fontWeight: '600' },
+  dateBtnPlaceholder: { fontSize: fontSize.body, color: colors.textHint },
+  dateBtnIcon: { fontSize: 16 },
+  pickerOverlay: {
+    flex: 1, justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  pickerSheet: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingBottom: spacing.xl,
+  },
+  pickerHeader: {
+    flexDirection: 'row', justifyContent: 'flex-end',
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
+    borderBottomWidth: 1, borderBottomColor: colors.surface3,
+  },
+  pickerListo: { fontSize: fontSize.body, fontWeight: '700', color: colors.primary },
   errorText: {
     color: colors.error,
     fontSize: fontSize.caption,

@@ -4,6 +4,7 @@ import {
   StyleSheet, SafeAreaView, StatusBar, Alert, Platform, Modal,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import api from '../../services/api';
 import LocationPickerModal from '../../components/LocationPickerModal';
@@ -32,17 +33,16 @@ function formatFechaHora(d) {
 const MIN_DATE = () => new Date(Date.now() + 60 * 60 * 1000);
 
 // { lat, lng, direccion } | null
-function LocationField({ label, value, placeholder, onPress, dotColor }) {
+function LocationField({ value, placeholder, onPress }) {
   return (
     <TouchableOpacity style={styles.locationField} onPress={onPress} activeOpacity={0.7}>
-      <View style={[styles.locationDot, { backgroundColor: dotColor }]} />
       <View style={{ flex: 1 }}>
         {value
           ? <Text style={styles.locationValor} numberOfLines={1}>{value.direccion}</Text>
           : <Text style={styles.locationPlaceholder}>{placeholder}</Text>
         }
       </View>
-      <Text style={styles.locationChevron}>›</Text>
+      <Ionicons name="chevron-forward" size={18} color={colors.textHint} />
     </TouchableOpacity>
   );
 }
@@ -191,7 +191,7 @@ export default function CrearViajeScreen({ navigation }) {
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Nuevo viaje</Text>
         <View style={{ width: 40 }} />
@@ -223,14 +223,12 @@ export default function CrearViajeScreen({ navigation }) {
                 <LocationField
                   value={origen}
                   placeholder="Origen"
-                  dotColor={colors.primary}
                   onPress={() => abrirPicker('origen')}
                 />
                 <View style={styles.separador} />
                 <LocationField
                   value={destino}
                   placeholder="Destino"
-                  dotColor={colors.error}
                   onPress={() => abrirPicker('destino')}
                 />
               </View>
@@ -257,7 +255,7 @@ export default function CrearViajeScreen({ navigation }) {
                 style={styles.paradaRemove}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Text style={{ fontSize: 16, color: colors.error }}>✕</Text>
+                <Ionicons name="close" size={18} color={colors.error} />
               </TouchableOpacity>
             </View>
           ))}
@@ -271,14 +269,14 @@ export default function CrearViajeScreen({ navigation }) {
         <View style={styles.seccion}>
           <Text style={styles.seccionLabel}>CUÁNDO</Text>
           <TouchableOpacity style={styles.fechaBtn} onPress={abrirDatePicker} activeOpacity={0.8}>
-            <Text style={styles.fechaBtnIcono}>📅</Text>
+            <Ionicons name="calendar-outline" size={22} color={colors.textSecondary} />
             <View style={{ flex: 1 }}>
               <Text style={styles.campoLabel}>Fecha y hora</Text>
               <Text style={[styles.fechaBtnValor, !fechaValida && { color: colors.error }]}>
                 {formatFechaHora(fechaHora)}
               </Text>
             </View>
-            <Text style={styles.fechaBtnChevron}>›</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.textHint} />
           </TouchableOpacity>
           {!fechaValida && (
             <Text style={styles.fechaError}>Debe ser al menos 1 hora desde ahora</Text>

@@ -4,6 +4,7 @@ import {
   StyleSheet, StatusBar, SafeAreaView, ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -88,7 +89,7 @@ export default function HomeScreen({ navigation }) {
             activeOpacity={0.7}
             onPress={() => navigation.navigate('Perfil')}
           >
-            <Text style={styles.iconBtnText}>👤</Text>
+            <Ionicons name="person-outline" size={20} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
