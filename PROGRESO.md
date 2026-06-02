@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-06-02  
-> Branch: master | Commits totales: 16
+> Branch: master | Commits totales: 17
 
 ---
 
@@ -26,7 +26,9 @@
 | `ca53be1` | 29 May 2026 | Feat — reemplaza emojis con Ionicons, fix socket timeout, fix double dot en location |
 | `6b79cb2` | 02 Jun 2026 | Fix — acceptance flow adaptado a nuevo payload de viaje:conductor_asignado (sin id_usuario_conductor) |
 | `bd28db2` | 02 Jun 2026 | Fix — escuchar evento error del socket para cancelar spinner cuando backend rechaza viaje:aceptar |
-| *(próximo)* | 02 Jun 2026 | Feat — mock vehicle auto-creado en primera aceptación, id_vehiculo siempre incluido en viaje:aceptar |
+| `f96539b` | 02 Jun 2026 | Feat — mock vehicle auto-creado en primera aceptación, id_vehiculo siempre incluido en viaje:aceptar |
+| `ffbb317` | 02 Jun 2026 | Fix — setState-in-render en onConductorAsignado usando aceptandoRef |
+| *(próximo)* | 02 Jun 2026 | Feat — gestión de vehículos en PerfilFleteroScreen (listar, agregar, eliminar) |
 
 ---
 
@@ -59,7 +61,7 @@
 | `DetalleViajeScreen` | ✅ Funcional | Fetch /api/viajes/:id para nombre real del cliente, bug fix stale closure, timeout 10s en handleAceptar |
 | `ViajeActivoFleteroScreen` | 🔧 Placeholder | Pantalla existe, sin GPS background real (Fase 4) |
 | `HistorialFleteroScreen` | ✅ Funcional | UI completa con filtros y totales, mock data lista para swap a /api/viajes/mis-viajes-conductor |
-| `PerfilFleteroScreen` | ✅ Funcional | Muestra datos del usuario, botón logout |
+| `PerfilFleteroScreen` | ✅ Funcional | Datos del usuario, gestión de vehículos (listar/agregar/eliminar), logout |
 | `CobroScreen` | 🔧 Placeholder | UI básica, sin lógica de pago real (Fase 6) |
 | `QREntregaScreen` | 🔧 Placeholder | Scanner preparado, sin lógica de confirmación (Fase 5) |
 | `OfertaScreen` | 🔧 Legado | Reemplazada por NuevoViajeModal + DetalleViajeScreen, probablemente se elimina |

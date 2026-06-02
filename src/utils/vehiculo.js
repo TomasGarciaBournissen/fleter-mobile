@@ -12,6 +12,10 @@ const MOCK_VEHICULO = {
 
 let cachedIdVehiculo = null;
 
+export function clearVehiculoCache() {
+  cachedIdVehiculo = null;
+}
+
 export async function getOrCreateVehiculo() {
   if (cachedIdVehiculo) return cachedIdVehiculo;
 
