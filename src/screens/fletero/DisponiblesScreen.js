@@ -159,15 +159,23 @@ export default function DisponiblesScreen({ navigation }) {
       Alert.alert('Llegaste tarde', 'Otro conductor aceptó este viaje primero.');
     };
 
+    const onError = (data) => {
+      clearTimeout(timeoutRef.current);
+      setAceptando(false);
+      Alert.alert('No se pudo aceptar', data?.mensaje ?? 'Error del servidor');
+    };
+
     socket.on('viaje:disponible',         onDisponible);
     socket.on('viaje:conductor_asignado', onConductorAsignado);
     socket.on('viaje:ya_asignado',        onYaAsignado);
+    socket.on('error',                    onError);
 
     return () => {
       clearTimeout(timeoutRef.current);
       socket.off('viaje:disponible',         onDisponible);
       socket.off('viaje:conductor_asignado', onConductorAsignado);
       socket.off('viaje:ya_asignado',        onYaAsignado);
+      socket.off('error',                    onError);
     };
   }, [socket, navigation, user]);
 

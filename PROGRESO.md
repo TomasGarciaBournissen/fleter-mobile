@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-06-02  
-> Branch: master | Commits totales: 14
+> Branch: master | Commits totales: 15
 
 ---
 
@@ -24,7 +24,8 @@
 | `95b0640` | 29 May 2026 | Docs — api.md actualizado |
 | `0499806` | 29 May 2026 | Feat — polish de pantallas con API real y bug fixes de acceptance flow |
 | `ca53be1` | 29 May 2026 | Feat — reemplaza emojis con Ionicons, fix socket timeout, fix double dot en location |
-| *(próximo)* | 02 Jun 2026 | Fix — acceptance flow adaptado a nuevo payload de viaje:conductor_asignado (sin id_usuario_conductor) |
+| `6b79cb2` | 02 Jun 2026 | Fix — acceptance flow adaptado a nuevo payload de viaje:conductor_asignado (sin id_usuario_conductor) |
+| *(próximo)* | 02 Jun 2026 | Fix — escuchar evento error del socket para cancelar spinner cuando backend rechaza viaje:aceptar |
 
 ---
 

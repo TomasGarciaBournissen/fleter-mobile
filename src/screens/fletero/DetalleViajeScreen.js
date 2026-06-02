@@ -105,13 +105,21 @@ export default function DetalleViajeScreen({ navigation, route }) {
       ]);
     };
 
+    const onError = (data) => {
+      clearTimeout(timeoutRef.current);
+      setAceptando(false);
+      Alert.alert('No se pudo aceptar', data?.mensaje ?? 'Error del servidor');
+    };
+
     socket.on('viaje:conductor_asignado', onAsignado);
     socket.on('viaje:ya_asignado',        onYaAsignado);
+    socket.on('error',                    onError);
 
     return () => {
       clearTimeout(timeoutRef.current);
       socket.off('viaje:conductor_asignado', onAsignado);
       socket.off('viaje:ya_asignado',        onYaAsignado);
+      socket.off('error',                    onError);
     };
   }, [socket, viaje.id, navigation]);
 
