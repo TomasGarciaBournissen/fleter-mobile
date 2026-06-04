@@ -2,35 +2,23 @@ El API.md que tenés mezcló contenido del CLAUDE.md adentro. Acá está el API.
 markdown# Fleter — Contrato de API
 
 
-
-
 Documento de referencia para el equipo mobile y web.
 Base URL desarrollo: `http://localhost:3000`
 Base URL producción: `https://nombre-proyecto-back-production.up.railway.app`
 
 
-
-
 ---
 
 
-
-
 ## Autenticación
-
-
 
 
 La mayoría de endpoints requieren un JWT de Firebase en el header:
 Authorization: Bearer <firebase-id-token>
 
 
-
-
 El token se obtiene del cliente Firebase después de que el usuario inicia sesión.
 Este backend **nunca autentica contraseñas directamente** — solo verifica el token.
-
-
 
 
 **En React Native:**
@@ -40,8 +28,6 @@ const token = await auth().currentUser.getIdToken();
 ```
 
 
-
-
 **En Next.js:**
 ```js
 import { getAuth } from 'firebase/auth';
@@ -49,11 +35,7 @@ const token = await getAuth().currentUser.getIdToken();
 ```
 
 
-
-
 El token dura 1 hora. Firebase lo renueva automáticamente.
-
-
 
 
 **Para testing (Thunder Client / Postman):**
@@ -67,21 +49,13 @@ Body:
 El campo `idToken` de la respuesta es el Bearer token.
 
 
-
-
 ---
-
-
 
 
 ## GET /health
 
 
-
-
 Verificación de estado del servidor. No requiere autenticación.
-
-
 
 
 **Respuesta exitosa — 200:**
@@ -93,31 +67,19 @@ Verificación de estado del servidor. No requiere autenticación.
 ```
 
 
-
-
 ---
-
-
 
 
 ## /auth — Autenticación y usuarios
 
 
-
-
 ### POST /api/auth/registro-cliente
-
-
 
 
 Crea una cuenta de cliente. Firebase genera las credenciales, luego se persiste en la DB.
 
 
-
-
 **Autenticación:** No requerida
-
-
 
 
 **Body:**
@@ -136,8 +98,6 @@ Crea una cuenta de cliente. Firebase genera las credenciales, luego se persiste 
 ```
 
 
-
-
 **Respuesta exitosa — 201:**
 ```json
 {
@@ -145,8 +105,6 @@ Crea una cuenta de cliente. Firebase genera las credenciales, luego se persiste 
   "id_usuario": 1
 }
 ```
-
-
 
 
 **Errores posibles:**
@@ -158,26 +116,16 @@ Crea una cuenta de cliente. Firebase genera las credenciales, luego se persiste 
 | 500 | `{ "error": "Internal Server Error" }` | Error inesperado |
 
 
-
-
 ---
-
-
 
 
 ### POST /api/auth/registro-conductor
 
 
-
-
 Crea una cuenta de conductor.
 
 
-
-
 **Autenticación:** No requerida
-
-
 
 
 **Body:**
@@ -195,8 +143,6 @@ Crea una cuenta de conductor.
 ```
 
 
-
-
 **Respuesta exitosa — 201:**
 ```json
 {
@@ -204,8 +150,6 @@ Crea una cuenta de conductor.
   "id_usuario": 5
 }
 ```
-
-
 
 
 **Errores posibles:**
@@ -216,26 +160,16 @@ Crea una cuenta de conductor.
 | 409 | `{ "error": "El DNI ya esta registrado" }` | DNI duplicado en DB |
 
 
-
-
 ---
-
-
 
 
 ### POST /api/auth/registro-gerente
 
 
-
-
 Crea una cuenta de gerente y la empresa asociada en una sola operación.
 
 
-
-
 **Autenticación:** No requerida
-
-
 
 
 **Body:**
@@ -253,8 +187,6 @@ Crea una cuenta de gerente y la empresa asociada en una sola operación.
 ```
 
 
-
-
 **Respuesta exitosa — 201:**
 ```json
 {
@@ -262,8 +194,6 @@ Crea una cuenta de gerente y la empresa asociada en una sola operación.
   "id_usuario": 12
 }
 ```
-
-
 
 
 **Errores posibles:**
@@ -274,32 +204,20 @@ Crea una cuenta de gerente y la empresa asociada en una sola operación.
 | 409 | `{ "error": "El DNI ya esta registrado" }` | DNI duplicado en DB |
 
 
-
-
 ---
 
 
-
-
 ### POST /api/auth/login
-
-
 
 
 Verifica que el usuario autenticado por Firebase existe en la DB.
 **No autentica credenciales** — eso lo hace Firebase en el cliente.
 
 
-
-
 **Autenticación:** Requerida
 
 
-
-
 **Body:** Ninguno
-
-
 
 
 **Respuesta exitosa — 200:**
@@ -314,11 +232,7 @@ Verifica que el usuario autenticado por Firebase existe en la DB.
 ```
 
 
-
-
 `rol` puede ser: `CLIENTE`, `CONDUCTOR`, `GERENTE`, `ADMIN`
-
-
 
 
 **Errores posibles:**
@@ -329,26 +243,16 @@ Verifica que el usuario autenticado por Firebase existe en la DB.
 | 404 | `{ "error": "Usuario no registrado" }` | Token válido pero sin registro en DB |
 
 
-
-
 ---
-
-
 
 
 ### GET /api/auth/me
 
 
-
-
 Retorna el perfil completo del usuario autenticado.
 
 
-
-
 **Autenticación:** Requerida
-
-
 
 
 **Respuesta exitosa — 200:**
@@ -367,8 +271,6 @@ Retorna el perfil completo del usuario autenticado.
 ```
 
 
-
-
 **Errores posibles:**
 | Status | Body | Causa |
 |--------|------|-------|
@@ -377,26 +279,16 @@ Retorna el perfil completo del usuario autenticado.
 | 404 | `{ "error": "Usuario no registrado" }` | Token válido pero sin registro en DB |
 
 
-
-
 ---
-
-
 
 
 ### PUT /api/auth/perfil
 
 
-
-
 Actualiza el perfil del usuario autenticado. Solo se actualizan los campos presentes en el body.
 
 
-
-
 **Autenticación:** Requerida
-
-
 
 
 **Body (todos opcionales, al menos uno requerido):**
@@ -407,8 +299,6 @@ Actualiza el perfil del usuario autenticado. Solo se actualizan los campos prese
   "telefono": "string"
 }
 ```
-
-
 
 
 **Respuesta exitosa — 200:**
@@ -427,8 +317,6 @@ Actualiza el perfil del usuario autenticado. Solo se actualizan los campos prese
 ```
 
 
-
-
 **Errores posibles:**
 | Status | Body | Causa |
 |--------|------|-------|
@@ -437,32 +325,20 @@ Actualiza el perfil del usuario autenticado. Solo se actualizan los campos prese
 | 401 | `{ "error": "Token invalido o expirado" }` | JWT inválido o vencido |
 
 
-
-
 ---
-
-
 
 
 ## /viajes — Gestión de viajes
 
 
-
-
 ### POST /api/viajes/estimar-costo
-
-
 
 
 Calcula el costo estimado de un viaje sin crearlo.
 Si `GOOGLE_MAPS_API_KEY` no está configurada usa valores mock (10 km, 0.5 h).
 
 
-
-
 **Rol requerido:** `CLIENTE`
-
-
 
 
 **Body:**
@@ -478,13 +354,9 @@ Si `GOOGLE_MAPS_API_KEY` no está configurada usa valores mock (10 km, 0.5 h).
 ```
 
 
-
-
 - `zona`: `"CABA"` | `"PROVINCIA"` | `"MIXTO"`
 - `paradas`: mínimo 2 elementos
 - `fecha_programada`: opcional. Si se omite se usa la fecha/hora actual para determinar si es hora pico.
-
-
 
 
 **Respuesta exitosa — 200:**
@@ -504,8 +376,6 @@ Si `GOOGLE_MAPS_API_KEY` no está configurada usa valores mock (10 km, 0.5 h).
 ```
 
 
-
-
 **Errores posibles:**
 | Status | Body | Causa |
 |--------|------|-------|
@@ -515,27 +385,17 @@ Si `GOOGLE_MAPS_API_KEY` no está configurada usa valores mock (10 km, 0.5 h).
 | 503 | `{ "error": "No se pudo calcular la distancia" }` | Error en Google Maps API |
 
 
-
-
 ---
 
 
-
-
 ### POST /api/viajes
-
-
 
 
 Crea un viaje nuevo. El viaje queda en estado `BUSCANDO_CONDUCTOR` y se publica
 instantáneamente a los conductores elegibles conectados via WebSocket.
 
 
-
-
 **Rol requerido:** `CLIENTE`
-
-
 
 
 **Body:**
@@ -552,19 +412,13 @@ instantáneamente a los conductores elegibles conectados via WebSocket.
 ```
 
 
-
-
 - `fecha_programada`: fecha ISO futura, mínimo 1 hora desde el momento del request
 - `condiciones_requeridas`: opcional. Valores posibles: `FRAGIL`, `REFRIGERADO`,
   `CARGA_PESADA`, `PELIGROSO`, `VOLUMINOSO`
 
 
-
-
 Las tarifas se calculan automáticamente según la zona y si la `fecha_programada` cae en hora pico
 (7–10 h o 17–20 h). Se usan las variables de entorno `TARIFA_*` o los valores por defecto.
-
-
 
 
 **Respuesta exitosa — 201:**
@@ -612,12 +466,8 @@ Las tarifas se calculan automáticamente según la zona y si la `fecha_programad
 ```
 
 
-
-
 **Comportamiento adicional:** después de crear el viaje, el servidor emite el evento
 `viaje:disponible` via WebSocket a todos los conductores elegibles conectados.
-
-
 
 
 **Errores posibles:**
@@ -630,16 +480,10 @@ Las tarifas se calculan automáticamente según la zona y si la `fecha_programad
 | 503 | `{ "error": "No se pudo calcular la distancia" }` | Error en Google Maps API |
 
 
-
-
 ---
 
 
-
-
 ### GET /api/viajes/disponibles
-
-
 
 
 Devuelve los viajes en estado `BUSCANDO_CONDUCTOR` con fecha futura para los que
@@ -647,11 +491,7 @@ el conductor es elegible (tiene al menos un vehículo que cumple todas las
 condiciones requeridas del viaje).
 
 
-
-
 **Rol requerido:** `CONDUCTOR`
-
-
 
 
 **Respuesta exitosa — 200:**
@@ -684,22 +524,7 @@ condiciones requeridas del viaje).
 ```
 
 
-
-
 Ordenados por `fecha_programada` ascendente.
-
-
-
-
-**Ejemplo de llamada (React Native / fetch):**
-```js
-const res = await fetch('http://localhost:3000/api/viajes/disponibles', {
-  headers: { Authorization: 'Bearer ' + conductorToken }
-});
-const viajes = await res.json(); // array
-```
-
-
 
 
 **Errores posibles:**
@@ -710,26 +535,16 @@ const viajes = await res.json(); // array
 | 403 | `{ "error": "Acceso denegado" }` | El usuario no tiene rol CONDUCTOR |
 
 
-
-
 ---
-
-
 
 
 ### GET /api/viajes/mis-viajes
 
 
-
-
 Devuelve todos los viajes del cliente autenticado, del más reciente al más antiguo.
 
 
-
-
 **Rol requerido:** `CLIENTE`
-
-
 
 
 **Respuesta exitosa — 200:**
@@ -752,8 +567,6 @@ Devuelve todos los viajes del cliente autenticado, del más reciente al más ant
 ```
 
 
-
-
 **Errores posibles:**
 | Status | Body | Causa |
 |--------|------|-------|
@@ -762,26 +575,16 @@ Devuelve todos los viajes del cliente autenticado, del más reciente al más ant
 | 403 | `{ "error": "Acceso denegado" }` | El usuario no tiene rol CLIENTE |
 
 
-
-
 ---
-
-
 
 
 ### GET /api/viajes/:id
 
 
-
-
 Detalle de un viaje. Solo puede acceder el cliente que lo creó o el conductor asignado.
 
 
-
-
 **Rol requerido:** Autenticado (`CLIENTE` o `CONDUCTOR`)
-
-
 
 
 **Respuesta exitosa — 200:**
@@ -828,8 +631,6 @@ Detalle de un viaje. Solo puede acceder el cliente que lo creó o el conductor a
 ```
 
 
-
-
 **Errores posibles:**
 | Status | Body | Causa |
 |--------|------|-------|
@@ -838,28 +639,18 @@ Detalle de un viaje. Solo puede acceder el cliente que lo creó o el conductor a
 | 404 | `{ "error": "Viaje no encontrado" }` | No existe viaje con ese id |
 
 
-
-
 ---
-
-
 
 
 ## WebSockets — Matching en tiempo real
 
 
-
-
 La conexión WebSocket se establece con autenticación JWT igual que los endpoints REST.
-
-
 
 
 **Conexión:**
 ```js
 import { io } from 'socket.io-client';
-
-
 
 
 const socket = io('https://nombre-proyecto-back-production.up.railway.app', {
@@ -870,8 +661,6 @@ const socket = io('https://nombre-proyecto-back-production.up.railway.app', {
 ```
 
 
-
-
 **Error de conexión si el token es inválido:**
 ```js
 socket.on('connect_error', (err) => {
@@ -880,23 +669,24 @@ socket.on('connect_error', (err) => {
 ```
 
 
+**Errores de lógica emitidos durante el flujo (evento `error`):**
+```js
+socket.on('error', (data) => {
+  console.log(data.mensaje); // descripción del error
+});
+```
+Los errores de negocio del servidor usan `{ "mensaje": "..." }` — **no** `{ "error": "..." }`.
 
 
 ---
 
 
-
-
 ### Evento: viaje:disponible
-
-
 
 
 **Dirección:** servidor → conductor  
 **Quién lo recibe:** conductores elegibles conectados cuando se crea un viaje nuevo  
 **Cuándo:** inmediatamente después de que un cliente hace `POST /api/viajes`
-
-
 
 
 **Payload:**
@@ -910,20 +700,9 @@ socket.on('connect_error', (err) => {
     { "orden": 1, "direccion": "Plaza de Mayo, CABA" },
     { "orden": 2, "direccion": "Recoleta, CABA" }
   ],
-  "condiciones_req": [
-    { "condicion": "FRAGIL" },
-    { "condicion": "REFRIGERADO" }
-  ]
+  "condiciones_req": []
 }
 ```
-
-
-
-
-**Nota:** `condiciones_req` puede ser un array vacío si el viaje
-no requiere condiciones especiales de vehículo.
-
-
 
 
 **Cómo escucharlo:**
@@ -935,23 +714,15 @@ socket.on('viaje:disponible', (data) => {
 ```
 
 
-
-
 ---
-
-
 
 
 ### Evento: viaje:aceptar
 
 
-
-
 **Dirección:** conductor → servidor  
 **Quién lo emite:** el conductor que quiere tomar el viaje  
 **Cuándo:** cuando el conductor toca "Aceptar" en la pantalla del viaje disponible
-
-
 
 
 **Payload a emitir:**
@@ -962,44 +733,52 @@ socket.on('viaje:disponible', (data) => {
 ```
 
 
+- `id_vehiculo`: **opcional**. Si se incluye, el servidor valida que pertenece al conductor y cumple las condiciones del viaje. Si se omite, el servidor elige automáticamente el primer vehículo elegible del conductor.
 
 
 **Cómo emitirlo:**
 ```js
+// sin vehículo (el backend lo elige automáticamente)
 socket.emit('viaje:aceptar', { id_viaje: 42 });
+
+
+// con vehículo específico
+socket.emit('viaje:aceptar', { id_viaje: 42, id_vehiculo: 7 });
 ```
 
 
+**Validaciones del servidor:**
+
+
+Si se envía `id_vehiculo`:
+1. El vehículo debe existir; si no: evento `error` con `{ "mensaje": "Vehiculo no encontrado" }`
+2. El vehículo debe pertenecer al conductor; si no: evento `error` con `{ "mensaje": "Ese vehiculo no te pertenece" }`
+3. El vehículo debe cumplir las condiciones del viaje; si falta alguna: evento `error` con `{ "mensaje": "Tu vehiculo no cumple las condiciones del viaje" }`
+
+
+Si NO se envía `id_vehiculo` (auto-selección):
+4. Si ningún vehículo cumple las condiciones: evento `error` con `{ "mensaje": "No tenes un vehiculo que cumpla las condiciones del viaje" }`
 
 
 **Nota:** después de emitir este evento el conductor recibirá `viaje:conductor_asignado`
 si ganó la carrera o `viaje:ya_asignado` si otro conductor fue más rápido.
 
 
-
-
 ---
-
-
 
 
 ### Evento: viaje:conductor_asignado
 
 
-
-
-**Dirección:** servidor → conductor ganador (socket directo) y cliente (socket directo)  
-**Quién lo recibe:** exclusivamente el conductor que ganó la asignación y el cliente dueño del viaje  
+**Dirección:** servidor → room del viaje  
+**Quién lo recibe:** el cliente que creó el viaje y el conductor que aceptó  
 **Cuándo:** cuando un conductor acepta exitosamente el viaje
-
-
 
 
 **Payload:**
 ```json
 {
   "id_viaje": 42,
-  "id_usuario_conductor": 5,
   "conductor": {
     "nombre": "Carlos",
     "apellido": "López",
@@ -1015,8 +794,6 @@ si ganó la carrera o `viaje:ya_asignado` si otro conductor fue más rápido.
 ```
 
 
-
-
 **Cómo escucharlo:**
 ```js
 socket.on('viaje:conductor_asignado', (data) => {
@@ -1027,31 +804,15 @@ socket.on('viaje:conductor_asignado', (data) => {
 ```
 
 
-
-
-**Nota:** este evento se emite directamente al socket del conductor ganador y al socket
-del cliente — no se broadcast al room. Los conductores que intentaron y perdieron reciben
-`viaje:ya_asignado` (si emitieron `viaje:aceptar`) o `viaje:no_disponible` (si aún
-estaban esperando en el room).
-
-
-
-
 ---
-
-
 
 
 ### Evento: viaje:ya_asignado
 
 
-
-
 **Dirección:** servidor → conductor  
 **Quién lo recibe:** el conductor que intentó aceptar pero llegó tarde  
 **Cuándo:** cuando dos conductores aceptan al mismo tiempo y el otro ganó
-
-
 
 
 **Payload:**
@@ -1063,8 +824,6 @@ estaban esperando en el room).
 ```
 
 
-
-
 **Cómo escucharlo:**
 ```js
 socket.on('viaje:ya_asignado', (data) => {
@@ -1074,68 +833,15 @@ socket.on('viaje:ya_asignado', (data) => {
 ```
 
 
-
-
 ---
-
-
-
-
-### Evento: viaje:no_disponible
-
-
-
-
-**Dirección:** servidor → conductores del room (broadcast, excluye al ganador)  
-**Quién lo recibe:** todos los conductores conectados al room `viaje:{id_viaje}` que no ganaron la asignación  
-**Cuándo:** inmediatamente después de que otro conductor acepta exitosamente el viaje
-
-
-
-
-**Payload:**
-```json
-{
-  "id_viaje": 42
-}
-```
-
-
-
-
-**Cómo escucharlo:**
-```js
-socket.on('viaje:no_disponible', (data) => {
-  // remover el viaje de la lista de disponibles
-  console.log('Viaje ya no disponible:', data.id_viaje);
-});
-```
-
-
-
-
-**Diferencia con `viaje:ya_asignado`:** este evento llega a conductores que estaban
-en el room pero **no llegaron a emitir `viaje:aceptar`**. Quien emitió `viaje:aceptar`
-y llegó tarde recibe `viaje:ya_asignado`, no este evento.
-
-
-
-
----
-
-
 
 
 ### Evento: viaje:cancelado_sin_conductor
 
 
-
-
 **Dirección:** servidor → cliente  
 **Quién lo recibe:** el cliente que creó el viaje  
 **Cuándo:** cuando nadie acepta el viaje dentro del tiempo límite (10 minutos por defecto)
-
-
 
 
 **Payload:**
@@ -1145,8 +851,6 @@ y llegó tarde recibe `viaje:ya_asignado`, no este evento.
   "mensaje": "No se encontro un conductor disponible"
 }
 ```
-
-
 
 
 **Cómo escucharlo:**
@@ -1159,7 +863,6 @@ socket.on('viaje:cancelado_sin_conductor', (data) => {
 
 
 ---
-
 
 ---
 
@@ -1485,20 +1188,328 @@ socket.on('viaje:estado_cambiado', (data) => {
 ---
 
 
+---
+
+
+## /conductores — Vehículos de conductores independientes
+
+
+### POST /api/conductores/mis-vehiculos
+
+
+Registra un vehículo propio del conductor autenticado.
+
+
+**Rol requerido:** `CONDUCTOR`
+
+
+**Headers requeridos:**
+```
+Authorization: Bearer <firebase-id-token>
+```
+
+
+**Body:**
+```json
+{
+  "patente": "string 6-8 caracteres (requerido)",
+  "marca": "string (requerido)",
+  "modelo": "string (requerido)",
+  "anio": "number entero entre 1990 y año actual (requerido)",
+  "color": "string (requerido)",
+  "tipo_vehiculo": "string (requerido)",
+  "condiciones": ["FRAGIL", "REFRIGERADO"]
+}
+```
+
+
+- `condiciones`: opcional, default `[]`. Valores válidos: `FRAGIL`, `REFRIGERADO`, `CARGA_PESADA`, `PELIGROSO`, `VOLUMINOSO`
+
+
+**Respuesta exitosa — 201:**
+```json
+{
+  "id_vehiculo": 10,
+  "id_empresa": null,
+  "id_conductor": 3,
+  "patente": "ABC123",
+  "marca": "Ford",
+  "modelo": "Transit",
+  "anio": 2022,
+  "color": "Blanco",
+  "tipo_vehiculo": "furgon",
+  "condiciones": [
+    { "id_condicion": 5, "id_vehiculo": 10, "condicion": "FRAGIL" },
+    { "id_condicion": 6, "id_vehiculo": 10, "condicion": "REFRIGERADO" }
+  ]
+}
+```
+
+
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 400 | `{ "error": "mensaje de validación" }` | Campo faltante o inválido |
+| 400 | `{ "error": "El usuario no tiene perfil de conductor" }` | Sin registro de conductor |
+| 401 | `{ "error": "Token no proporcionado" }` | Sin header Authorization |
+| 403 | `{ "error": "Acceso denegado" }` | El usuario no tiene rol CONDUCTOR |
+| 409 | `{ "error": "La patente ya esta registrada" }` | Patente duplicada |
+
+
+---
+
+
+### GET /api/conductores/mis-vehiculos
+
+
+Devuelve todos los vehículos propios del conductor autenticado.
+
+
+**Rol requerido:** `CONDUCTOR`
+
+
+**Headers requeridos:**
+```
+Authorization: Bearer <firebase-id-token>
+```
+
+
+**Respuesta exitosa — 200:**
+```json
+[
+  {
+    "id_vehiculo": 10,
+    "id_empresa": null,
+    "id_conductor": 3,
+    "patente": "ABC123",
+    "marca": "Ford",
+    "modelo": "Transit",
+    "anio": 2022,
+    "color": "Blanco",
+    "tipo_vehiculo": "furgon",
+    "condiciones": [
+      { "id_condicion": 5, "id_vehiculo": 10, "condicion": "FRAGIL" }
+    ]
+  }
+]
+```
+
+
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 400 | `{ "error": "El usuario no tiene perfil de conductor" }` | Sin registro de conductor |
+| 401 | `{ "error": "Token no proporcionado" }` | Sin header Authorization |
+| 403 | `{ "error": "Acceso denegado" }` | El usuario no tiene rol CONDUCTOR |
+
+
+---
+
+
+### PUT /api/conductores/mis-vehiculos/:id
+
+
+Actualiza los datos de un vehículo propio del conductor. Solo se actualizan los campos presentes.
+
+
+**Rol requerido:** `CONDUCTOR`
+
+
+**Headers requeridos:**
+```
+Authorization: Bearer <firebase-id-token>
+```
+
+
+**Body (todos opcionales):**
+```json
+{
+  "marca": "string",
+  "modelo": "string",
+  "anio": 2023,
+  "color": "Negro",
+  "tipo_vehiculo": "camion"
+}
+```
+
+
+**Respuesta exitosa — 200:**
+```json
+{
+  "id_vehiculo": 10,
+  "id_empresa": null,
+  "id_conductor": 3,
+  "patente": "ABC123",
+  "marca": "Ford",
+  "modelo": "Transit",
+  "anio": 2023,
+  "color": "Negro",
+  "tipo_vehiculo": "camion",
+  "condiciones": []
+}
+```
+
+
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 400 | `{ "error": "mensaje de validación" }` | Valor de campo inválido |
+| 400 | `{ "error": "El usuario no tiene perfil de conductor" }` | Sin registro de conductor |
+| 401 | `{ "error": "Token no proporcionado" }` | Sin header Authorization |
+| 403 | `{ "error": "Acceso denegado" }` | El usuario no tiene rol CONDUCTOR |
+| 403 | `{ "error": "Este vehiculo no te pertenece" }` | El vehículo pertenece a otro conductor |
+| 404 | `{ "error": "Vehiculo no encontrado" }` | No existe vehículo con ese id |
+
+
+---
+
+
+### DELETE /api/conductores/mis-vehiculos/:id
+
+
+Elimina un vehículo propio del conductor. No se puede eliminar si está en un viaje activo.
+
+
+**Rol requerido:** `CONDUCTOR`
+
+
+**Headers requeridos:**
+```
+Authorization: Bearer <firebase-id-token>
+```
+
+
+**Respuesta exitosa — 200:**
+```json
+{
+  "mensaje": "Vehiculo eliminado"
+}
+```
+
+
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 400 | `{ "error": "El usuario no tiene perfil de conductor" }` | Sin registro de conductor |
+| 400 | `{ "error": "No se puede eliminar un vehiculo en uso" }` | El vehículo está en un viaje activo |
+| 401 | `{ "error": "Token no proporcionado" }` | Sin header Authorization |
+| 403 | `{ "error": "Acceso denegado" }` | El usuario no tiene rol CONDUCTOR |
+| 403 | `{ "error": "Este vehiculo no te pertenece" }` | El vehículo pertenece a otro conductor |
+| 404 | `{ "error": "Vehiculo no encontrado" }` | No existe vehículo con ese id |
+
+
+---
+
+
+### POST /api/conductores/mis-vehiculos/:id/condiciones/:condicion
+
+
+Agrega una condición a un vehículo propio del conductor.
+
+
+**Rol requerido:** `CONDUCTOR`
+
+
+**Headers requeridos:**
+```
+Authorization: Bearer <firebase-id-token>
+```
+
+
+- `:condicion`: uno de `FRAGIL`, `REFRIGERADO`, `CARGA_PESADA`, `PELIGROSO`, `VOLUMINOSO`
+
+
+**Respuesta exitosa — 201:**
+```json
+{
+  "id_vehiculo": 10,
+  "id_empresa": null,
+  "id_conductor": 3,
+  "patente": "ABC123",
+  "marca": "Ford",
+  "modelo": "Transit",
+  "anio": 2022,
+  "color": "Blanco",
+  "tipo_vehiculo": "furgon",
+  "condiciones": [
+    { "id_condicion": 7, "id_vehiculo": 10, "condicion": "FRAGIL" }
+  ]
+}
+```
+
+
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 400 | `{ "error": "Condicion invalida" }` | Valor de condición no reconocido |
+| 400 | `{ "error": "El usuario no tiene perfil de conductor" }` | Sin registro de conductor |
+| 401 | `{ "error": "Token no proporcionado" }` | Sin header Authorization |
+| 403 | `{ "error": "Acceso denegado" }` | El usuario no tiene rol CONDUCTOR |
+| 403 | `{ "error": "Este vehiculo no te pertenece" }` | El vehículo pertenece a otro conductor |
+| 404 | `{ "error": "Vehiculo no encontrado" }` | No existe vehículo con ese id |
+| 409 | `{ "error": "El vehiculo ya tiene esa condicion" }` | Condición duplicada |
+
+
+---
+
+
+### DELETE /api/conductores/mis-vehiculos/:id/condiciones/:condicion
+
+
+Elimina una condición de un vehículo propio del conductor.
+
+
+**Rol requerido:** `CONDUCTOR`
+
+
+**Headers requeridos:**
+```
+Authorization: Bearer <firebase-id-token>
+```
+
+
+- `:condicion`: uno de `FRAGIL`, `REFRIGERADO`, `CARGA_PESADA`, `PELIGROSO`, `VOLUMINOSO`
+
+
+**Respuesta exitosa — 200:**
+```json
+{
+  "id_vehiculo": 10,
+  "id_empresa": null,
+  "id_conductor": 3,
+  "patente": "ABC123",
+  "marca": "Ford",
+  "modelo": "Transit",
+  "anio": 2022,
+  "color": "Blanco",
+  "tipo_vehiculo": "furgon",
+  "condiciones": []
+}
+```
+
+
+**Errores posibles:**
+| Status | Body | Causa |
+|--------|------|-------|
+| 400 | `{ "error": "Condicion invalida" }` | Valor de condición no reconocido |
+| 400 | `{ "error": "El usuario no tiene perfil de conductor" }` | Sin registro de conductor |
+| 401 | `{ "error": "Token no proporcionado" }` | Sin header Authorization |
+| 403 | `{ "error": "Acceso denegado" }` | El usuario no tiene rol CONDUCTOR |
+| 403 | `{ "error": "Este vehiculo no te pertenece" }` | El vehículo pertenece a otro conductor |
+| 404 | `{ "error": "Vehiculo no encontrado" }` | No existe vehículo con ese id |
+
+
+---
+
+
 ## Convenciones generales
-
-
 
 
 - Todos los errores devuelven `{ "error": "mensaje legible" }`
 - Fechas en formato ISO 8601 UTC
 - El campo `contrasena` nunca se almacena en la DB — solo va a Firebase
 - `id_conductor`, `id_vehiculo` e `id_empresa` en el viaje son `null` hasta que se asigne un conductor
-- El campo `vehiculo` en `viaje:conductor_asignado` puede ser `null` si el conductor
-  no tiene vehículo registrado en la DB (se resuelve en Fase 4)
+- El campo `vehiculo` en `viaje:conductor_asignado` siempre es un objeto no nulo — si el conductor no tiene vehículo elegible el servidor emite `error` antes de asignar el viaje
 
 
 
-
-
-  
