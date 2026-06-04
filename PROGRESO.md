@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-06-04  
-> Branch: master | Commits totales: 19
+> Branch: master | Commits totales: 23
 
 ---
 
@@ -29,7 +29,11 @@
 | `f96539b` | 02 Jun 2026 | Feat — mock vehicle auto-creado en primera aceptación, id_vehiculo siempre incluido en viaje:aceptar |
 | `ffbb317` | 02 Jun 2026 | Fix — setState-in-render en onConductorAsignado usando aceptandoRef |
 | `9d68df8` | 02 Jun 2026 | Feat — gestión de vehículos en PerfilFleteroScreen (listar, agregar, eliminar) |
-| *(próximo)* | 04 Jun 2026 | Feat — Fase 4: GPS tracking, MapView real en ViajeActivo (conductor + cliente), background task, socket GPS events |
+| `f8fc3ea` | 04 Jun 2026 | Feat — Fase 4: GPS tracking real, MapView en ViajeActivo (conductor + cliente), background task, socket GPS events |
+| `761f30f` | 04 Jun 2026 | Fix — remover costo acumulado en tiempo real de ViajeActivoScreen (cliente) |
+| `9b4243a` | 04 Jun 2026 | Feat — MapViewWrapper para Expo Go + debug GPS card en ViajeActivoFletero |
+| `9d897ba` | 04 Jun 2026 | Fix — ignorar errores de conexión de socket en onError |
+| `a7e7a42` | 04 Jun 2026 | Fix — GPS Highest accuracy + contador de updates en debug card |
 
 ---
 
@@ -120,6 +124,9 @@
 | `viaje:ya_asignado` + `viaje:conductor_asignado` doble alert | Conductor que pierde en `DetalleViajeScreen` puede recibir dos alerts | ⚠️ Menor, sin resolver |
 | `OfertaScreen` legada | Existía antes de NuevoViajeModal, posiblemente sin uso | ⚠️ Revisar si eliminar |
 | Acceptance flow no responde | Backend no procesa `viaje:aceptar` — frontend ya tiene timeout 10s como safety net | ❌ Requiere fix en backend |
+| GPS background en Expo Go | `startLocationUpdatesAsync` requiere build nativa — fallback a interval foreground activo | ⚠️ Funciona en foreground, background requiere build nativa |
+| MapView no disponible en Expo Go | `react-native-maps` requiere módulo nativo — MapViewWrapper muestra placeholder | ⚠️ Funciona en build nativa |
+| Transición CARGANDO → EN_RUTA | No documentada en api.md — frontend asume que el backend la auto-dispara con GPS | ⚠️ Pendiente confirmar con backend |
 | `id_usuario_conductor` removido del payload | API nueva no incluye ese campo en `viaje:conductor_asignado` — lógica de navegación actualizada para no depender de él | ✅ Resuelto |
 
 ---
