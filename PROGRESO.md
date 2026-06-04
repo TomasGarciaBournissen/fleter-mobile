@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-06-02  
-> Branch: master | Commits totales: 17
+> Última actualización: 2026-06-04  
+> Branch: master | Commits totales: 19
 
 ---
 
@@ -28,7 +28,8 @@
 | `bd28db2` | 02 Jun 2026 | Fix — escuchar evento error del socket para cancelar spinner cuando backend rechaza viaje:aceptar |
 | `f96539b` | 02 Jun 2026 | Feat — mock vehicle auto-creado en primera aceptación, id_vehiculo siempre incluido en viaje:aceptar |
 | `ffbb317` | 02 Jun 2026 | Fix — setState-in-render en onConductorAsignado usando aceptandoRef |
-| *(próximo)* | 02 Jun 2026 | Feat — gestión de vehículos en PerfilFleteroScreen (listar, agregar, eliminar) |
+| `9d68df8` | 02 Jun 2026 | Feat — gestión de vehículos en PerfilFleteroScreen (listar, agregar, eliminar) |
+| *(próximo)* | 04 Jun 2026 | Feat — Fase 4: GPS tracking, MapView real en ViajeActivo (conductor + cliente), background task, socket GPS events |
 
 ---
 
@@ -49,7 +50,7 @@
 | `CrearViajeScreen` | ✅ Funcional | Google Places Legacy API para origen/destino/paradas, coords reales en payload, POST /api/viajes/estimar-costo |
 | `ConfirmacionViajeScreen` | ✅ Funcional | Resumen + POST /api/viajes, navega a BuscandoFletero |
 | `BuscandoFleteroScreen` | ✅ Funcional | Animación de búsqueda, escucha `viaje:conductor_asignado` via socket |
-| `ViajeActivoScreen` | 🔧 Placeholder | Pantalla existe pero sin GPS real ni tracking (Fase 4) |
+| `ViajeActivoScreen` | ✅ Funcional | MapView con marcador del conductor en tiempo real, mapa:actualizar, costo:actualizar, alerta:desvio, timeline de estados |
 | `HistorialScreen` | ✅ Funcional | GET /api/viajes/mis-viajes, agrupado por mes, filtros (Todos/Finalizados/Cancelados/En curso), back button |
 | `PerfilScreen` | ✅ Funcional | Nombre y email reales del AuthContext, edición local, logout |
 
@@ -59,7 +60,7 @@
 | `DisponiblesScreen` | ✅ Funcional | GET /api/viajes/disponibles + socket `viaje:disponible`, bug fix stale closure en acceptance flow |
 | `NuevoViajeModal` | ✅ Funcional | Bottom sheet con countdown 30s, barra animada, Aceptar/Rechazar |
 | `DetalleViajeScreen` | ✅ Funcional | Fetch /api/viajes/:id para nombre real del cliente, bug fix stale closure, timeout 10s en handleAceptar |
-| `ViajeActivoFleteroScreen` | 🔧 Placeholder | Pantalla existe, sin GPS background real (Fase 4) |
+| `ViajeActivoFleteroScreen` | ✅ Funcional | GPS real (expo-location + background task), MapView con posición propia + paradas, PATCH CARGANDO/DESCARGANDO, timeline reactivo a viaje:estado_cambiado |
 | `HistorialFleteroScreen` | ✅ Funcional | UI completa con filtros y totales, mock data lista para swap a /api/viajes/mis-viajes-conductor |
 | `PerfilFleteroScreen` | ✅ Funcional | Datos del usuario, gestión de vehículos (listar/agregar/eliminar), logout |
 | `CobroScreen` | 🔧 Placeholder | UI básica, sin lógica de pago real (Fase 6) |
@@ -101,6 +102,12 @@
 | `viaje:conductor_asignado` | servidor → room | `DisponiblesScreen`, `DetalleViajeScreen`, `BuscandoFleteroScreen` | ✅ Distingue por `id_usuario_conductor` |
 | `viaje:ya_asignado` | servidor → conductor | `DisponiblesScreen`, `DetalleViajeScreen` | ✅ Muestra alerta |
 | `viaje:cancelado_sin_conductor` | servidor → cliente | — | ❌ No implementado |
+| `conductor:ubicacion` | conductor → servidor | `ViajeActivoFleteroScreen` | ✅ Background task cada 15s |
+| `mapa:actualizar` | servidor → room | `ViajeActivoScreen` | ✅ Actualiza marcador del conductor |
+| `costo:actualizar` | servidor → room | `ViajeActivoScreen` | ✅ Actualiza costo acumulado |
+| `viaje:estado_cambiado` | servidor → room | `ViajeActivoFleteroScreen`, `ViajeActivoScreen` | ✅ Timeline reactivo |
+| `alerta:desvio` | servidor → room | `ViajeActivoScreen` | ✅ Banner de alerta |
+| `alerta:parada` | servidor → room | `ViajeActivoScreen` | ✅ Banner de parada sospechosa |
 
 ---
 
@@ -132,11 +139,16 @@
 - [ ] Manejar `viaje:cancelado_sin_conductor` en el cliente
 - [ ] Fix doble alert en `DetalleViajeScreen` cuando conductor pierde
 
-### Fase 4 (sin empezar)
-- GPS background real con `react-native-background-geolocation`
-- Emit `fletero:ubicacion` cada 15s
-- `ViajeActivoFleteroScreen` con mapa y paradas
-- `ViajeActivoScreen` cliente con pin en tiempo real
+### Fase 4 (completo)
+- [x] `react-native-maps` + `expo-task-manager` instalados
+- [x] Google Maps API key en app.json (android)
+- [x] Plugin `expo-location` con background permissions en app.json
+- [x] `src/tasks/locationTask.js` — background GPS task (defineTask + start/stop)
+- [x] `ViajeActivoFleteroScreen` — GPS real, MapView, PATCH estados, timeline reactivo
+- [x] `ViajeActivoScreen` — MapView con conductor marker, socket mapa:actualizar + costo:actualizar + alerta:desvio
+
+### Fase 5 (sin empezar)
+- QREntregaScreen con lógica de confirmación real
 
 ---
 
