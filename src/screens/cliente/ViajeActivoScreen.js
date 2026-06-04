@@ -37,15 +37,14 @@ export default function ViajeActivoScreen({ navigation, route }) {
   const { viajeId, conductor: conductorParam, vehiculo: vehiculoParam } = route.params ?? {};
   const { socket } = useSocket();
 
-  const [viaje,             setViaje]             = useState(null);
-  const [estado,            setEstado]             = useState('CONDUCTOR_ASIGNADO');
-  const [conductorPos,      setConductorPos]       = useState(null);
-  const [costoAcumulado,    setCostoAcumulado]     = useState(null);
-  const [alertaDesvio,      setAlertaDesvio]       = useState(null);
-  const [alertaParada,      setAlertaParada]       = useState(null);
-  const [velocidad,         setVelocidad]          = useState(null);
-  const [cargando,          setCargando]           = useState(true);
-  const conductorMarkerRef  = useRef(null);
+  const [viaje,          setViaje]        = useState(null);
+  const [estado,         setEstado]       = useState('CONDUCTOR_ASIGNADO');
+  const [conductorPos,   setConductorPos] = useState(null);
+  const [alertaDesvio,   setAlertaDesvio] = useState(null);
+  const [alertaParada,   setAlertaParada] = useState(null);
+  const [velocidad,      setVelocidad]    = useState(null);
+  const [cargando,       setCargando]     = useState(true);
+  const conductorMarkerRef = useRef(null);
 
   // Fetch trip data
   useEffect(() => {
@@ -70,10 +69,6 @@ export default function ViajeActivoScreen({ navigation, route }) {
       setEstado(data.estado_nuevo);
     };
 
-    const onCostoActualizar = (data) => {
-      setCostoAcumulado(data.precio_acumulado);
-    };
-
     const onAlertaDesvio = (data) => {
       setAlertaDesvio(data.mensaje);
       // Auto-dismiss after 10s
@@ -85,18 +80,16 @@ export default function ViajeActivoScreen({ navigation, route }) {
       setTimeout(() => setAlertaParada(null), 10000);
     };
 
-    socket.on('mapa:actualizar',      onMapaActualizar);
+    socket.on('mapa:actualizar',       onMapaActualizar);
     socket.on('viaje:estado_cambiado', onEstadoCambiado);
-    socket.on('costo:actualizar',     onCostoActualizar);
-    socket.on('alerta:desvio',        onAlertaDesvio);
-    socket.on('alerta:parada',        onAlertaParada);
+    socket.on('alerta:desvio',         onAlertaDesvio);
+    socket.on('alerta:parada',         onAlertaParada);
 
     return () => {
-      socket.off('mapa:actualizar',      onMapaActualizar);
+      socket.off('mapa:actualizar',       onMapaActualizar);
       socket.off('viaje:estado_cambiado', onEstadoCambiado);
-      socket.off('costo:actualizar',     onCostoActualizar);
-      socket.off('alerta:desvio',        onAlertaDesvio);
-      socket.off('alerta:parada',        onAlertaParada);
+      socket.off('alerta:desvio',         onAlertaDesvio);
+      socket.off('alerta:parada',         onAlertaParada);
     };
   }, [socket, viajeId]);
 
@@ -113,10 +106,7 @@ export default function ViajeActivoScreen({ navigation, route }) {
     ? `${vehiculoParam.marca} ${vehiculoParam.modelo} · ${vehiculoParam.patente}`
     : '';
 
-  const costoDisplay = costoAcumulado != null
-    ? `$${formatPrecio(costoAcumulado)}`
-    : viaje?.precio_estimado ? `$${formatPrecio(viaje.precio_estimado)}` : '—';
-
+  const precioEstimado = viaje?.precio_estimado ? `$${formatPrecio(viaje.precio_estimado)}` : '—';
   const estadoIdx = estadoIndex(estado);
   const badgeLabel = ESTADO_BADGE_LABELS[estado] ?? estado;
 
@@ -174,11 +164,8 @@ export default function ViajeActivoScreen({ navigation, route }) {
             )}
           </View>
           <View style={styles.costoBlock}>
-            <Text style={styles.costoLabel}>Costo acumulado</Text>
-            <Text style={styles.costoValor}>{costoDisplay}</Text>
-            {costoAcumulado != null && (
-              <Text style={styles.costoEstimadoText}>estimado: ${formatPrecio(viaje?.precio_estimado ?? 0)}</Text>
-            )}
+            <Text style={styles.costoLabel}>Total acordado</Text>
+            <Text style={styles.costoValor}>{precioEstimado}</Text>
           </View>
         </View>
 
@@ -372,10 +359,9 @@ const styles = StyleSheet.create({
   },
   badgeActivoText: { fontSize: 10, fontWeight: '800', color: colors.primary, letterSpacing: 0.8 },
   velocidadText:   { fontSize: fontSize.caption, color: colors.textHint, marginTop: 4 },
-  costoBlock:      { alignItems: 'flex-end' },
-  costoLabel:      { fontSize: fontSize.caption, color: colors.textSecondary, marginBottom: 2 },
-  costoValor:      { fontSize: 28, fontWeight: '800', color: colors.textPrimary },
-  costoEstimadoText: { fontSize: fontSize.caption, color: colors.textHint, marginTop: 2 },
+  costoBlock:  { alignItems: 'flex-end' },
+  costoLabel:  { fontSize: fontSize.caption, color: colors.textSecondary, marginBottom: 2 },
+  costoValor:  { fontSize: 28, fontWeight: '800', color: colors.textPrimary },
 
   mapaContainer: {
     height: 230, borderRadius: radius.lg, overflow: 'hidden',
