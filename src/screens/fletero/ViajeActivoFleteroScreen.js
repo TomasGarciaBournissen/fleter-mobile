@@ -72,13 +72,18 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
       });
 
       watchSub = await Location.watchPositionAsync(
-        { accuracy: Location.Accuracy.Balanced, timeInterval: 3000, distanceInterval: 5 },
+        { accuracy: Location.Accuracy.Highest, timeInterval: 3000, distanceInterval: 0 },
         (loc) => {
           if (!active) return;
           const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
           setPosicion(coords);
           posicionRef.current = coords;
-          setDebugGps(prev => ({ ...prev, lat: loc.coords.latitude, lng: loc.coords.longitude }));
+          setDebugGps(prev => ({
+            ...prev,
+            lat: loc.coords.latitude,
+            lng: loc.coords.longitude,
+            updates: (prev?.updates ?? 0) + 1,
+          }));
         }
       );
 
@@ -221,6 +226,9 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
             <View style={styles.debugHeader}>
               <View style={styles.debugDot} />
               <Text style={styles.debugTitle}>GPS activo</Text>
+              {debugGps?.updates != null && (
+                <Text style={styles.debugUpdates}>{debugGps.updates} updates</Text>
+              )}
             </View>
             <Text style={styles.debugLine}>
               {debugGps.lat != null ? `${debugGps.lat.toFixed(5)}, ${debugGps.lng.toFixed(5)}` : 'Obteniendo posición...'}
@@ -355,7 +363,8 @@ const styles = StyleSheet.create({
   },
   debugHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: 2 },
   debugDot:    { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.success },
-  debugTitle:  { fontSize: fontSize.caption, fontWeight: '700', color: colors.textSecondary },
+  debugTitle:   { fontSize: fontSize.caption, fontWeight: '700', color: colors.textSecondary },
+  debugUpdates: { fontSize: fontSize.caption, color: colors.success, fontWeight: '700', marginLeft: 'auto' },
   debugLine:   { fontSize: fontSize.caption, color: colors.textHint, fontFamily: 'monospace' },
 
   infoBanner: {
