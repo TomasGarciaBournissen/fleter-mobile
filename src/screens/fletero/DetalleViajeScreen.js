@@ -107,9 +107,10 @@ export default function DetalleViajeScreen({ navigation, route }) {
     };
 
     const onError = (data) => {
+      if (!data?.mensaje) return;
       clearTimeout(timeoutRef.current);
       setAceptando(false);
-      Alert.alert('No se pudo aceptar', data?.mensaje ?? 'Error del servidor');
+      Alert.alert('No se pudo aceptar', data.mensaje);
     };
 
     socket.on('viaje:conductor_asignado', onAsignado);

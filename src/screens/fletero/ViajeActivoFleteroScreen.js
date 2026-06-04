@@ -72,7 +72,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
       });
 
       watchSub = await Location.watchPositionAsync(
-        { accuracy: Location.Accuracy.Balanced, timeInterval: 5000, distanceInterval: 20 },
+        { accuracy: Location.Accuracy.Balanced, timeInterval: 3000, distanceInterval: 5 },
         (loc) => {
           if (!active) return;
           const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
