@@ -3,7 +3,7 @@ import {
   View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar,
   ScrollView, ActivityIndicator, Alert, Linking, Platform,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
@@ -37,6 +37,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
   const [estado, setEstado]             = useState('CONDUCTOR_ASIGNADO');
   const [posicion, setPosicion]         = useState(null);
   const [cargandoAccion, setCargandoAccion] = useState(false);
+  const [debugGps, setDebugGps]         = useState(null);
   const posicionRef = useRef(null);
   const mapRef      = useRef(null);
 
@@ -67,6 +68,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
 
       setLocationEmitter((lat, lng) => {
         socket.emit('conductor:ubicacion', { id_viaje: viajeId, lat, lng, timestamp: Date.now() });
+        setDebugGps(prev => ({ ...prev, lastEmit: new Date().toLocaleTimeString('es-AR') }));
       });
 
       watchSub = await Location.watchPositionAsync(
@@ -76,6 +78,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
           const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
           setPosicion(coords);
           posicionRef.current = coords;
+          setDebugGps(prev => ({ ...prev, lat: loc.coords.latitude, lng: loc.coords.longitude }));
         }
       );
 
@@ -212,6 +215,22 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
           </MapView>
         </View>
 
+        {/* Debug GPS — visible solo mientras no hay build nativa */}
+        {debugGps && (
+          <View style={styles.debugCard}>
+            <View style={styles.debugHeader}>
+              <View style={styles.debugDot} />
+              <Text style={styles.debugTitle}>GPS activo</Text>
+            </View>
+            <Text style={styles.debugLine}>
+              {debugGps.lat != null ? `${debugGps.lat.toFixed(5)}, ${debugGps.lng.toFixed(5)}` : 'Obteniendo posición...'}
+            </Text>
+            {debugGps.lastEmit && (
+              <Text style={styles.debugLine}>Último emit al backend: {debugGps.lastEmit}</Text>
+            )}
+          </View>
+        )}
+
         {/* Banner informativo para estado CARGANDO */}
         {estado === 'CARGANDO' && (
           <View style={styles.infoBanner}>
@@ -325,6 +344,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.full,
     padding: 6, borderWidth: 2, borderColor: colors.textPrimary,
   },
+
+  debugCard: {
+    backgroundColor: colors.surface2,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.surface3,
+    padding: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  debugHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: 2 },
+  debugDot:    { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.success },
+  debugTitle:  { fontSize: fontSize.caption, fontWeight: '700', color: colors.textSecondary },
+  debugLine:   { fontSize: fontSize.caption, color: colors.textHint, fontFamily: 'monospace' },
 
   infoBanner: {
     flexDirection: 'row', alignItems: 'flex-start',
