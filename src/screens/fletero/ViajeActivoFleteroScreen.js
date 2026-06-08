@@ -126,6 +126,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
 
     let nuevoEstado = null;
     if (estado === 'CONDUCTOR_ASIGNADO' || estado === 'EN_CAMINO_A_ORIGEN') nuevoEstado = 'CARGANDO';
+    else if (estado === 'CARGANDO') nuevoEstado = 'EN_RUTA';
     else if (estado === 'EN_RUTA') nuevoEstado = 'DESCARGANDO';
     if (!nuevoEstado) return;
 
@@ -142,6 +143,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
 
   const getBotonLabel = () => {
     if (estado === 'CONDUCTOR_ASIGNADO' || estado === 'EN_CAMINO_A_ORIGEN') return 'Llegué al origen — Iniciar carga';
+    if (estado === 'CARGANDO')    return 'Carga lista — Salir hacia destino';
     if (estado === 'EN_RUTA')     return 'Llegué al destino — Iniciar descarga';
     if (estado === 'DESCARGANDO') return 'Escanear QR de entrega';
     return null;

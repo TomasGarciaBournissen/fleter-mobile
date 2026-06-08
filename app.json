@@ -13,7 +13,10 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Movix necesita la cámara para escanear el código QR de entrega."
+      }
     },
     "android": {
       "adaptiveIcon": {

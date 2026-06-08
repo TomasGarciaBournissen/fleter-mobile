@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-06-04  
-> Branch: master | Commits totales: 23
+> Última actualización: 2026-06-08  
+> Branch: master | Commits totales: 29
 
 ---
 
@@ -34,6 +34,12 @@
 | `9b4243a` | 04 Jun 2026 | Feat — MapViewWrapper para Expo Go + debug GPS card en ViajeActivoFletero |
 | `9d897ba` | 04 Jun 2026 | Fix — ignorar errores de conexión de socket en onError |
 | `a7e7a42` | 04 Jun 2026 | Fix — GPS Highest accuracy + contador de updates en debug card |
+| `ca53be1` | 08 Jun 2026 | Feat — reemplaza emojis con Ionicons, fix socket timeout, fix location double dot |
+| `f2bcc23` | 08 Jun 2026 | Docs — regla de actualización de PROGRESO.md en CLAUDE.md |
+| `447a9f7` | 08 Jun 2026 | Docs — PROGRESO.md actualizado con todos los cambios de sesión |
+| `0499806` | 08 Jun 2026 | Feat — pantallas con datos reales de API y bug fixes |
+| `95b0640` | 08 Jun 2026 | Docs — api.md actualizado |
+| (pendiente) | 08 Jun 2026 | Feat — Places New API + AsyncStorage historial + fix .env + fix CARGANDO→EN_RUTA + QREntregaScreen Fase 5 + QR display cliente |
 
 ---
 
@@ -54,7 +60,7 @@
 | `CrearViajeScreen` | ✅ Funcional | Google Places Legacy API para origen/destino/paradas, coords reales en payload, POST /api/viajes/estimar-costo |
 | `ConfirmacionViajeScreen` | ✅ Funcional | Resumen + POST /api/viajes, navega a BuscandoFletero |
 | `BuscandoFleteroScreen` | ✅ Funcional | Animación de búsqueda, escucha `viaje:conductor_asignado` via socket |
-| `ViajeActivoScreen` | ✅ Funcional | MapView con marcador del conductor en tiempo real, mapa:actualizar, costo:actualizar, alerta:desvio, timeline de estados |
+| `ViajeActivoScreen` | ✅ Funcional | MapView con marcador del conductor en tiempo real, mapa:actualizar, costo:actualizar, alerta:desvio, timeline de estados, QR de entrega expandible |
 | `HistorialScreen` | ✅ Funcional | GET /api/viajes/mis-viajes, agrupado por mes, filtros (Todos/Finalizados/Cancelados/En curso), back button |
 | `PerfilScreen` | ✅ Funcional | Nombre y email reales del AuthContext, edición local, logout |
 
@@ -68,8 +74,7 @@
 | `HistorialFleteroScreen` | ✅ Funcional | UI completa con filtros y totales, mock data lista para swap a /api/viajes/mis-viajes-conductor |
 | `PerfilFleteroScreen` | ✅ Funcional | Datos del usuario, gestión de vehículos (listar/agregar/eliminar), logout |
 | `CobroScreen` | 🔧 Placeholder | UI básica, sin lógica de pago real (Fase 6) |
-| `QREntregaScreen` | 🔧 Placeholder | Scanner preparado, sin lógica de confirmación (Fase 5) |
-| `OfertaScreen` | 🔧 Legado | Reemplazada por NuevoViajeModal + DetalleViajeScreen, probablemente se elimina |
+| `QREntregaScreen` | ✅ Funcional | expo-barcode-scanner real, validación POST /confirmar-entrega, modal manual como fallback |
 
 ---
 
@@ -154,8 +159,11 @@
 - [x] `ViajeActivoFleteroScreen` — GPS real, MapView, PATCH estados, timeline reactivo
 - [x] `ViajeActivoScreen` — MapView con conductor marker, socket mapa:actualizar + costo:actualizar + alerta:desvio
 
-### Fase 5 (sin empezar)
-- QREntregaScreen con lógica de confirmación real
+### Fase 5 (completo)
+- [x] `QREntregaScreen` — `expo-barcode-scanner` real, permiso de cámara, validación con backend `POST /confirmar-entrega`, modal de ingreso manual, muestra destinatario confirmado
+- [x] `ViajeActivoScreen` (cliente) — muestra QR del destino (`paradas[last].qr_token`) desde estado CARGANDO, expandible a pantalla completa, con fallback si backend no devuelve token
+- [x] Fix CARGANDO → EN_RUTA: transición de estado y label de botón agregados en `ViajeActivoFleteroScreen`
+- [x] `react-native-qrcode-svg` + `react-native-svg` instalados
 
 ---
 

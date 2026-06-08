@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar, ActivityIndicator, Linking, Platform,
+  SafeAreaView, StatusBar, ActivityIndicator, Linking, Platform, Modal,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
+import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { useSocket } from '../../context/SocketContext';
@@ -44,6 +45,7 @@ export default function ViajeActivoScreen({ navigation, route }) {
   const [alertaParada,   setAlertaParada] = useState(null);
   const [velocidad,      setVelocidad]    = useState(null);
   const [cargando,       setCargando]     = useState(true);
+  const [modalQR,        setModalQR]      = useState(false);
   const conductorMarkerRef = useRef(null);
 
   // Fetch trip data
@@ -96,6 +98,8 @@ export default function ViajeActivoScreen({ navigation, route }) {
   const paradas = viaje?.paradas?.slice().sort((a, b) => a.orden - b.orden) ?? [];
   const origen  = paradas[0];
   const destino = paradas[paradas.length - 1];
+  const qrToken = destino?.qr_token ?? null;
+  const mostrarQR = ['CARGANDO', 'EN_RUTA', 'DESCARGANDO', 'FINALIZADO'].includes(estado);
 
   const conductorNombre = conductorParam
     ? `${conductorParam.nombre} ${conductorParam.apellido}`.trim()
@@ -305,7 +309,51 @@ export default function ViajeActivoScreen({ navigation, route }) {
           })}
         </View>
 
+        {/* QR de entrega — visible desde CARGANDO en adelante */}
+        {mostrarQR && qrToken && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Código QR de entrega</Text>
+            <Text style={styles.qrSub}>
+              Mostrá este código al fletero cuando llegue al destino para confirmar la entrega.
+            </Text>
+            <TouchableOpacity style={styles.qrPreviewWrap} onPress={() => setModalQR(true)} activeOpacity={0.85}>
+              <QRCode value={qrToken} size={120} color={colors.textPrimary} backgroundColor={colors.surface1} />
+              <View style={styles.qrAgrandar}>
+                <Ionicons name="expand-outline" size={14} color={colors.textSecondary} />
+                <Text style={styles.qrAgrandarText}> Tocar para agrandar</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {mostrarQR && !qrToken && (
+          <View style={[styles.card, { alignItems: 'center', paddingVertical: spacing.lg }]}>
+            <Ionicons name="qr-code-outline" size={32} color={colors.textHint} />
+            <Text style={[styles.qrSub, { textAlign: 'center', marginTop: spacing.sm }]}>
+              El código QR estará disponible cuando el backend lo genere.
+            </Text>
+          </View>
+        )}
+
       </ScrollView>
+
+      {/* Modal QR pantalla completa */}
+      <Modal visible={modalQR} transparent animationType="fade">
+        <TouchableOpacity style={styles.modalQROverlay} activeOpacity={1} onPress={() => setModalQR(false)}>
+          <View style={styles.modalQRSheet}>
+            <Text style={styles.modalQRTitulo}>Código QR de entrega</Text>
+            <Text style={styles.modalQRSub}>Mostrá este código al fletero</Text>
+            {qrToken && (
+              <View style={styles.modalQRBox}>
+                <QRCode value={qrToken} size={220} color={colors.textPrimary} backgroundColor={colors.surface1} />
+              </View>
+            )}
+            <TouchableOpacity style={styles.modalQRCerrar} onPress={() => setModalQR(false)}>
+              <Text style={styles.modalQRCerrarText}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.btnCancelar} activeOpacity={0.85}>
@@ -450,4 +498,30 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md, alignItems: 'center',
   },
   btnCancelarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.error },
+
+  qrSub: { fontSize: fontSize.caption, color: colors.textSecondary, marginBottom: spacing.md },
+  qrPreviewWrap: { alignItems: 'center', gap: spacing.sm },
+  qrAgrandar: { flexDirection: 'row', alignItems: 'center' },
+  qrAgrandarText: { fontSize: fontSize.caption, color: colors.textSecondary },
+
+  modalQROverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  modalQRSheet: {
+    backgroundColor: colors.background, borderRadius: radius.xl,
+    padding: spacing.xl, alignItems: 'center', width: '85%', gap: spacing.sm,
+  },
+  modalQRTitulo: { fontSize: fontSize.h2, fontWeight: '800', color: colors.textPrimary },
+  modalQRSub:    { fontSize: fontSize.body, color: colors.textSecondary, textAlign: 'center' },
+  modalQRBox: {
+    padding: spacing.lg, backgroundColor: colors.surface1,
+    borderRadius: radius.lg, borderWidth: 1, borderColor: colors.surface3,
+    marginVertical: spacing.md,
+  },
+  modalQRCerrar: {
+    paddingVertical: spacing.sm, paddingHorizontal: spacing.xl,
+    borderRadius: radius.lg, borderWidth: 1, borderColor: colors.surface3,
+  },
+  modalQRCerrarText: { fontSize: fontSize.body, fontWeight: '600', color: colors.textSecondary },
 });
