@@ -4,50 +4,90 @@ import {
   Modal, SafeAreaView, StatusBar, TextInput,
   FlatList, ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../theme';
 
-const PLACES_KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY ?? '';
+const PLACES_KEY       = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY ?? '';
+const HISTORIAL_KEY    = 'fleter_historial_direcciones';
+const HISTORIAL_MAX    = 8;
 
+// Places New API — autocomplete (v1)
 async function autocomplete(input) {
-  const params = new URLSearchParams({
-    input,
-    components: 'country:ar',
-    language: 'es',
-    key: PLACES_KEY,
-  });
   const res = await fetch(
-    `https://maps.googleapis.com/maps/api/place/autocomplete/json?${params}`
+    'https://places.googleapis.com/v1/places:autocomplete',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': PLACES_KEY,
+      },
+      body: JSON.stringify({
+        input,
+        includedRegionCodes: ['ar'],
+        languageCode: 'es',
+      }),
+    }
   );
   const json = await res.json();
-  if (json.status !== 'OK' && json.status !== 'ZERO_RESULTS') {
-    throw new Error(json.error_message ?? json.status);
-  }
-  return json.predictions ?? [];
+  if (!res.ok) throw new Error(json.error?.message ?? `HTTP ${res.status}`);
+  return json.suggestions ?? [];
 }
 
+// Places New API — place details (v1)
 async function fetchDetails(placeId) {
-  const params = new URLSearchParams({
-    place_id: placeId,
-    fields: 'geometry,formatted_address,name',
-    key: PLACES_KEY,
-  });
   const res = await fetch(
-    `https://maps.googleapis.com/maps/api/place/details/json?${params}`
+    `https://places.googleapis.com/v1/places/${placeId}`,
+    {
+      headers: {
+        'X-Goog-Api-Key': PLACES_KEY,
+        'X-Goog-FieldMask': 'location,formattedAddress,displayName',
+      },
+    }
   );
-  return res.json();
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error?.message ?? `HTTP ${res.status}`);
+  return json;
+}
+
+async function leerHistorial() {
+  try {
+    const raw = await AsyncStorage.getItem(HISTORIAL_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+async function guardarEnHistorial(ubicacion) {
+  try {
+    const prev = await leerHistorial();
+    // Sacar duplicados por dirección exacta y poner la nueva primera
+    const filtrado = prev.filter(h => h.direccion !== ubicacion.direccion);
+    const nuevo = [ubicacion, ...filtrado].slice(0, HISTORIAL_MAX);
+    await AsyncStorage.setItem(HISTORIAL_KEY, JSON.stringify(nuevo));
+  } catch {}
 }
 
 export default function LocationPickerModal({ visible, titulo, onSelect, onClose }) {
   const [query,       setQuery]       = useState('');
   const [resultados,  setResultados]  = useState([]);
+  const [historial,   setHistorial]   = useState([]);
   const [cargando,    setCargando]    = useState(false);
   const [error,       setError]       = useState('');
   const debounceRef = useRef(null);
 
   useEffect(() => {
-    if (!visible) { setQuery(''); setResultados([]); setError(''); }
+    if (visible) {
+      leerHistorial().then(setHistorial);
+    } else {
+      setQuery('');
+      setResultados([]);
+      setError('');
+    }
   }, [visible]);
+
+  const historialFiltrado = query.length > 0
+    ? historial.filter(h => h.direccion.toLowerCase().includes(query.toLowerCase()))
+    : historial;
 
   const handleChange = (text) => {
     setQuery(text);
@@ -56,7 +96,7 @@ export default function LocationPickerModal({ visible, titulo, onSelect, onClose
     if (text.length < 3) { setResultados([]); return; }
 
     debounceRef.current = setTimeout(async () => {
-      if (!PLACES_KEY) { setError('EXPO_PUBLIC_GOOGLE_PLACES_KEY no configurada'); return; }
+      if (!PLACES_KEY) { setError('EXPO_PUBLIC_GOOGLE_PLACES_KEY no configurada en .env'); return; }
       setCargando(true);
       try {
         const sugerencias = await autocomplete(text);
@@ -69,20 +109,23 @@ export default function LocationPickerModal({ visible, titulo, onSelect, onClose
     }, 350);
   };
 
+  const seleccionar = async (ubicacion) => {
+    await guardarEnHistorial(ubicacion);
+    onSelect(ubicacion);
+  };
+
   const handleSelect = async (sugerencia) => {
-    const placeId = sugerencia.place_id;
+    const placeId = sugerencia.placePrediction?.placeId;
     if (!placeId) return;
     setCargando(true);
     try {
       const details = await fetchDetails(placeId);
-      const result = details.result;
       const ubicacion = {
-        direccion: result?.formatted_address ?? sugerencia.description ?? '',
-        lat: result?.geometry?.location?.lat ?? 0,
-        lng: result?.geometry?.location?.lng ?? 0,
+        direccion: details.formattedAddress ?? sugerencia.placePrediction?.text?.text ?? '',
+        lat: details.location?.latitude ?? 0,
+        lng: details.location?.longitude ?? 0,
       };
-      console.log('[Places] ubicación seleccionada:', JSON.stringify(ubicacion));
-      onSelect(ubicacion);
+      await seleccionar(ubicacion);
     } catch (e) {
       setError('No se pudo obtener la dirección');
     } finally {
@@ -90,13 +133,26 @@ export default function LocationPickerModal({ visible, titulo, onSelect, onClose
     }
   };
 
+  const renderHistorialItem = ({ item }) => (
+    <TouchableOpacity style={styles.row} onPress={() => seleccionar(item)} activeOpacity={0.7}>
+      <Ionicons name="time-outline" size={16} color={colors.textHint} style={{ marginRight: spacing.sm }} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.rowMain} numberOfLines={1}>{item.direccion}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   const renderItem = ({ item }) => {
-    const main = item.structured_formatting?.main_text ?? item.description ?? '';
-    const sec  = item.structured_formatting?.secondary_text ?? '';
+    const pred = item.placePrediction;
+    const main = pred?.structuredFormat?.mainText?.text ?? pred?.text?.text ?? '';
+    const sec  = pred?.structuredFormat?.secondaryText?.text ?? '';
     return (
       <TouchableOpacity style={styles.row} onPress={() => handleSelect(item)} activeOpacity={0.7}>
-        <Text style={styles.rowMain} numberOfLines={1}>{main}</Text>
-        {sec ? <Text style={styles.rowSub} numberOfLines={1}>{sec}</Text> : null}
+        <Ionicons name="location-outline" size={16} color={colors.textHint} style={{ marginRight: spacing.sm }} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.rowMain} numberOfLines={1}>{main}</Text>
+          {sec ? <Text style={styles.rowSub} numberOfLines={1}>{sec}</Text> : null}
+        </View>
       </TouchableOpacity>
     );
   };
@@ -133,18 +189,43 @@ export default function LocationPickerModal({ visible, titulo, onSelect, onClose
           </View>
         ) : null}
 
-        <FlatList
-          data={resultados}
-          keyExtractor={(_, i) => String(i)}
-          renderItem={renderItem}
-          keyboardShouldPersistTaps="handled"
-          ItemSeparatorComponent={() => <View style={styles.separador} />}
-          ListEmptyComponent={
-            !cargando && query.length >= 3
-              ? <Text style={styles.vacio}>Sin resultados</Text>
-              : null
-          }
-        />
+        {/* Historial — se muestra siempre que haya resultados de Places o cuando el query filtra el historial */}
+        {historialFiltrado.length > 0 && (
+          <>
+            <Text style={styles.seccionLabel}>
+              {query.length === 0 ? 'Recientes' : 'Del historial'}
+            </Text>
+            <FlatList
+              data={historialFiltrado}
+              keyExtractor={(item) => item.direccion}
+              renderItem={renderHistorialItem}
+              keyboardShouldPersistTaps="handled"
+              ItemSeparatorComponent={() => <View style={styles.separador} />}
+              scrollEnabled={false}
+            />
+            {resultados.length > 0 && <View style={styles.separadorSeccion} />}
+          </>
+        )}
+
+        {/* Resultados de Places API */}
+        {resultados.length > 0 && (
+          <>
+            {historialFiltrado.length > 0 && (
+              <Text style={styles.seccionLabel}>Sugerencias</Text>
+            )}
+            <FlatList
+              data={resultados}
+              keyExtractor={(_, i) => String(i)}
+              renderItem={renderItem}
+              keyboardShouldPersistTaps="handled"
+              ItemSeparatorComponent={() => <View style={styles.separador} />}
+            />
+          </>
+        )}
+
+        {!cargando && query.length >= 3 && resultados.length === 0 && historialFiltrado.length === 0 && (
+          <Text style={styles.vacio}>Sin resultados</Text>
+        )}
       </SafeAreaView>
     </Modal>
   );
@@ -179,7 +260,15 @@ const styles = StyleSheet.create({
   },
   spinner: { marginLeft: spacing.xs },
 
+  seccionLabel: {
+    fontSize: fontSize.caption, fontWeight: '700', color: colors.textHint,
+    textTransform: 'uppercase', letterSpacing: 0.8,
+    paddingHorizontal: spacing.md, paddingTop: spacing.sm, paddingBottom: 4,
+  },
+  separadorSeccion: { height: 8, backgroundColor: colors.surface2 },
+
   row: {
+    flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2,
     backgroundColor: colors.surface1,
   },
