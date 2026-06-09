@@ -68,7 +68,7 @@ function ViajeItem({ viaje }) {
 
 export default function HomeScreen({ navigation }) {
   const { user } = useAuth();
-  const [viajeActivo, setViajeActivo] = useState(null);
+  const [viajesActivos, setViajesActivos] = useState([]);
   const [ultimos,     setUltimos]     = useState([]);
   const [cargando,    setCargando]    = useState(true);
 
@@ -76,12 +76,12 @@ export default function HomeScreen({ navigation }) {
     setCargando(true);
     try {
       const { data } = await api.get('/api/viajes/mis-viajes');
-      const activo   = data.find(v => ESTADOS_ACTIVOS.includes(v.estado)) ?? null;
+      const activos  = data.filter(v => ESTADOS_ACTIVOS.includes(v.estado));
       const pasados  = data.filter(v => !ESTADOS_ACTIVOS.includes(v.estado));
-      setViajeActivo(activo);
+      setViajesActivos(activos);
       setUltimos(pasados.slice(0, 3));
     } catch {
-      setViajeActivo(null);
+      setViajesActivos([]);
       setUltimos([]);
     } finally {
       setCargando(false);
@@ -131,32 +131,39 @@ export default function HomeScreen({ navigation }) {
           <RefreshControl refreshing={cargando} onRefresh={cargar} tintColor={colors.primary} />
         }
       >
-        {/* Banner viaje activo */}
-        {viajeActivo && (() => {
-          const paradas = viajeActivo.paradas ?? [];
-          const origen  = paradas[0]?.direccion ?? '—';
-          const destino = paradas[paradas.length - 1]?.direccion ?? '—';
-          const { label, color } = ESTADO_ACTIVO_LABELS[viajeActivo.estado] ?? { label: 'En curso', color: colors.primary };
-          return (
-            <TouchableOpacity
-              style={styles.bannerActivo}
-              onPress={() => handleContinuarViaje(viajeActivo)}
-              activeOpacity={0.88}
-            >
-              <View style={styles.bannerActivoTop}>
-                <View style={styles.bannerActivoDot} />
-                <Text style={styles.bannerActivoTitle}>Viaje en curso</Text>
-                <View style={[styles.bannerActivoBadge, { backgroundColor: `${color}22`, borderColor: `${color}44` }]}>
-                  <Text style={[styles.bannerActivoBadgeText, { color }]}>{label}</Text>
-                </View>
-              </View>
-              <Text style={styles.bannerActivoRuta} numberOfLines={1}>{origen} → {destino}</Text>
-              <View style={styles.bannerActivoFooter}>
-                <Text style={styles.bannerActivoCta}>Tocar para continuar →</Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })()}
+        {/* Viajes activos */}
+        {viajesActivos.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                {viajesActivos.length === 1 ? 'Viaje en curso' : `${viajesActivos.length} viajes en curso`}
+              </Text>
+            </View>
+            {viajesActivos.map((viaje) => {
+              const paradas = viaje.paradas ?? [];
+              const origen  = paradas[0]?.direccion ?? '—';
+              const destino = paradas[paradas.length - 1]?.direccion ?? '—';
+              const { label, color } = ESTADO_ACTIVO_LABELS[viaje.estado] ?? { label: 'En curso', color: colors.primary };
+              return (
+                <TouchableOpacity
+                  key={viaje.id_viaje}
+                  style={styles.bannerActivo}
+                  onPress={() => handleContinuarViaje(viaje)}
+                  activeOpacity={0.88}
+                >
+                  <View style={styles.bannerActivoTop}>
+                    <View style={styles.bannerActivoDot} />
+                    <Text style={styles.bannerActivoTitle} numberOfLines={1}>{origen} → {destino}</Text>
+                    <View style={[styles.bannerActivoBadge, { backgroundColor: `${color}22`, borderColor: `${color}44` }]}>
+                      <Text style={[styles.bannerActivoBadgeText, { color }]}>{label}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.bannerActivoCta}>Tocar para continuar →</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -231,17 +238,12 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  bannerActivoTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xs },
-  bannerActivoDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary },
-  bannerActivoTitle: { fontSize: fontSize.body, fontWeight: '800', color: colors.textPrimary, flex: 1 },
-  bannerActivoBadge: {
-    borderRadius: radius.full, borderWidth: 1,
-    paddingHorizontal: spacing.sm, paddingVertical: 2,
-  },
-  bannerActivoBadgeText: { fontSize: 10, fontWeight: '700' },
-  bannerActivoRuta: { fontSize: fontSize.body, color: colors.textSecondary, marginBottom: spacing.sm },
-  bannerActivoFooter: { borderTopWidth: 1, borderTopColor: colors.surface3, paddingTop: spacing.xs },
-  bannerActivoCta: { fontSize: fontSize.caption, fontWeight: '700', color: colors.primary },
+  bannerActivoTop:      { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xs },
+  bannerActivoDot:      { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary },
+  bannerActivoTitle:    { fontSize: fontSize.body, fontWeight: '700', color: colors.textPrimary, flex: 1 },
+  bannerActivoBadge:    { borderRadius: radius.full, borderWidth: 1, paddingHorizontal: spacing.sm, paddingVertical: 2 },
+  bannerActivoBadgeText:{ fontSize: 10, fontWeight: '700' },
+  bannerActivoCta:      { fontSize: fontSize.caption, fontWeight: '700', color: colors.primary, marginTop: 2 },
 
   section: { marginBottom: spacing.lg },
   sectionHeader: {
