@@ -3,7 +3,9 @@ import {
   View, Text, TouchableOpacity, StyleSheet,
   SafeAreaView, StatusBar, ActivityIndicator, Alert, TextInput, Modal,
 } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+let BarCodeScanner = null;
+try { BarCodeScanner = require('expo-barcode-scanner').BarCodeScanner; } catch {}
+const SCANNER_DISPONIBLE = BarCodeScanner != null;
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
@@ -31,6 +33,10 @@ export default function QREntregaScreen({ navigation, route }) {
   const paradaActual = paradasPendientes[paradaIdx] ?? null;
 
   useEffect(() => {
+    if (!SCANNER_DISPONIBLE) {
+      setPermisoOk(false);
+      return;
+    }
     BarCodeScanner.requestPermissionsAsync().then(({ status }) => {
       setPermisoOk(status === 'granted');
     });
@@ -107,10 +113,14 @@ export default function QREntregaScreen({ navigation, route }) {
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.centrado}>
-          <Ionicons name="camera-off-outline" size={48} color={colors.textHint} />
-          <Text style={styles.permisoDenegadoTitulo}>Sin acceso a la cámara</Text>
+          <Ionicons name={SCANNER_DISPONIBLE ? 'camera-off-outline' : 'qr-code-outline'} size={48} color={colors.textHint} />
+          <Text style={styles.permisoDenegadoTitulo}>
+            {SCANNER_DISPONIBLE ? 'Sin acceso a la cámara' : 'Escáner no disponible en Expo Go'}
+          </Text>
           <Text style={styles.permisoDenegadoSub}>
-            Habilitá el permiso de cámara en Configuración para escanear el QR.
+            {SCANNER_DISPONIBLE
+              ? 'Habilitá el permiso de cámara en Configuración para escanear el QR.'
+              : 'Pedile al cliente el texto del QR e ingresalo manualmente para confirmar la entrega.'}
           </Text>
           <TouchableOpacity style={styles.btnPrimario} onPress={() => setModalManual(true)}>
             <Text style={styles.btnPrimarioText}>Ingresar código manualmente</Text>
