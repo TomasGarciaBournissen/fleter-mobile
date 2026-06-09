@@ -45,10 +45,12 @@ export default function ViajeActivoScreen({ navigation, route }) {
   const [alertaParada,   setAlertaParada] = useState(null);
   const [velocidad,      setVelocidad]    = useState(null);
   const [cargando,       setCargando]     = useState(true);
+  const [qrParadas,      setQrParadas]    = useState([]);
   const [modalQR,        setModalQR]      = useState(false);
+  const [qrParadaIdx,    setQrParadaIdx]  = useState(0);
   const conductorMarkerRef = useRef(null);
 
-  // Fetch trip data
+  // Fetch trip data + QR tokens
   useEffect(() => {
     if (!viajeId) { setCargando(false); return; }
     api.get(`/api/viajes/${viajeId}`)
@@ -56,6 +58,15 @@ export default function ViajeActivoScreen({ navigation, route }) {
       .catch(() => {})
       .finally(() => setCargando(false));
   }, [viajeId]);
+
+  // Cargar QRs cuando el viaje llega a CARGANDO o posterior
+  useEffect(() => {
+    const estadosConQR = ['CARGANDO', 'EN_RUTA', 'DESCARGANDO'];
+    if (!viajeId || !estadosConQR.includes(estado) || qrParadas.length > 0) return;
+    api.get(`/api/viajes/${viajeId}/qr-paradas`)
+      .then(({ data }) => setQrParadas(data ?? []))
+      .catch(() => {});
+  }, [estado, viajeId]);
 
   // Socket listeners
   useEffect(() => {
@@ -82,24 +93,31 @@ export default function ViajeActivoScreen({ navigation, route }) {
       setTimeout(() => setAlertaParada(null), 10000);
     };
 
+    const onFinalizado = (data) => {
+      if (Number(data.id_viaje) !== Number(viajeId)) return;
+      setEstado('FINALIZADO');
+    };
+
     socket.on('mapa:actualizar',       onMapaActualizar);
     socket.on('viaje:estado_cambiado', onEstadoCambiado);
     socket.on('alerta:desvio',         onAlertaDesvio);
     socket.on('alerta:parada',         onAlertaParada);
+    socket.on('viaje:finalizado',      onFinalizado);
 
     return () => {
       socket.off('mapa:actualizar',       onMapaActualizar);
       socket.off('viaje:estado_cambiado', onEstadoCambiado);
       socket.off('alerta:desvio',         onAlertaDesvio);
       socket.off('alerta:parada',         onAlertaParada);
+      socket.off('viaje:finalizado',      onFinalizado);
     };
   }, [socket, viajeId]);
 
   const paradas = viaje?.paradas?.slice().sort((a, b) => a.orden - b.orden) ?? [];
   const origen  = paradas[0];
   const destino = paradas[paradas.length - 1];
-  const qrToken = destino?.qr_token ?? null;
   const mostrarQR = ['CARGANDO', 'EN_RUTA', 'DESCARGANDO', 'FINALIZADO'].includes(estado);
+  const qrActual  = qrParadas[qrParadaIdx] ?? null;
 
   const conductorNombre = conductorParam
     ? `${conductorParam.nombre} ${conductorParam.apellido}`.trim()
@@ -310,14 +328,35 @@ export default function ViajeActivoScreen({ navigation, route }) {
         </View>
 
         {/* QR de entrega — visible desde CARGANDO en adelante */}
-        {mostrarQR && qrToken && (
+        {mostrarQR && qrParadas.length > 0 && (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Código QR de entrega</Text>
-            <Text style={styles.qrSub}>
-              Mostrá este código al fletero cuando llegue al destino para confirmar la entrega.
-            </Text>
+            <View style={styles.qrHeader}>
+              <Text style={styles.cardTitle}>Código QR de entrega</Text>
+              {qrParadas.length > 1 && (
+                <View style={styles.qrPaginador}>
+                  <TouchableOpacity
+                    disabled={qrParadaIdx === 0}
+                    onPress={() => setQrParadaIdx(i => i - 1)}
+                    style={[styles.qrPagBtn, qrParadaIdx === 0 && { opacity: 0.3 }]}
+                  >
+                    <Ionicons name="chevron-back" size={16} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                  <Text style={styles.qrPagText}>{qrParadaIdx + 1}/{qrParadas.length}</Text>
+                  <TouchableOpacity
+                    disabled={qrParadaIdx === qrParadas.length - 1}
+                    onPress={() => setQrParadaIdx(i => i + 1)}
+                    style={[styles.qrPagBtn, qrParadaIdx === qrParadas.length - 1 && { opacity: 0.3 }]}
+                  >
+                    <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+            {qrActual?.direccion ? (
+              <Text style={styles.qrSub} numberOfLines={1}>{qrActual.direccion}</Text>
+            ) : null}
             <TouchableOpacity style={styles.qrPreviewWrap} onPress={() => setModalQR(true)} activeOpacity={0.85}>
-              <QRCode value={qrToken} size={120} color={colors.textPrimary} backgroundColor={colors.surface1} />
+              <QRCode value={qrActual.qr_firmado} size={120} color={colors.textPrimary} backgroundColor={colors.surface1} />
               <View style={styles.qrAgrandar}>
                 <Ionicons name="expand-outline" size={14} color={colors.textSecondary} />
                 <Text style={styles.qrAgrandarText}> Tocar para agrandar</Text>
@@ -326,11 +365,11 @@ export default function ViajeActivoScreen({ navigation, route }) {
           </View>
         )}
 
-        {mostrarQR && !qrToken && (
+        {mostrarQR && qrParadas.length === 0 && (
           <View style={[styles.card, { alignItems: 'center', paddingVertical: spacing.lg }]}>
-            <Ionicons name="qr-code-outline" size={32} color={colors.textHint} />
+            <ActivityIndicator color={colors.primary} size="small" />
             <Text style={[styles.qrSub, { textAlign: 'center', marginTop: spacing.sm }]}>
-              El código QR estará disponible cuando el backend lo genere.
+              Cargando códigos QR...
             </Text>
           </View>
         )}
@@ -342,10 +381,12 @@ export default function ViajeActivoScreen({ navigation, route }) {
         <TouchableOpacity style={styles.modalQROverlay} activeOpacity={1} onPress={() => setModalQR(false)}>
           <View style={styles.modalQRSheet}>
             <Text style={styles.modalQRTitulo}>Código QR de entrega</Text>
-            <Text style={styles.modalQRSub}>Mostrá este código al fletero</Text>
-            {qrToken && (
+            <Text style={styles.modalQRSub}>
+              {qrActual?.direccion ?? 'Mostrá este código al fletero'}
+            </Text>
+            {qrActual?.qr_firmado && (
               <View style={styles.modalQRBox}>
-                <QRCode value={qrToken} size={220} color={colors.textPrimary} backgroundColor={colors.surface1} />
+                <QRCode value={qrActual.qr_firmado} size={220} color={colors.textPrimary} backgroundColor={colors.surface1} />
               </View>
             )}
             <TouchableOpacity style={styles.modalQRCerrar} onPress={() => setModalQR(false)}>
@@ -499,6 +540,10 @@ const styles = StyleSheet.create({
   },
   btnCancelarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.error },
 
+  qrHeader:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs },
+  qrPaginador: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  qrPagBtn:    { padding: 4 },
+  qrPagText:   { fontSize: fontSize.caption, fontWeight: '700', color: colors.textSecondary },
   qrSub: { fontSize: fontSize.caption, color: colors.textSecondary, marginBottom: spacing.md },
   qrPreviewWrap: { alignItems: 'center', gap: spacing.sm },
   qrAgrandar: { flexDirection: 'row', alignItems: 'center' },

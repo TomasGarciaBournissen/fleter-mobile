@@ -107,20 +107,29 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
     };
   }, [socket, viajeId]);
 
-  // Socket: estado_cambiado
+  // Socket: estado_cambiado + viaje:finalizado
   useEffect(() => {
     if (!socket) return;
     const onEstadoCambiado = (data) => {
       if (Number(data.id_viaje) !== Number(viajeId)) return;
       setEstado(data.estado_nuevo);
     };
+    const onFinalizado = (data) => {
+      if (Number(data.id_viaje) !== Number(viajeId)) return;
+      setEstado('FINALIZADO');
+      navigation.replace('Cobro', { viajeId, precioReal: data.precio_real, remitoUrl: data.remito_url });
+    };
     socket.on('viaje:estado_cambiado', onEstadoCambiado);
-    return () => socket.off('viaje:estado_cambiado', onEstadoCambiado);
+    socket.on('viaje:finalizado',      onFinalizado);
+    return () => {
+      socket.off('viaje:estado_cambiado', onEstadoCambiado);
+      socket.off('viaje:finalizado',      onFinalizado);
+    };
   }, [socket, viajeId]);
 
   const handleAccion = async () => {
     if (estado === 'DESCARGANDO') {
-      navigation.navigate('QREntrega', { viajeId });
+      navigation.navigate('QREntrega', { viajeId, paradas });
       return;
     }
 

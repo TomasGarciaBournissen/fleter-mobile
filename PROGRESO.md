@@ -39,7 +39,8 @@
 | `447a9f7` | 08 Jun 2026 | Docs — PROGRESO.md actualizado con todos los cambios de sesión |
 | `0499806` | 08 Jun 2026 | Feat — pantallas con datos reales de API y bug fixes |
 | `95b0640` | 08 Jun 2026 | Docs — api.md actualizado |
-| (pendiente) | 08 Jun 2026 | Feat — Places New API + AsyncStorage historial + fix .env + fix CARGANDO→EN_RUTA + QREntregaScreen Fase 5 + QR display cliente |
+| `102b74b` | 08 Jun 2026 | Feat — Places New API + AsyncStorage historial + fix .env + fix CARGANDO→EN_RUTA + QREntregaScreen Fase 5 + QR display cliente |
+| (pendiente) | 08 Jun 2026 | Fix — adaptar QR flow al nuevo contrato de API (confirmar-parada, qr-paradas, viaje:finalizado) |
 
 ---
 
@@ -60,7 +61,7 @@
 | `CrearViajeScreen` | ✅ Funcional | Google Places Legacy API para origen/destino/paradas, coords reales en payload, POST /api/viajes/estimar-costo |
 | `ConfirmacionViajeScreen` | ✅ Funcional | Resumen + POST /api/viajes, navega a BuscandoFletero |
 | `BuscandoFleteroScreen` | ✅ Funcional | Animación de búsqueda, escucha `viaje:conductor_asignado` via socket |
-| `ViajeActivoScreen` | ✅ Funcional | MapView con marcador del conductor en tiempo real, mapa:actualizar, costo:actualizar, alerta:desvio, timeline de estados, QR de entrega expandible |
+| `ViajeActivoScreen` | ✅ Funcional | MapView con marcador del conductor en tiempo real, mapa:actualizar, alerta:desvio, timeline de estados, QR por parada via GET /qr-paradas, expandible, paginador si hay múltiples paradas, viaje:finalizado |
 | `HistorialScreen` | ✅ Funcional | GET /api/viajes/mis-viajes, agrupado por mes, filtros (Todos/Finalizados/Cancelados/En curso), back button |
 | `PerfilScreen` | ✅ Funcional | Nombre y email reales del AuthContext, edición local, logout |
 
@@ -74,7 +75,7 @@
 | `HistorialFleteroScreen` | ✅ Funcional | UI completa con filtros y totales, mock data lista para swap a /api/viajes/mis-viajes-conductor |
 | `PerfilFleteroScreen` | ✅ Funcional | Datos del usuario, gestión de vehículos (listar/agregar/eliminar), logout |
 | `CobroScreen` | 🔧 Placeholder | UI básica, sin lógica de pago real (Fase 6) |
-| `QREntregaScreen` | ✅ Funcional | expo-barcode-scanner real, validación POST /confirmar-entrega, modal manual como fallback |
+| `QREntregaScreen` | ✅ Funcional | expo-barcode-scanner real, validación POST /confirmar-parada con lat/lng, soporta múltiples paradas, modal manual, cierre automático al confirmar última parada |
 
 ---
 
