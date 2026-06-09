@@ -12,10 +12,7 @@ export async function conectarSocket() {
 
   socket = io(process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000', {
     auth: { token: `Bearer ${idToken}` },
-    transports: ['polling', 'websocket'],
-    reconnectionDelay: 2000,
-    reconnectionDelayMax: 10000,
-    timeout: 10000,
+    transports: ['websocket'],
   });
 
   return socket;
