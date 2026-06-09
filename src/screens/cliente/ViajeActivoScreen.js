@@ -362,6 +362,11 @@ export default function ViajeActivoScreen({ navigation, route }) {
                 <Text style={styles.qrAgrandarText}> Tocar para agrandar</Text>
               </View>
             </TouchableOpacity>
+            {/* Código en texto para Expo Go — el conductor puede copiarlo manualmente */}
+            <View style={styles.qrTextoWrap}>
+              <Text style={styles.qrTextoLabel}>Código para ingreso manual:</Text>
+              <Text style={styles.qrTexto} selectable>{qrActual.qr_firmado}</Text>
+            </View>
           </View>
         )}
 
@@ -548,6 +553,16 @@ const styles = StyleSheet.create({
   qrPreviewWrap: { alignItems: 'center', gap: spacing.sm },
   qrAgrandar: { flexDirection: 'row', alignItems: 'center' },
   qrAgrandarText: { fontSize: fontSize.caption, color: colors.textSecondary },
+  qrTextoWrap: {
+    marginTop: spacing.sm, backgroundColor: colors.surface2,
+    borderRadius: radius.md, padding: spacing.sm,
+    borderWidth: 1, borderColor: colors.surface3,
+  },
+  qrTextoLabel: { fontSize: fontSize.caption, color: colors.textHint, marginBottom: 4 },
+  qrTexto: {
+    fontSize: 10, color: colors.textSecondary,
+    fontFamily: 'monospace', lineHeight: 14,
+  },
 
   modalQROverlay: {
     flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',

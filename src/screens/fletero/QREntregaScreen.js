@@ -126,6 +126,33 @@ export default function QREntregaScreen({ navigation, route }) {
             <Text style={styles.btnPrimarioText}>Ingresar código manualmente</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Modal manual — necesita estar acá también para el early return de Expo Go */}
+        <Modal visible={modalManual} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitulo}>Ingresar código QR</Text>
+              <Text style={styles.modalSub}>Copiá el código que muestra el cliente</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={codigoManual}
+                onChangeText={setCodigoManual}
+                placeholder="Pegá el código aquí..."
+                placeholderTextColor={colors.textHint}
+                multiline
+                autoFocus
+              />
+              <View style={styles.modalBtns}>
+                <TouchableOpacity style={styles.modalBtnCancelar} onPress={() => { setModalManual(false); setCodigoManual(''); }}>
+                  <Text style={styles.modalBtnCancelarText}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.modalBtnConfirmar, !codigoManual.trim() && { opacity: 0.4 }]} onPress={handleManual} disabled={!codigoManual.trim()}>
+                  {validando ? <ActivityIndicator color={colors.textPrimary} /> : <Text style={styles.modalBtnConfirmarText}>Confirmar</Text>}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     );
   }
