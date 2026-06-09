@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  SafeAreaView, StatusBar, ActivityIndicator, Linking, Platform, Modal,
+  SafeAreaView, StatusBar, ActivityIndicator, Linking, Platform, Modal, Alert,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
 import QRCode from 'react-native-qrcode-svg';
@@ -45,6 +45,7 @@ export default function ViajeActivoScreen({ navigation, route }) {
   const [alertaParada,   setAlertaParada] = useState(null);
   const [velocidad,      setVelocidad]    = useState(null);
   const [cargando,       setCargando]     = useState(true);
+  const [cancelando,     setCancelando]   = useState(false);
   const [qrParadas,      setQrParadas]    = useState([]);
   const [modalQR,        setModalQR]      = useState(false);
   const [qrParadaIdx,    setQrParadaIdx]  = useState(0);
@@ -127,6 +128,32 @@ export default function ViajeActivoScreen({ navigation, route }) {
   const vehiculoInfo   = vehiculoParam
     ? `${vehiculoParam.marca} ${vehiculoParam.modelo} · ${vehiculoParam.patente}`
     : '';
+
+  const handleCancelar = () => {
+    Alert.alert(
+      'Cancelar viaje',
+      '¿Seguro que querés cancelar? Esta acción no se puede deshacer.',
+      [
+        { text: 'No, continuar', style: 'cancel' },
+        {
+          text: 'Sí, cancelar',
+          style: 'destructive',
+          onPress: async () => {
+            setCancelando(true);
+            try {
+              await api.patch(`/api/viajes/${viajeId}/estado`, { estado: 'CANCELADO' });
+              navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+            } catch (e) {
+              const msg = e?.response?.data?.error ?? 'No se pudo cancelar el viaje';
+              Alert.alert('Error', msg);
+            } finally {
+              setCancelando(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const precioEstimado = viaje?.precio_estimado ? `$${formatPrecio(viaje.precio_estimado)}` : '—';
   const estadoIdx = estadoIndex(estado);
@@ -402,8 +429,16 @@ export default function ViajeActivoScreen({ navigation, route }) {
       </Modal>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.btnCancelar} activeOpacity={0.85}>
-          <Text style={styles.btnCancelarText}>Cancelar viaje</Text>
+        <TouchableOpacity
+          style={[styles.btnCancelar, cancelando && { opacity: 0.5 }]}
+          onPress={handleCancelar}
+          disabled={cancelando}
+          activeOpacity={0.85}
+        >
+          {cancelando
+            ? <ActivityIndicator color={colors.error} />
+            : <Text style={styles.btnCancelarText}>Cancelar viaje</Text>
+          }
         </TouchableOpacity>
       </View>
     </SafeAreaView>
