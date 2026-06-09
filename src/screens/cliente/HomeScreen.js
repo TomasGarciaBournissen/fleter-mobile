@@ -10,6 +10,17 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { formatPrecio } from '../../utils/format';
 
+const ESTADOS_ACTIVOS = ['BUSCANDO_CONDUCTOR', 'CONDUCTOR_ASIGNADO', 'EN_CAMINO_A_ORIGEN', 'CARGANDO', 'EN_RUTA', 'DESCARGANDO'];
+
+const ESTADO_ACTIVO_LABELS = {
+  BUSCANDO_CONDUCTOR:  { label: 'Buscando fletero',  color: colors.warning },
+  CONDUCTOR_ASIGNADO:  { label: 'Fletero asignado',  color: colors.primary },
+  EN_CAMINO_A_ORIGEN:  { label: 'En camino',         color: colors.primary },
+  CARGANDO:            { label: 'Cargando',           color: colors.warning },
+  EN_RUTA:             { label: 'En ruta',            color: colors.primary },
+  DESCARGANDO:         { label: 'Descargando',        color: colors.warning },
+};
+
 function estadoInfo(estado) {
   if (estado === 'FINALIZADO') return { label: 'Entregado', color: colors.success };
   if (estado === 'CANCELADO')  return { label: 'Cancelado', color: colors.error };
@@ -57,20 +68,38 @@ function ViajeItem({ viaje }) {
 
 export default function HomeScreen({ navigation }) {
   const { user } = useAuth();
-  const [ultimos,   setUltimos]   = useState([]);
-  const [cargando,  setCargando]  = useState(true);
+  const [viajeActivo, setViajeActivo] = useState(null);
+  const [ultimos,     setUltimos]     = useState([]);
+  const [cargando,    setCargando]    = useState(true);
 
   const cargar = useCallback(async () => {
     setCargando(true);
     try {
       const { data } = await api.get('/api/viajes/mis-viajes');
-      setUltimos(data.slice(0, 3));
+      const activo   = data.find(v => ESTADOS_ACTIVOS.includes(v.estado)) ?? null;
+      const pasados  = data.filter(v => !ESTADOS_ACTIVOS.includes(v.estado));
+      setViajeActivo(activo);
+      setUltimos(pasados.slice(0, 3));
     } catch {
+      setViajeActivo(null);
       setUltimos([]);
     } finally {
       setCargando(false);
     }
   }, []);
+
+  const handleContinuarViaje = (viaje) => {
+    if (viaje.estado === 'BUSCANDO_CONDUCTOR') {
+      navigation.navigate('BuscandoFletero', { idViaje: viaje.id_viaje });
+      return;
+    }
+    const conductor = viaje.conductor ? {
+      nombre:               viaje.conductor.usuario?.nombre ?? '',
+      apellido:             viaje.conductor.usuario?.apellido ?? '',
+      calificacion_promedio: viaje.conductor.calificacion_promedio,
+    } : null;
+    navigation.navigate('ViajeActivo', { viajeId: viaje.id_viaje, conductor });
+  };
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -102,6 +131,33 @@ export default function HomeScreen({ navigation }) {
           <RefreshControl refreshing={cargando} onRefresh={cargar} tintColor={colors.primary} />
         }
       >
+        {/* Banner viaje activo */}
+        {viajeActivo && (() => {
+          const paradas = viajeActivo.paradas ?? [];
+          const origen  = paradas[0]?.direccion ?? '—';
+          const destino = paradas[paradas.length - 1]?.direccion ?? '—';
+          const { label, color } = ESTADO_ACTIVO_LABELS[viajeActivo.estado] ?? { label: 'En curso', color: colors.primary };
+          return (
+            <TouchableOpacity
+              style={styles.bannerActivo}
+              onPress={() => handleContinuarViaje(viajeActivo)}
+              activeOpacity={0.88}
+            >
+              <View style={styles.bannerActivoTop}>
+                <View style={styles.bannerActivoDot} />
+                <Text style={styles.bannerActivoTitle}>Viaje en curso</Text>
+                <View style={[styles.bannerActivoBadge, { backgroundColor: `${color}22`, borderColor: `${color}44` }]}>
+                  <Text style={[styles.bannerActivoBadgeText, { color }]}>{label}</Text>
+                </View>
+              </View>
+              <Text style={styles.bannerActivoRuta} numberOfLines={1}>{origen} → {destino}</Text>
+              <View style={styles.bannerActivoFooter}>
+                <Text style={styles.bannerActivoCta}>Tocar para continuar →</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })()}
+
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Últimos viajes</Text>
@@ -161,6 +217,31 @@ const styles = StyleSheet.create({
 
   scroll:        { flex: 1 },
   scrollContent: { paddingHorizontal: spacing.md, paddingBottom: 100 },
+
+  bannerActivo: {
+    backgroundColor: colors.surface1,
+    borderRadius: radius.lg,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  bannerActivoTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xs },
+  bannerActivoDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary },
+  bannerActivoTitle: { fontSize: fontSize.body, fontWeight: '800', color: colors.textPrimary, flex: 1 },
+  bannerActivoBadge: {
+    borderRadius: radius.full, borderWidth: 1,
+    paddingHorizontal: spacing.sm, paddingVertical: 2,
+  },
+  bannerActivoBadgeText: { fontSize: 10, fontWeight: '700' },
+  bannerActivoRuta: { fontSize: fontSize.body, color: colors.textSecondary, marginBottom: spacing.sm },
+  bannerActivoFooter: { borderTopWidth: 1, borderTopColor: colors.surface3, paddingTop: spacing.xs },
+  bannerActivoCta: { fontSize: fontSize.caption, fontWeight: '700', color: colors.primary },
 
   section: { marginBottom: spacing.lg },
   sectionHeader: {
