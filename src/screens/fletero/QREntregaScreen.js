@@ -130,37 +130,38 @@ export default function QREntregaScreen({ navigation, route }) {
         {/* Modal manual — necesita estar acá también para el early return de Expo Go */}
         <Modal visible={modalManual} transparent animationType="slide">
           <KeyboardAvoidingView
-            style={{ flex: 1 }}
+            style={styles.modalKAV}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
-            <ScrollView
-              contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end' }}
-              keyboardShouldPersistTaps="handled"
-            >
-              <View style={styles.modalOverlay}>
-                <View style={styles.modalCard}>
-                  <Text style={styles.modalTitulo}>Ingresar código QR</Text>
-                  <Text style={styles.modalSub}>Copiá el código que muestra el cliente</Text>
-                  <TextInput
-                    style={styles.modalInput}
-                    value={codigoManual}
-                    onChangeText={setCodigoManual}
-                    placeholder="Pegá el código aquí..."
-                    placeholderTextColor={colors.textHint}
-                    multiline
-                    autoFocus
-                  />
-                  <View style={styles.modalBtns}>
-                    <TouchableOpacity style={styles.modalBtnCancelar} onPress={() => { setModalManual(false); setCodigoManual(''); }}>
-                      <Text style={styles.modalBtnCancelarText}>Cancelar</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.modalBtnConfirmar, !codigoManual.trim() && { opacity: 0.4 }]} onPress={handleManual} disabled={!codigoManual.trim()}>
-                      {validando ? <ActivityIndicator color={colors.textPrimary} /> : <Text style={styles.modalBtnConfirmarText}>Confirmar</Text>}
-                    </TouchableOpacity>
-                  </View>
-                </View>
+            <TouchableOpacity style={styles.modalDismiss} activeOpacity={1} onPress={() => { setModalManual(false); setCodigoManual(''); }} />
+            <View style={styles.modalSheet}>
+              <Text style={styles.modalTitulo}>Ingresar código QR</Text>
+              <Text style={styles.modalSub}>Copiá el código que muestra el cliente en pantalla</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={codigoManual}
+                onChangeText={setCodigoManual}
+                placeholder="Pegá el código aquí..."
+                placeholderTextColor={colors.textHint}
+                multiline
+                autoFocus
+              />
+              <View style={styles.modalBotones}>
+                <TouchableOpacity style={styles.modalBtnCancelar} onPress={() => { setModalManual(false); setCodigoManual(''); }}>
+                  <Text style={styles.modalBtnCancelarText}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalBtnConfirmar, !codigoManual.trim() && { opacity: 0.4 }]}
+                  onPress={handleManual}
+                  disabled={!codigoManual.trim()}
+                >
+                  {validando
+                    ? <ActivityIndicator color={colors.textPrimary} />
+                    : <Text style={styles.modalBtnConfirmarText}>Confirmar</Text>
+                  }
+                </TouchableOpacity>
               </View>
-            </ScrollView>
+            </View>
           </KeyboardAvoidingView>
         </Modal>
       </SafeAreaView>
@@ -434,11 +435,15 @@ const styles = StyleSheet.create({
   permisoDenegadoTitulo: { fontSize: fontSize.h2, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' },
   permisoDenegadoSub:    { fontSize: fontSize.body, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
 
-  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.4)' },
+  modalKAV:     { flex: 1, justifyContent: 'flex-end' },
+  modalDismiss: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
   modalSheet: {
-    backgroundColor: colors.background, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl,
+    backgroundColor: colors.background,
+    borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl,
     padding: spacing.lg, paddingBottom: spacing.xl + spacing.md,
     gap: spacing.sm,
+    shadowColor: '#000', shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12, shadowRadius: 12, elevation: 16,
   },
   modalTitulo: { fontSize: fontSize.h2, fontWeight: '800', color: colors.textPrimary },
   modalSub:    { fontSize: fontSize.body, color: colors.textSecondary },
@@ -446,12 +451,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface1, borderRadius: radius.md,
     borderWidth: 1, borderColor: colors.surface3,
     paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 4,
-    fontSize: fontSize.body, color: colors.textPrimary, marginTop: spacing.sm,
+    fontSize: fontSize.body, color: colors.textPrimary,
+    minHeight: 80, textAlignVertical: 'top',
   },
-  modalBotones:       { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
-  modalBtnCancelar:   {
+  modalBotones: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
+  modalBtnCancelar: {
     flex: 1, borderWidth: 1, borderColor: colors.surface3,
     borderRadius: radius.lg, paddingVertical: spacing.md, alignItems: 'center',
+    backgroundColor: colors.surface1,
   },
   modalBtnCancelarText: { fontSize: fontSize.body, fontWeight: '600', color: colors.textSecondary },
+  modalBtnConfirmar: {
+    flex: 2, backgroundColor: colors.primary,
+    borderRadius: radius.lg, paddingVertical: spacing.md, alignItems: 'center',
+  },
+  modalBtnConfirmarText: { fontSize: fontSize.body, fontWeight: '800', color: colors.textPrimary },
 });
