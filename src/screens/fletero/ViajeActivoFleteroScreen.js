@@ -3,7 +3,7 @@ import {
   View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar,
   ScrollView, ActivityIndicator, Alert, Linking, Platform,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
@@ -15,6 +15,11 @@ import {
   startLocationTracking,
   stopLocationTracking,
 } from '../../tasks/locationTask';
+
+function routeToCoords(route) {
+  if (!Array.isArray(route)) return [];
+  return route.map(([lng, lat]) => ({ latitude: lat, longitude: lng }));
+}
 
 const ESTADOS = [
   { id: 'CONDUCTOR_ASIGNADO',  label: 'Conductor asignado' },
@@ -36,6 +41,9 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
   const [viaje, setViaje]               = useState(null);
   const [estado, setEstado]             = useState('CONDUCTOR_ASIGNADO');
   const [posicion, setPosicion]         = useState(null);
+  const [eta, setEta]                   = useState(null);
+  const [rutaCoords, setRutaCoords]     = useState([]);
+  const [alertaRuta, setAlertaRuta]     = useState(false);
   const [cargandoAccion, setCargandoAccion] = useState(false);
   const [debugGps, setDebugGps]         = useState(null);
   const posicionRef = useRef(null);
@@ -45,7 +53,11 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
   useEffect(() => {
     if (!viajeId) return;
     api.get(`/api/viajes/${viajeId}`)
-      .then(({ data }) => { setViaje(data); setEstado(data.estado); })
+      .then(({ data }) => {
+        setViaje(data);
+        setEstado(data.estado);
+        if (data.ruta_planeada) setRutaCoords(routeToCoords(data.ruta_planeada));
+      })
       .catch(() => {});
   }, [viajeId]);
 
@@ -107,9 +119,10 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
     };
   }, [socket, viajeId]);
 
-  // Socket: estado_cambiado + viaje:finalizado
+  // Socket: estado_cambiado, viaje:finalizado, eta, ruta
   useEffect(() => {
     if (!socket) return;
+
     const onEstadoCambiado = (data) => {
       if (Number(data.id_viaje) !== Number(viajeId)) return;
       setEstado(data.estado_nuevo);
@@ -119,13 +132,29 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
       setEstado('FINALIZADO');
       navigation.replace('Cobro', { viajeId, precioReal: data.precio_real, remitoUrl: data.remito_url });
     };
+    const onEtaActualizar = (data) => {
+      if (Number(data.id_viaje) !== Number(viajeId)) return;
+      setEta(data.minutos_restantes);
+    };
+    const onRutaRecalculada = (data) => {
+      if (Number(data.id_viaje) !== Number(viajeId)) return;
+      if (data.nueva_ruta) setRutaCoords(routeToCoords(data.nueva_ruta));
+      setAlertaRuta(true);
+      setTimeout(() => setAlertaRuta(false), 6000);
+    };
+
     socket.on('viaje:estado_cambiado', onEstadoCambiado);
     socket.on('viaje:finalizado',      onFinalizado);
+    socket.on('eta:actualizar',        onEtaActualizar);
+    socket.on('ruta:recalculada',      onRutaRecalculada);
+
     return () => {
       socket.off('viaje:estado_cambiado', onEstadoCambiado);
       socket.off('viaje:finalizado',      onFinalizado);
+      socket.off('eta:actualizar',        onEtaActualizar);
+      socket.off('ruta:recalculada',      onRutaRecalculada);
     };
-  }, [socket, viajeId]);
+  }, [socket, viajeId, navigation]);
 
   const handleAccion = async () => {
     if (estado === 'DESCARGANDO') {
@@ -199,6 +228,13 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
             showsUserLocation={false}
             showsMyLocationButton={false}
           >
+            {rutaCoords.length > 1 && (
+              <Polyline
+                coordinates={rutaCoords}
+                strokeColor={colors.primary}
+                strokeWidth={3}
+              />
+            )}
             {posicion && (
               <Marker coordinate={posicion} title="Yo">
                 <View style={styles.markerConductor}>
@@ -250,11 +286,27 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
           </View>
         )}
 
+        {/* ETA */}
+        {eta != null && (
+          <View style={styles.etaBanner}>
+            <Ionicons name="time-outline" size={16} color={colors.primary} />
+            <Text style={styles.etaBannerText}> Próxima parada en ~{eta} min</Text>
+          </View>
+        )}
+
+        {/* Ruta recalculada */}
+        {alertaRuta && (
+          <View style={styles.infoBanner}>
+            <Ionicons name="navigate-outline" size={16} color={colors.primary} />
+            <Text style={styles.infoBannerText}> Ruta recalculada por desvío</Text>
+          </View>
+        )}
+
         {/* Banner informativo para estado CARGANDO */}
         {estado === 'CARGANDO' && (
           <View style={styles.infoBanner}>
             <Ionicons name="time-outline" size={16} color={colors.warning} />
-            <Text style={styles.infoBannerText}> Cargá la mercadería. Cuando empieces a moverte, el viaje continúa automáticamente.</Text>
+            <Text style={styles.infoBannerText}> Cargá la mercadería. Cuando esté lista, tocá "Carga lista" para continuar.</Text>
           </View>
         )}
 
@@ -377,6 +429,14 @@ const styles = StyleSheet.create({
   debugTitle:   { fontSize: fontSize.caption, fontWeight: '700', color: colors.textSecondary },
   debugUpdates: { fontSize: fontSize.caption, color: colors.success, fontWeight: '700', marginLeft: 'auto' },
   debugLine:   { fontSize: fontSize.caption, color: colors.textHint, fontFamily: 'monospace' },
+
+  etaBanner: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: `${colors.primary}18`,
+    borderRadius: radius.md, borderWidth: 1, borderColor: `${colors.primary}66`,
+    padding: spacing.sm, marginBottom: spacing.sm,
+  },
+  etaBannerText: { fontSize: fontSize.body, color: colors.primary, fontWeight: '700', flex: 1 },
 
   infoBanner: {
     flexDirection: 'row', alignItems: 'flex-start',

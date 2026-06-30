@@ -5,6 +5,7 @@ import CrearViajeScreen from '../screens/cliente/CrearViajeScreen';
 import ConfirmacionViajeScreen from '../screens/cliente/ConfirmacionViajeScreen';
 import BuscandoFleteroScreen from '../screens/cliente/BuscandoFleteroScreen';
 import ViajeActivoScreen from '../screens/cliente/ViajeActivoScreen';
+import CalificacionScreen from '../screens/cliente/CalificacionScreen';
 import HistorialScreen from '../screens/cliente/HistorialScreen';
 import PerfilScreen from '../screens/cliente/PerfilScreen';
 
@@ -18,6 +19,7 @@ export default function ClienteStack() {
       <Stack.Screen name="ConfirmacionViaje" component={ConfirmacionViajeScreen} />
       <Stack.Screen name="BuscandoFletero" component={BuscandoFleteroScreen} />
       <Stack.Screen name="ViajeActivo" component={ViajeActivoScreen} />
+      <Stack.Screen name="Calificacion" component={CalificacionScreen} />
       <Stack.Screen name="Historial" component={HistorialScreen} />
       <Stack.Screen name="Perfil" component={PerfilScreen} />
     </Stack.Navigator>

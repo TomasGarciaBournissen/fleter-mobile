@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-06-08  
-> Branch: master | Commits totales: 29
+> Última actualización: 2026-06-30  
+> Branch: master | Commits totales: 30
 
 ---
 
@@ -41,6 +41,7 @@
 | `95b0640` | 08 Jun 2026 | Docs — api.md actualizado |
 | `102b74b` | 08 Jun 2026 | Feat — Places New API + AsyncStorage historial + fix .env + fix CARGANDO→EN_RUTA + QREntregaScreen Fase 5 + QR display cliente |
 | (pendiente) | 08 Jun 2026 | Fix — adaptar QR flow al nuevo contrato de API (confirmar-parada, qr-paradas, viaje:finalizado) |
+| (pendiente) | 30 Jun 2026 | Feat — retomar viaje activo, ETA, ruta recalculada, Polyline, CalificacionScreen, historial real, GERENTE |
 
 ---
 
@@ -72,9 +73,10 @@
 | `NuevoViajeModal` | ✅ Funcional | Bottom sheet con countdown 30s, barra animada, Aceptar/Rechazar |
 | `DetalleViajeScreen` | ✅ Funcional | Fetch /api/viajes/:id para nombre real del cliente, bug fix stale closure, timeout 10s en handleAceptar |
 | `ViajeActivoFleteroScreen` | ✅ Funcional | GPS real (expo-location + background task), MapView con posición propia + paradas, PATCH CARGANDO/DESCARGANDO, timeline reactivo a viaje:estado_cambiado |
-| `HistorialFleteroScreen` | ✅ Funcional | UI completa con filtros y totales, mock data lista para swap a /api/viajes/mis-viajes-conductor |
+| `HistorialFleteroScreen` | ✅ Funcional | API real GET /api/viajes/mis-viajes-conductor, filtros Todos/En curso/Finalizados/Cancelados |
 | `PerfilFleteroScreen` | ✅ Funcional | Datos del usuario, gestión de vehículos (listar/agregar/eliminar), logout |
-| `CobroScreen` | 🔧 Placeholder | UI básica, sin lógica de pago real (Fase 6) |
+| `CobroScreen` | ✅ Funcional | Muestra precio_real y remito PDF reales de route params, navega a DisponiblesHome |
+| `CalificacionScreen` | ✅ Funcional | Rating 1-5 + comentario opcional, POST /api/viajes/:id/calificacion, link remito PDF |
 | `QREntregaScreen` | ✅ Funcional | expo-barcode-scanner real, validación POST /confirmar-parada con lat/lng, soporta múltiples paradas, modal manual, cierre automático al confirmar última parada |
 
 ---
@@ -111,13 +113,16 @@
 | `viaje:aceptar` | conductor → servidor | `DisponiblesScreen`, `DetalleViajeScreen` | ✅ |
 | `viaje:conductor_asignado` | servidor → room | `DisponiblesScreen`, `DetalleViajeScreen`, `BuscandoFleteroScreen` | ✅ Distingue por `id_usuario_conductor` |
 | `viaje:ya_asignado` | servidor → conductor | `DisponiblesScreen`, `DetalleViajeScreen` | ✅ Muestra alerta |
-| `viaje:cancelado_sin_conductor` | servidor → cliente | — | ❌ No implementado |
+| `viaje:cancelado_sin_conductor` | servidor → cliente | `BuscandoFleteroScreen` | ✅ Alert con mensaje y botón volver al inicio |
 | `conductor:ubicacion` | conductor → servidor | `ViajeActivoFleteroScreen` | ✅ Background task cada 15s |
 | `mapa:actualizar` | servidor → room | `ViajeActivoScreen` | ✅ Actualiza marcador del conductor |
 | `costo:actualizar` | servidor → room | `ViajeActivoScreen` | ✅ Actualiza costo acumulado |
 | `viaje:estado_cambiado` | servidor → room | `ViajeActivoFleteroScreen`, `ViajeActivoScreen` | ✅ Timeline reactivo |
 | `alerta:desvio` | servidor → room | `ViajeActivoScreen` | ✅ Banner de alerta |
 | `alerta:parada` | servidor → room | `ViajeActivoScreen` | ✅ Banner de parada sospechosa |
+| `eta:actualizar` | servidor → room | `ViajeActivoScreen`, `ViajeActivoFleteroScreen` | ✅ Muestra "Llega en ~X min" / "Próxima parada en ~X min" |
+| `ruta:recalculada` | servidor → room | `ViajeActivoScreen`, `ViajeActivoFleteroScreen` | ✅ Actualiza Polyline en mapa + banner "Ruta recalculada" |
+| `viaje:finalizado` | servidor → room | `ViajeActivoScreen`, `ViajeActivoFleteroScreen` | ✅ Cliente → CalificacionScreen, Fletero → CobroScreen |
 
 ---
 
@@ -126,6 +131,7 @@
 | Problema | Causa | Estado |
 |----------|-------|--------|
 | Login web no funciona | Firebase web SDK vs React Native Firebase SDK se comportan diferente | ❌ Sin resolver |
+| Retomar viaje activo | Fletero cierra y vuelve a abrir la app — `DisponiblesScreen` detecta viaje activo y navega automáticamente | ✅ Resuelto |
 | Conductor no ve viajes con requisitos | `RegisterFleteroScreen` no registra vehículo ni condiciones → backend filtra por elegibilidad | ❌ Pendiente Fase 1 completa |
 | `viaje:ya_asignado` + `viaje:conductor_asignado` doble alert | Conductor que pierde en `DetalleViajeScreen` puede recibir dos alerts | ⚠️ Menor, sin resolver |
 | `OfertaScreen` legada | Existía antes de NuevoViajeModal, posiblemente sin uso | ⚠️ Revisar si eliminar |
@@ -143,13 +149,13 @@
 - [ ] Agregar sección de vehículo + condiciones a `RegisterFleteroScreen`
 - [ ] Backend: endpoint para registrar vehículo (POST /api/vehiculos o similar)
 
-### Fase 2 (casi completo)
+### Fase 2 (completo)
 - [x] `HistorialScreen` (cliente) — GET /api/viajes/mis-viajes, estados con colores, agrupado por mes
-- [ ] `HistorialFleteroScreen` — endpoint pendiente en backend (GET /api/viajes/mis-viajes-conductor); UI ya lista
+- [x] `HistorialFleteroScreen` — GET /api/viajes/mis-viajes-conductor real, filtros Todos/En curso/Finalizados/Cancelados
 
 ### Fase 3 (casi completo)
 - [ ] Pantalla de espera del cliente con animación (`BuscandoFleteroScreen` existe pero básica)
-- [ ] Manejar `viaje:cancelado_sin_conductor` en el cliente
+- [x] Manejar `viaje:cancelado_sin_conductor` en `BuscandoFleteroScreen`
 - [ ] Fix doble alert en `DetalleViajeScreen` cuando conductor pierde
 
 ### Fase 4 (completo)
@@ -161,10 +167,20 @@
 - [x] `ViajeActivoScreen` — MapView con conductor marker, socket mapa:actualizar + costo:actualizar + alerta:desvio
 
 ### Fase 5 (completo)
-- [x] `QREntregaScreen` — `expo-barcode-scanner` real, permiso de cámara, validación con backend `POST /confirmar-entrega`, modal de ingreso manual, muestra destinatario confirmado
-- [x] `ViajeActivoScreen` (cliente) — muestra QR del destino (`paradas[last].qr_token`) desde estado CARGANDO, expandible a pantalla completa, con fallback si backend no devuelve token
+- [x] `QREntregaScreen` — `expo-barcode-scanner` real, permiso de cámara, `POST /api/viajes/:id/confirmar-parada` con `qr_firmado+lat+lng`, modal de ingreso manual
+- [x] `ViajeActivoScreen` (cliente) — QR via `GET /api/viajes/:id/qr-paradas` desde CARGANDO, paginador multi-parada, expandible a pantalla completa
+- [x] `CalificacionScreen` (cliente) — rating 1-5 + comentario, `POST /api/viajes/:id/calificacion`, link remito PDF
+- [x] `CobroScreen` (fletero) — muestra precio_real y remito PDF reales
+- [x] `ViajeActivoScreen` navega a `CalificacionScreen` al recibir `viaje:finalizado`
 - [x] Fix CARGANDO → EN_RUTA: transición de estado y label de botón agregados en `ViajeActivoFleteroScreen`
 - [x] `react-native-qrcode-svg` + `react-native-svg` instalados
+
+### Fase 4 extra (completo)
+- [x] `eta:actualizar` en `ViajeActivoScreen` (cliente) y `ViajeActivoFleteroScreen`
+- [x] `ruta:recalculada` en ambas pantallas — actualiza Polyline + banner info
+- [x] Polyline en mapa exportada desde `MapViewWrapper` y renderizada con `ruta_planeada` del backend
+- [x] Retomar viaje activo: `DisponiblesScreen` detecta en mount si hay viaje activo y navega a `ViajeActivoFleteroScreen`
+- [x] `RootNavigator` maneja rol `GERENTE`/`ADMIN` con pantalla "Acceso no disponible"
 
 ---
 

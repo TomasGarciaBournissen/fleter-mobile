@@ -6,67 +6,20 @@ import {
 } from 'react-native';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { formatPrecio } from '../../utils/format';
+import api from '../../services/api';
 
-const MOCK_VIAJES = [
-  {
-    id_viaje: 1,
-    fecha_programada: '2026-04-27T10:30:00.000Z',
-    precio_real: 14500,
-    estado: 'FINALIZADO',
-    paradas: [
-      { orden: 1, direccion: 'Palermo, CABA' },
-      { orden: 2, direccion: 'San Telmo, CABA' },
-    ],
-  },
-  {
-    id_viaje: 2,
-    fecha_programada: '2026-04-26T15:00:00.000Z',
-    precio_real: 9800,
-    estado: 'FINALIZADO',
-    paradas: [
-      { orden: 1, direccion: 'Recoleta, CABA' },
-      { orden: 2, direccion: 'Belgrano, CABA' },
-    ],
-  },
-  {
-    id_viaje: 3,
-    fecha_programada: '2026-04-23T09:15:00.000Z',
-    precio_real: 11200,
-    estado: 'CANCELADO',
-    paradas: [
-      { orden: 1, direccion: 'Caballito, CABA' },
-      { orden: 2, direccion: 'Flores, CABA' },
-    ],
-  },
-  {
-    id_viaje: 4,
-    fecha_programada: '2026-03-31T12:00:00.000Z',
-    precio_real: 9800,
-    estado: 'FINALIZADO',
-    paradas: [
-      { orden: 1, direccion: 'Almagro, CABA' },
-      { orden: 2, direccion: 'Microcentro, CABA' },
-    ],
-  },
-  {
-    id_viaje: 5,
-    fecha_programada: '2026-03-28T10:30:00.000Z',
-    precio_real: 13400,
-    estado: 'FINALIZADO',
-    paradas: [
-      { orden: 1, direccion: 'Boedo, CABA' },
-      { orden: 2, direccion: 'Palermo Soho, CABA' },
-    ],
-  },
-];
+const FILTROS = ['Todos', 'En curso', 'Finalizados', 'Cancelados'];
 
-const FILTROS = ['Todos', 'Finalizados', 'Cancelados'];
-
-const ESTADOS_TERMINALES = ['FINALIZADO', 'CANCELADO'];
+const ESTADOS_EN_CURSO = ['CONDUCTOR_ASIGNADO', 'EN_CAMINO_A_ORIGEN', 'CARGANDO', 'EN_RUTA', 'DESCARGANDO'];
 
 function estadoInfo(estado) {
-  if (estado === 'FINALIZADO') return { label: 'Entregado', color: colors.success };
-  if (estado === 'CANCELADO')  return { label: 'Cancelado', color: colors.error };
+  if (estado === 'FINALIZADO')        return { label: 'Entregado', color: colors.success };
+  if (estado === 'CANCELADO')         return { label: 'Cancelado', color: colors.error };
+  if (estado === 'CONDUCTOR_ASIGNADO') return { label: 'Asignado',  color: colors.warning };
+  if (estado === 'EN_CAMINO_A_ORIGEN') return { label: 'En camino', color: colors.warning };
+  if (estado === 'CARGANDO')           return { label: 'Cargando',  color: colors.warning };
+  if (estado === 'EN_RUTA')            return { label: 'En ruta',   color: colors.warning };
+  if (estado === 'DESCARGANDO')        return { label: 'Descargando', color: colors.warning };
   return { label: 'En curso', color: colors.warning };
 }
 
@@ -139,9 +92,8 @@ export default function HistorialFleteroScreen() {
     setCargando(true);
     setError('');
     try {
-      // TODO: reemplazar con api.get('/api/viajes/mis-viajes-conductor') cuando el backend lo implemente
-      await new Promise((r) => setTimeout(r, 400));
-      setViajes(MOCK_VIAJES);
+      const { data } = await api.get('/api/viajes/mis-viajes-conductor');
+      setViajes(data);
     } catch (e) {
       setError('No se pudo cargar el historial');
     } finally {
@@ -152,9 +104,10 @@ export default function HistorialFleteroScreen() {
   useEffect(() => { cargar(); }, [cargar]);
 
   const viajesFiltrados = viajes.filter((v) => {
+    if (filtro === 'En curso')    return ESTADOS_EN_CURSO.includes(v.estado);
     if (filtro === 'Finalizados') return v.estado === 'FINALIZADO';
     if (filtro === 'Cancelados')  return v.estado === 'CANCELADO';
-    return v.estado !== 'CANCELADO';
+    return true;
   });
 
   const secciones = agruparPorMes(viajesFiltrados);

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
-  TouchableOpacity, Animated, Easing,
+  TouchableOpacity, Animated, Easing, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
@@ -37,9 +37,22 @@ export default function BuscandoFleteroScreen({ navigation, route }) {
       navigation.replace('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor, vehiculo: data.vehiculo });
     };
 
-    socket.on('viaje:conductor_asignado', onAsignado);
-    return () => socket.off('viaje:conductor_asignado', onAsignado);
-  }, [socket, navigation]);
+    const onCancelado = (data) => {
+      if (idViaje && Number(data.id_viaje) !== Number(idViaje)) return;
+      Alert.alert(
+        'Sin fletero disponible',
+        data.mensaje ?? 'No se encontró un fletero en el tiempo límite. Podés volver a publicar el viaje.',
+        [{ text: 'Volver al inicio', onPress: () => navigation.reset({ index: 0, routes: [{ name: 'Home' }] }) }]
+      );
+    };
+
+    socket.on('viaje:conductor_asignado',      onAsignado);
+    socket.on('viaje:cancelado_sin_conductor', onCancelado);
+    return () => {
+      socket.off('viaje:conductor_asignado',      onAsignado);
+      socket.off('viaje:cancelado_sin_conductor', onCancelado);
+    };
+  }, [socket, navigation, idViaje]);
 
   return (
     <SafeAreaView style={styles.safeArea}>

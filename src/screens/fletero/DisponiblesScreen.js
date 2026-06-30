@@ -101,12 +101,15 @@ function ViajeCard({ viaje, onPress }) {
   );
 }
 
+const ESTADOS_ACTIVOS = ['CONDUCTOR_ASIGNADO', 'EN_CAMINO_A_ORIGEN', 'CARGANDO', 'EN_RUTA', 'DESCARGANDO'];
+
 export default function DisponiblesScreen({ navigation }) {
   const [viajes,        setViajes]        = useState([]);
   const [cargando,      setCargando]      = useState(true);
   const [viajeOferta,   setViajeOferta]   = useState(null);
   const [aceptando,     setAceptando]     = useState(false);
-  const aceptandoRef = useRef(false);
+  const aceptandoRef   = useRef(false);
+  const resumeChecked  = useRef(false);
   const { socket } = useSocket();
   const { user } = useAuth();
   const timeoutRef = useRef(null);
@@ -129,6 +132,18 @@ export default function DisponiblesScreen({ navigation }) {
   }, []);
 
   useEffect(() => { fetchViajes(); }, [fetchViajes]);
+
+  // Al abrir la app: retomar viaje activo si existe
+  useEffect(() => {
+    if (resumeChecked.current) return;
+    resumeChecked.current = true;
+    api.get('/api/viajes/mis-viajes-conductor')
+      .then(({ data }) => {
+        const activo = data.find(v => ESTADOS_ACTIVOS.includes(v.estado));
+        if (activo) navigation.navigate('ViajeActivo', { viajeId: activo.id_viaje });
+      })
+      .catch(() => {});
+  }, [navigation]);
 
   // Socket: escuchar viajes nuevos en tiempo real
   useEffect(() => {

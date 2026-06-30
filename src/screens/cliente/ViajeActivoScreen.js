@@ -3,7 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   SafeAreaView, StatusBar, ActivityIndicator, Linking, Platform, Modal, Alert,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
@@ -22,6 +22,11 @@ const TIMELINE_ESTADOS = [
 
 function estadoIndex(e) {
   return TIMELINE_ESTADOS.findIndex(s => s.id === e);
+}
+
+function routeToCoords(route) {
+  if (!Array.isArray(route)) return [];
+  return route.map(([lng, lat]) => ({ latitude: lat, longitude: lng }));
 }
 
 const ESTADO_BADGE_LABELS = {
@@ -43,19 +48,27 @@ export default function ViajeActivoScreen({ navigation, route }) {
   const [conductorPos,   setConductorPos] = useState(null);
   const [alertaDesvio,   setAlertaDesvio] = useState(null);
   const [alertaParada,   setAlertaParada] = useState(null);
+  const [alertaRuta,     setAlertaRuta]   = useState(false);
   const [velocidad,      setVelocidad]    = useState(null);
+  const [eta,            setEta]          = useState(null);
+  const [rutaCoords,     setRutaCoords]   = useState([]);
   const [cargando,       setCargando]     = useState(true);
   const [cancelando,     setCancelando]   = useState(false);
   const [qrParadas,      setQrParadas]    = useState([]);
   const [modalQR,        setModalQR]      = useState(false);
   const [qrParadaIdx,    setQrParadaIdx]  = useState(0);
   const conductorMarkerRef = useRef(null);
+  const finalizadoRef      = useRef(false);
 
-  // Fetch trip data + QR tokens
+  // Fetch trip data
   useEffect(() => {
     if (!viajeId) { setCargando(false); return; }
     api.get(`/api/viajes/${viajeId}`)
-      .then(({ data }) => { setViaje(data); setEstado(data.estado); })
+      .then(({ data }) => {
+        setViaje(data);
+        setEstado(data.estado);
+        if (data.ruta_planeada) setRutaCoords(routeToCoords(data.ruta_planeada));
+      })
       .catch(() => {})
       .finally(() => setCargando(false));
   }, [viajeId]);
@@ -85,7 +98,6 @@ export default function ViajeActivoScreen({ navigation, route }) {
 
     const onAlertaDesvio = (data) => {
       setAlertaDesvio(data.mensaje);
-      // Auto-dismiss after 10s
       setTimeout(() => setAlertaDesvio(null), 10000);
     };
 
@@ -94,15 +106,36 @@ export default function ViajeActivoScreen({ navigation, route }) {
       setTimeout(() => setAlertaParada(null), 10000);
     };
 
+    const onEtaActualizar = (data) => {
+      if (Number(data.id_viaje) !== Number(viajeId)) return;
+      setEta(data.minutos_restantes);
+    };
+
+    const onRutaRecalculada = (data) => {
+      if (Number(data.id_viaje) !== Number(viajeId)) return;
+      if (data.nueva_ruta) setRutaCoords(routeToCoords(data.nueva_ruta));
+      setAlertaRuta(true);
+      setTimeout(() => setAlertaRuta(false), 6000);
+    };
+
     const onFinalizado = (data) => {
       if (Number(data.id_viaje) !== Number(viajeId)) return;
+      if (finalizadoRef.current) return;
+      finalizadoRef.current = true;
       setEstado('FINALIZADO');
+      navigation.navigate('Calificacion', {
+        viajeId,
+        precioReal: data.precio_real,
+        remitoUrl: data.remito_url,
+      });
     };
 
     socket.on('mapa:actualizar',       onMapaActualizar);
     socket.on('viaje:estado_cambiado', onEstadoCambiado);
     socket.on('alerta:desvio',         onAlertaDesvio);
     socket.on('alerta:parada',         onAlertaParada);
+    socket.on('eta:actualizar',        onEtaActualizar);
+    socket.on('ruta:recalculada',      onRutaRecalculada);
     socket.on('viaje:finalizado',      onFinalizado);
 
     return () => {
@@ -110,9 +143,11 @@ export default function ViajeActivoScreen({ navigation, route }) {
       socket.off('viaje:estado_cambiado', onEstadoCambiado);
       socket.off('alerta:desvio',         onAlertaDesvio);
       socket.off('alerta:parada',         onAlertaParada);
+      socket.off('eta:actualizar',        onEtaActualizar);
+      socket.off('ruta:recalculada',      onRutaRecalculada);
       socket.off('viaje:finalizado',      onFinalizado);
     };
-  }, [socket, viajeId]);
+  }, [socket, viajeId, navigation]);
 
   const paradas = viaje?.paradas?.slice().sort((a, b) => a.orden - b.orden) ?? [];
   const origen  = paradas[0];
@@ -200,6 +235,12 @@ export default function ViajeActivoScreen({ navigation, route }) {
             <Text style={[styles.alertaBannerText, { color: colors.warning }]}> {alertaParada}</Text>
           </TouchableOpacity>
         ) : null}
+        {alertaRuta ? (
+          <View style={[styles.alertaBanner, styles.alertaBannerInfo]}>
+            <Ionicons name="navigate-outline" size={16} color={colors.primary} />
+            <Text style={[styles.alertaBannerText, { color: colors.primary }]}> Ruta recalculada por desvío</Text>
+          </View>
+        ) : null}
 
         {/* Estado + Costo */}
         <View style={styles.estadoCard}>
@@ -210,6 +251,9 @@ export default function ViajeActivoScreen({ navigation, route }) {
             </View>
             {velocidad != null && (
               <Text style={styles.velocidadText}>{velocidad} km/h</Text>
+            )}
+            {eta != null && (
+              <Text style={styles.etaText}>Llega en ~{eta} min</Text>
             )}
           </View>
           <View style={styles.costoBlock}>
@@ -227,6 +271,13 @@ export default function ViajeActivoScreen({ navigation, route }) {
             showsUserLocation={false}
             showsMyLocationButton={false}
           >
+            {rutaCoords.length > 1 && (
+              <Polyline
+                coordinates={rutaCoords}
+                strokeColor={colors.primary}
+                strokeWidth={3}
+              />
+            )}
             {conductorPos && (
               <Marker coordinate={conductorPos} title="Fletero" ref={conductorMarkerRef}>
                 <View style={styles.markerConductor}>
@@ -428,19 +479,21 @@ export default function ViajeActivoScreen({ navigation, route }) {
         </TouchableOpacity>
       </Modal>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.btnCancelar, cancelando && { opacity: 0.5 }]}
-          onPress={handleCancelar}
-          disabled={cancelando}
-          activeOpacity={0.85}
-        >
-          {cancelando
-            ? <ActivityIndicator color={colors.error} />
-            : <Text style={styles.btnCancelarText}>Cancelar viaje</Text>
-          }
-        </TouchableOpacity>
-      </View>
+      {estado !== 'FINALIZADO' && estado !== 'CANCELADO' && (
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={[styles.btnCancelar, cancelando && { opacity: 0.5 }]}
+            onPress={handleCancelar}
+            disabled={cancelando}
+            activeOpacity={0.85}
+          >
+            {cancelando
+              ? <ActivityIndicator color={colors.error} />
+              : <Text style={styles.btnCancelarText}>Cancelar viaje</Text>
+            }
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -471,6 +524,9 @@ const styles = StyleSheet.create({
   alertaBannerWarning: {
     backgroundColor: `${colors.warning}18`, borderColor: colors.warning,
   },
+  alertaBannerInfo: {
+    backgroundColor: `${colors.primary}18`, borderColor: colors.primary,
+  },
   alertaBannerText: { fontSize: fontSize.body, fontWeight: '600', color: colors.error, flex: 1 },
 
   estadoCard: {
@@ -488,6 +544,7 @@ const styles = StyleSheet.create({
   },
   badgeActivoText: { fontSize: 10, fontWeight: '800', color: colors.primary, letterSpacing: 0.8 },
   velocidadText:   { fontSize: fontSize.caption, color: colors.textHint, marginTop: 4 },
+  etaText:         { fontSize: fontSize.caption, color: colors.primary,  fontWeight: '700', marginTop: 2 },
   costoBlock:  { alignItems: 'flex-end' },
   costoLabel:  { fontSize: fontSize.caption, color: colors.textSecondary, marginBottom: 2 },
   costoValor:  { fontSize: 28, fontWeight: '800', color: colors.textPrimary },

@@ -5,12 +5,14 @@ import { colors, fontSize, spacing } from '../theme';
 
 let _MapView = null;
 let _Marker = null;
+let _Polyline = null;
 let _PROVIDER_GOOGLE = null;
 
 try {
   const RNMaps = require('react-native-maps');
   _MapView = RNMaps.default;
   _Marker = RNMaps.Marker;
+  _Polyline = RNMaps.Polyline;
   _PROVIDER_GOOGLE = RNMaps.PROVIDER_GOOGLE;
 } catch {}
 
@@ -19,6 +21,11 @@ export const PROVIDER_GOOGLE = _PROVIDER_GOOGLE;
 export function Marker(props) {
   if (!_Marker) return null;
   return <_Marker {...props} />;
+}
+
+export function Polyline(props) {
+  if (!_Polyline) return null;
+  return <_Polyline {...props} />;
 }
 
 export function MapView({ style, children, ...props }) {
