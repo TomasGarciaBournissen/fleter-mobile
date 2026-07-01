@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-06-30  
-> Branch: master | Commits totales: 30
+> Última actualización: 2026-07-01  
+> Branch: master | Commits totales: 31
 
 ---
 
@@ -42,6 +42,8 @@
 | `102b74b` | 08 Jun 2026 | Feat — Places New API + AsyncStorage historial + fix .env + fix CARGANDO→EN_RUTA + QREntregaScreen Fase 5 + QR display cliente |
 | (pendiente) | 08 Jun 2026 | Fix — adaptar QR flow al nuevo contrato de API (confirmar-parada, qr-paradas, viaje:finalizado) |
 | (pendiente) | 30 Jun 2026 | Feat — retomar viaje activo, ETA, ruta recalculada, Polyline, CalificacionScreen, historial real, GERENTE |
+| (pendiente) | 01 Jul 2026 | Docs — api.md sincronizado con contrato real (ruta_planeada, eta:actualizar, ruta:recalculada, mis-viajes-conductor, cancelar-conductor) |
+| (pendiente) | 01 Jul 2026 | Feat — cancelación de viaje por el conductor en ViajeActivoFleteroScreen (POST /api/viajes/:id/cancelar-conductor) |
 
 ---
 
@@ -72,7 +74,7 @@
 | `DisponiblesScreen` | ✅ Funcional | GET /api/viajes/disponibles + socket `viaje:disponible`, bug fix stale closure en acceptance flow |
 | `NuevoViajeModal` | ✅ Funcional | Bottom sheet con countdown 30s, barra animada, Aceptar/Rechazar |
 | `DetalleViajeScreen` | ✅ Funcional | Fetch /api/viajes/:id para nombre real del cliente, bug fix stale closure, timeout 10s en handleAceptar |
-| `ViajeActivoFleteroScreen` | ✅ Funcional | GPS real (expo-location + background task), MapView con posición propia + paradas, PATCH CARGANDO/DESCARGANDO, timeline reactivo a viaje:estado_cambiado |
+| `ViajeActivoFleteroScreen` | ✅ Funcional | GPS real (expo-location + background task), MapView con posición propia + paradas, PATCH CARGANDO/DESCARGANDO, timeline reactivo a viaje:estado_cambiado, botón "Cancelar viaje" (POST /cancelar-conductor) visible solo en estado CONDUCTOR_ASIGNADO |
 | `HistorialFleteroScreen` | ✅ Funcional | API real GET /api/viajes/mis-viajes-conductor, filtros Todos/En curso/Finalizados/Cancelados |
 | `PerfilFleteroScreen` | ✅ Funcional | Datos del usuario, gestión de vehículos (listar/agregar/eliminar), logout |
 | `CobroScreen` | ✅ Funcional | Muestra precio_real y remito PDF reales de route params, navega a DisponiblesHome |
@@ -140,6 +142,7 @@
 | MapView no disponible en Expo Go | `react-native-maps` requiere módulo nativo — MapViewWrapper muestra placeholder | ⚠️ Funciona en build nativa |
 | Transición CARGANDO → EN_RUTA | No documentada en api.md — frontend asume que el backend la auto-dispara con GPS | ⚠️ Pendiente confirmar con backend |
 | `id_usuario_conductor` removido del payload | API nueva no incluye ese campo en `viaje:conductor_asignado` — lógica de navegación actualizada para no depender de él | ✅ Resuelto |
+| Cancelación del cliente rota | `ViajeActivoScreen` (cliente) llama `PATCH /api/viajes/:id/estado` con `estado: 'CANCELADO'`, pero el contrato solo permite rol `CONDUCTOR` y valores `CARGANDO`/`DESCARGANDO` en ese endpoint — no hay endpoint de cancelación documentado para el cliente | ❌ Pendiente, requiere endpoint nuevo en backend |
 
 ---
 
@@ -157,6 +160,7 @@
 - [ ] Pantalla de espera del cliente con animación (`BuscandoFleteroScreen` existe pero básica)
 - [x] Manejar `viaje:cancelado_sin_conductor` en `BuscandoFleteroScreen`
 - [ ] Fix doble alert en `DetalleViajeScreen` cuando conductor pierde
+- [x] Cancelación de viaje por el conductor (`POST /api/viajes/:id/cancelar-conductor`) en `ViajeActivoFleteroScreen`, solo habilitada en estado `CONDUCTOR_ASIGNADO`
 
 ### Fase 4 (completo)
 - [x] `react-native-maps` + `expo-task-manager` instalados

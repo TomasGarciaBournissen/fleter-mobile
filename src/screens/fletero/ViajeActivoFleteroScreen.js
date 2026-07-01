@@ -45,6 +45,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
   const [rutaCoords, setRutaCoords]     = useState([]);
   const [alertaRuta, setAlertaRuta]     = useState(false);
   const [cargandoAccion, setCargandoAccion] = useState(false);
+  const [cancelando, setCancelando]     = useState(false);
   const [debugGps, setDebugGps]         = useState(null);
   const posicionRef = useRef(null);
   const mapRef      = useRef(null);
@@ -177,6 +178,32 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
     } finally {
       setCargandoAccion(false);
     }
+  };
+
+  const handleCancelar = () => {
+    Alert.alert(
+      'Cancelar viaje',
+      '¿Seguro que querés cancelar? El viaje vuelve a publicarse para otros conductores.',
+      [
+        { text: 'No, continuar', style: 'cancel' },
+        {
+          text: 'Sí, cancelar',
+          style: 'destructive',
+          onPress: async () => {
+            setCancelando(true);
+            try {
+              await api.post(`/api/viajes/${viajeId}/cancelar-conductor`);
+              navigation.reset({ index: 0, routes: [{ name: 'DisponiblesHome' }] });
+            } catch (e) {
+              const msg = e?.response?.data?.error ?? 'No se pudo cancelar el viaje';
+              Alert.alert('Error', msg);
+            } finally {
+              setCancelando(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const getBotonLabel = () => {
@@ -381,6 +408,20 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
               : <Text style={styles.btnAccionText}>{botonLabel}</Text>
             }
           </TouchableOpacity>
+
+          {estado === 'CONDUCTOR_ASIGNADO' && (
+            <TouchableOpacity
+              style={[styles.btnCancelar, cancelando && styles.btnDisabled]}
+              onPress={handleCancelar}
+              disabled={cancelando || cargandoAccion}
+              activeOpacity={0.85}
+            >
+              {cancelando
+                ? <ActivityIndicator color={colors.error} />
+                : <Text style={styles.btnCancelarText}>Cancelar viaje</Text>
+              }
+            </TouchableOpacity>
+          )}
         </View>
       ) : null}
     </SafeAreaView>
@@ -499,4 +540,10 @@ const styles = StyleSheet.create({
   },
   btnAccionText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
   btnDisabled:   { opacity: 0.6 },
+
+  btnCancelar: {
+    borderWidth: 1, borderColor: colors.error, borderRadius: radius.lg,
+    paddingVertical: spacing.md, alignItems: 'center', marginTop: spacing.sm,
+  },
+  btnCancelarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.error },
 });
