@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-08-19  
-> Branch: master | Commits totales: 33
+> Última actualización: 2026-08-20  
+> Branch: master | Commits totales: 34
 
 ---
 
@@ -47,6 +47,7 @@
 | (pendiente) | 14 Ago 2026 | Feat — build nativa iOS funcionando en dispositivo físico (Xcode + Google Maps SDK), mapa expandible + centrar en conductor/fletero |
 | (pendiente) | 14 Ago 2026 | Feat — implementación completa del contrato nuevo de api.md: flujo "Iniciar viaje" manual, cancelar-cliente, zona calculada por servidor, duración/puntualidad en historiales, conductor afiliado (tab Asignados), y rol GERENTE completo (empresas, flota, conductores, reservar/asignar/reasignar, tracking) |
 | (pendiente) | 19 Ago 2026 | Fix — api.md en disco había quedado desactualizado (se había revertido a la versión "Fase 5", sin zona/iniciar/admin/jerarquía) pese a que el código ya implementaba todo eso; resincronizado con el contrato completo. Agrega botón "Liberar viaje" (`POST /viajes/:id/cancelar-reserva`) en `AsignarConductorScreen` y link a remito PDF en `ViajeActivoGerenteScreen` al finalizar |
+| (pendiente) | 20 Ago 2026 | Feat — reemplaza confirmación de entrega por QR con confirmación por GPS en `QREntregaScreen` (contrato nuevo: `confirmar-parada` ya no acepta `qr_firmado`, sino `id_parada+lat+lng`), botón "Finalizar viaje" en la última parada. Popup de alta de vehículo en `DisponiblesScreen` tras el registro del fletero (agregar ahora o más tarde desde Perfil). Refresco de `DisponiblesScreen` al recuperar foco + fix de pull-to-refresh (estaba atado al mismo loading state que la carga inicial). Saca el selector manual de zona en `CrearViajeScreen` (la calcula el servidor). Fix: `ViajeActivoFleteroScreen` no reflejaba el estado real si el POST a `/iniciar` fallaba en el cliente aunque el backend ya hubiera aplicado el cambio; ahora reconsulta el viaje ante ese error. Fix: la parada de origen se confirma en el momento de salir de `CARGANDO` (mientras el conductor todavía está ahí) en vez de diferirse al final, donde la validación de proximidad GPS la rechazaba por estar lejos. `ViajeActivoFleteroScreen` ahora espera el fetch inicial antes de renderizar, para no mostrar por un instante la etapa por defecto. api.md sincronizado |
 
 ---
 
@@ -65,26 +66,26 @@
 | Pantalla | Estado | Notas |
 |----------|--------|-------|
 | `HomeScreen` | ✅ Funcional | Últimos 3 viajes reales vía GET /api/viajes/mis-viajes, pull-to-refresh, FAB nuevo viaje |
-| `CrearViajeScreen` | ✅ Funcional | Google Places Legacy API para origen/destino/paradas, coords reales en payload, POST /api/viajes/estimar-costo |
-| `ConfirmacionViajeScreen` | ✅ Funcional | Resumen + POST /api/viajes, navega a BuscandoFletero |
+| `CrearViajeScreen` | ✅ Funcional | Google Places Legacy API para origen/destino/paradas, coords reales en payload, POST /api/viajes/estimar-costo. Selector manual de zona (CABA/PROVINCIA/MIXTO) eliminado — el `zona` del body ya no se manda, el servidor la calcula solo. `fecha_programada` mínima bajada a 1 minuto desde ahora en el mobile (antes 1 hora) — **ojo:** el backend sigue exigiendo su propio mínimo (`ANTICIPACION_MINIMA_MINUTOS`, default 60), así que con ese default el publish puede devolver 400 aunque el form lo deje avanzar, ver Problemas Conocidos |
+| `ConfirmacionViajeScreen` | ✅ Funcional | Resumen + POST /api/viajes, navega a BuscandoFletero. Campo "Zona" ahora usa únicamente `estimado.zona` (la calculada por el servidor) |
 | `BuscandoFleteroScreen` | ✅ Funcional | Animación de búsqueda, escucha `viaje:conductor_asignado` via socket, botón "Cancelar búsqueda" (POST /cancelar-cliente, funciona en BUSCANDO_CONDUCTOR ya que el timeout automático de 10min se eliminó del backend) |
-| `ViajeActivoScreen` | ✅ Funcional | MapView con marcador del conductor en tiempo real, mapa expandible a pantalla completa + botón centrar, Google Maps en iOS y Android, mapa:actualizar, alerta:desvio, timeline de estados, escucha `viaje:iniciado` (reemplaza el auto-inicio por GPS), botón cancelar (POST /cancelar-cliente) solo en CONDUCTOR_ASIGNADO, QR por parada via GET /qr-paradas, expandible, paginador si hay múltiples paradas, viaje:finalizado |
+| `ViajeActivoScreen` | ✅ Funcional | MapView con marcador del conductor en tiempo real, mapa expandible a pantalla completa + botón centrar, Google Maps en iOS y Android, mapa:actualizar, alerta:desvio, timeline de estados, escucha `viaje:iniciado` (reemplaza el auto-inicio por GPS), botón cancelar (POST /cancelar-cliente) solo en CONDUCTOR_ASIGNADO, viaje:finalizado. Panel de QR por parada removido (GET /qr-paradas ya no existe en el contrato — la confirmación de entrega pasó a ser por GPS del lado del conductor) |
 | `HistorialScreen` | ✅ Funcional | GET /api/viajes/mis-viajes, agrupado por mes, filtros (Todos/Finalizados/Cancelados/En curso), back button |
 | `PerfilScreen` | ✅ Funcional | Nombre y email reales del AuthContext, edición local, logout |
 
 ### Fletero
 | Pantalla | Estado | Notas |
 |----------|--------|-------|
-| `DisponiblesScreen` | ✅ Funcional | GET /api/viajes/disponibles + socket `viaje:disponible`, bug fix stale closure en acceptance flow |
+| `DisponiblesScreen` | ✅ Funcional | GET /api/viajes/disponibles + socket `viaje:disponible`, bug fix stale closure en acceptance flow. Refetch con `useFocusEffect` al recuperar foco (antes solo cargaba una vez al montar). Pull-to-refresh separado del loading inicial (antes compartían el mismo state y el pull tapaba la lista entera con el spinner). Popup "Registrá tu vehículo" si el conductor no tiene ninguno — Agregar ahora (navega a Perfil y abre el modal de alta) o Más tarde (se descarta, persistido en AsyncStorage por usuario) |
 | `NuevoViajeModal` | ✅ Funcional | Bottom sheet con countdown 30s, barra animada, Aceptar/Rechazar |
 | `DetalleViajeScreen` | ✅ Funcional | Fetch /api/viajes/:id para nombre real del cliente, bug fix stale closure, timeout 10s en handleAceptar |
-| `ViajeActivoFleteroScreen` | ✅ Funcional | GPS real (expo-location + background task) gateado detrás de "Iniciar viaje" (POST /api/viajes/:id/iniciar) — ya no arranca solo con el primer ping, MapView con posición propia + paradas, mapa expandible + centrar, PATCH CARGANDO/EN_RUTA/DESCARGANDO, timeline reactivo a viaje:estado_cambiado, botón "Cancelar viaje" (POST /cancelar-conductor) visible solo en estado CONDUCTOR_ASIGNADO |
+| `ViajeActivoFleteroScreen` | ✅ Funcional | GPS real (expo-location + background task) gateado detrás de "Iniciar viaje" (POST /api/viajes/:id/iniciar) — ya no arranca solo con el primer ping, MapView con posición propia + paradas, mapa expandible + centrar, PATCH CARGANDO/EN_RUTA/DESCARGANDO, timeline reactivo a viaje:estado_cambiado, botón "Cancelar viaje" (POST /cancelar-conductor) visible solo en estado CONDUCTOR_ASIGNADO, botón "Confirmar entrega" en DESCARGANDO (ya no "Escanear QR"). Confirma la parada de origen automáticamente al salir de CARGANDO (mientras el conductor sigue ahí — confirmar-parada exige EN_RUTA/DESCARGANDO y proximidad GPS, así que dejarla para el final la hacía fallar por estar lejos). Si el POST a /iniciar falla del lado del cliente, reconsulta el viaje para no dejar el botón desincronizado del estado real. Espera el fetch inicial antes de renderizar (no muestra la etapa por defecto antes de tener el estado real) |
 | `AsignadosScreen` | ✅ Funcional (nueva) | GET /api/viajes/asignados + socket `viaje:asignado`, para conductores afiliados a una empresa que reciben viajes sin tener que aceptarlos — tab nueva en FleteroStack |
 | `HistorialFleteroScreen` | ✅ Funcional | API real GET /api/viajes/mis-viajes-conductor, filtros Todos/En curso/Finalizados/Cancelados, duración/puntualidad si vienen en la respuesta |
-| `PerfilFleteroScreen` | ✅ Funcional | Datos del usuario, gestión de vehículos (listar/agregar/eliminar), sección "Mis empresas" (afiliarse con código, listar afiliaciones PENDIENTE/ACTIVO, desafiliarse), logout |
+| `PerfilFleteroScreen` | ✅ Funcional | Datos del usuario, gestión de vehículos (listar/agregar/eliminar), sección "Mis empresas" (afiliarse con código, listar afiliaciones PENDIENTE/ACTIVO, desafiliarse), logout. Abre el modal de alta de vehículo automáticamente si llega desde el popup de `DisponiblesScreen` (route param `abrirVehiculo`) |
 | `CobroScreen` | ✅ Funcional | Muestra precio_real y remito PDF reales de route params, navega a DisponiblesHome |
 | `CalificacionScreen` | ✅ Funcional | Rating 1-5 + comentario opcional, POST /api/viajes/:id/calificacion, link remito PDF |
-| `QREntregaScreen` | ✅ Funcional | `expo-camera` (migrado desde `expo-barcode-scanner`, deprecado y sin build contra Expo SDK 54), validación POST /confirmar-parada con lat/lng, soporta múltiples paradas, modal manual, cierre automático al confirmar última parada |
+| `QREntregaScreen` | ✅ Funcional | Reescrita: ya no escanea QR (`expo-camera` sin uso, contrato eliminó `qr_firmado`) — pide permiso de ubicación y por cada parada pendiente muestra un botón "Confirmar entrega" ("Finalizar viaje" en la última) que manda `POST /confirmar-parada` con `id_parada+lat+lng`. Soporta múltiples paradas, cierre automático al confirmar la última |
 
 ### Gerente (nuevo — rol completo)
 | Pantalla | Estado | Notas |
@@ -176,6 +177,9 @@
 | `api.md` desincronizado del código | El archivo en disco había quedado en la versión "Fase 5" (sin zona/iniciar/admin/jerarquía) aunque el código del rol GERENTE ya estaba implementado — probablemente una escritura anterior no se guardó bien | ✅ Resuelto — resincronizado con el contrato completo, verificado contra cada pantalla existente |
 | Gerente no podía soltar una reserva | `POST /viajes/:id/cancelar-reserva` existe en el contrato pero nada lo llamaba — un gerente que reservaba y se arrepentía dejaba el viaje bloqueado hasta el timeout de 10min | ✅ Resuelto — botón "Liberar viaje" en `AsignarConductorScreen` |
 | Gerente sin acceso al remito | `GET /viajes/:id/remito` acepta rol GERENTE pero `ViajeActivoGerenteScreen` no mostraba nada al finalizar el viaje | ✅ Resuelto — link "Ver remito PDF" usando `remito_url` de `viaje:finalizado` (o fetch de respaldo si la pantalla se reabre) |
+| `fecha_programada` mínima desincronizada mobile/backend | `CrearViajeScreen` baja su mínimo a 1 minuto, pero el backend real sigue con `ANTICIPACION_MINIMA_MINUTOS` en 60 (default) — confirmado en dispositivo: el form deja publicar y el backend devuelve 400 `fecha_programada debe ser una fecha ISO futura (al menos 1 hora desde ahora)` | ❌ Pendiente — hay que bajar la variable de entorno en el backend, o subir de nuevo el mínimo del mobile a 60 |
+| Botón "Iniciar viaje" quedaba desincronizado | Si el POST a `/api/viajes/:id/iniciar` fallaba del lado del cliente (timeout, cold start) aunque el backend ya hubiera aplicado el cambio, el botón seguía mostrando "Iniciar viaje" y el segundo intento devolvía error de "ya iniciado". El endpoint no emite ningún evento que el fletero escuche | ✅ Resuelto — ante error, `ViajeActivoFleteroScreen` reconsulta `GET /api/viajes/:id` y sincroniza el estado real antes de mostrar un error |
+| Confirmación de la parada de origen imposible al final del viaje | `confirmar-parada` exige estado `EN_RUTA`/`DESCARGANDO` + proximidad GPS a la parada. Si la confirmación de la parada de origen se difiere hasta `DESCARGANDO` (como hacía la pantalla de confirmación), el conductor ya está lejos del origen y la valida por proximidad la rechaza | ✅ Resuelto — se confirma automáticamente al salir de `CARGANDO`, mientras el conductor sigue en el origen. Nota: viajes que ya estaban más allá de `CARGANDO` antes de este fix no tienen la parada de origen confirmada retroactivamente |
 
 ---
 
@@ -230,6 +234,17 @@
 - [ ] Probar contra un backend real con cuenta GERENTE (reservar → asignar → iniciar → tracking → finalizar de punta a punta)
 - [ ] Escuchar `viaje:reserva_cancelada` en `DisponiblesGerenteScreen`
 - [ ] Selector de múltiples empresas en `useMiEmpresa` si un gerente llega a tener más de una
+
+### Fase 7 — Confirmación por GPS y fixes de testing en dispositivo (completo)
+- [x] `QREntregaScreen` reescrita: confirmación de entrega por GPS en vez de QR (contrato eliminó `qr_firmado`/`GET /qr-paradas`)
+- [x] Panel de QR removido de `ViajeActivoScreen` (cliente) — llamaba a un endpoint que ya no existe
+- [x] Popup de alta de vehículo para el fletero sin vehículos registrados
+- [x] `DisponiblesScreen`: refetch al recuperar foco + fix de pull-to-refresh
+- [x] Selector manual de zona eliminado de `CrearViajeScreen`
+- [x] Fix: parada de origen se confirma al salir de `CARGANDO`, no al final del viaje
+- [x] Fix: botón "Iniciar viaje" se resincroniza con el backend si el POST falla del lado del cliente
+- [x] `ViajeActivoFleteroScreen` espera el estado real antes de renderizar la etapa del viaje
+- [ ] Coordinar con backend el valor de `ANTICIPACION_MINIMA_MINUTOS` (mobile ya está en 1 min, backend sigue en 60)
 
 ---
 

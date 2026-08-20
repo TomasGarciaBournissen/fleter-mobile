@@ -1,14 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform,
-  SafeAreaView, StatusBar, ActivityIndicator, Alert, TextInput, Modal, ScrollView,
+  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar,
+  ActivityIndicator, Alert, Linking,
 } from 'react-native';
-let CameraView = null;
-let Camera = null;
-try {
-  ({ CameraView, Camera } = require('expo-camera'));
-} catch {}
-const SCANNER_DISPONIBLE = CameraView != null;
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
@@ -22,45 +16,37 @@ export default function QREntregaScreen({ navigation, route }) {
     .filter(p => p.estado !== 'ENTREGADO')
     .sort((a, b) => a.orden - b.orden);
 
-  const [paradaIdx,    setParadaIdx]    = useState(0);
-  const [permisoOk,    setPermisoOk]    = useState(null);
-  const [validando,    setValidando]    = useState(false);
-  const [confirmada,   setConfirmada]   = useState(false);
+  const [paradaIdx,      setParadaIdx]      = useState(0);
+  const [permisoOk,      setPermisoOk]      = useState(null);
+  const [confirmando,    setConfirmando]    = useState(false);
+  const [confirmada,     setConfirmada]     = useState(false);
   const [viajeFinalizado, setViajeFinalizado] = useState(false);
-  const [precioReal,   setPrecioReal]   = useState(null);
-  const [remitoUrl,    setRemitoUrl]    = useState(null);
-  const [modalManual,  setModalManual]  = useState(false);
-  const [codigoManual, setCodigoManual] = useState('');
-  const scannedRef = useRef(false);
+  const [precioReal,     setPrecioReal]     = useState(null);
+  const [remitoUrl,      setRemitoUrl]      = useState(null);
 
   const paradaActual = paradasPendientes[paradaIdx] ?? null;
+  const esUltimaParada = paradaIdx === paradasPendientes.length - 1;
 
   useEffect(() => {
-    if (!SCANNER_DISPONIBLE) {
-      setPermisoOk(false);
-      return;
-    }
-    Camera.requestCameraPermissionsAsync().then(({ status }) => {
+    Location.requestForegroundPermissionsAsync().then(({ status }) => {
       setPermisoOk(status === 'granted');
     });
   }, []);
 
-  const validarQR = async (qrFirmado) => {
-    if (!qrFirmado?.trim()) return;
-    setValidando(true);
-    try {
-      // Obtener posición GPS actual para validación de proximidad
-      let lat = 0, lng = 0;
-      try {
-        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-        lat = loc.coords.latitude;
-        lng = loc.coords.longitude;
-      } catch {}
+  const pedirPermiso = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    setPermisoOk(status === 'granted');
+  };
 
+  const handleConfirmar = async () => {
+    if (!paradaActual || confirmando) return;
+    setConfirmando(true);
+    try {
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       const { data } = await api.post(`/api/viajes/${viajeId}/confirmar-parada`, {
-        qr_firmado: qrFirmado.trim(),
-        lat,
-        lng,
+        id_parada: paradaActual.id_parada,
+        lat: loc.coords.latitude,
+        lng: loc.coords.longitude,
       });
 
       if (data.viaje_finalizado) {
@@ -69,41 +55,26 @@ export default function QREntregaScreen({ navigation, route }) {
         setRemitoUrl(data.remito_url);
         setConfirmada(true);
       } else {
-        // Quedan más paradas
         const siguiente = paradaIdx + 1;
         if (siguiente < paradasPendientes.length) {
           setParadaIdx(siguiente);
-          scannedRef.current = false;
         } else {
           setConfirmada(true);
         }
       }
     } catch (e) {
-      scannedRef.current = false;
-      const msg = e?.response?.data?.error ?? 'QR inválido o no corresponde a esta parada';
-      Alert.alert('Error al confirmar', msg, [{ text: 'Reintentar' }]);
+      const msg = e?.response?.data?.error ?? 'No pudimos obtener tu ubicación o confirmar la parada. Intentá de nuevo.';
+      Alert.alert('No se pudo confirmar', msg);
     } finally {
-      setValidando(false);
+      setConfirmando(false);
     }
-  };
-
-  const handleScan = ({ data }) => {
-    if (scannedRef.current || validando) return;
-    scannedRef.current = true;
-    validarQR(data);
-  };
-
-  const handleManual = () => {
-    setModalManual(false);
-    validarQR(codigoManual);
-    setCodigoManual('');
   };
 
   const handleIrACobro = () => {
     navigation.replace('Cobro', { viajeId, precioReal, remitoUrl });
   };
 
-  // ── Permiso denegado ────────────────────────────────────────────────────────
+  // ── Permiso de ubicación denegado ───────────────────────────────────────────
   if (permisoOk === false) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -112,61 +83,23 @@ export default function QREntregaScreen({ navigation, route }) {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Entrega QR</Text>
+          <Text style={styles.headerTitle}>Confirmar entrega</Text>
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.centrado}>
-          <Ionicons name={SCANNER_DISPONIBLE ? 'camera-off-outline' : 'qr-code-outline'} size={48} color={colors.textHint} />
-          <Text style={styles.permisoDenegadoTitulo}>
-            {SCANNER_DISPONIBLE ? 'Sin acceso a la cámara' : 'Escáner no disponible en Expo Go'}
-          </Text>
+          <Ionicons name="location-outline" size={48} color={colors.textHint} />
+          <Text style={styles.permisoDenegadoTitulo}>Necesitamos tu ubicación</Text>
           <Text style={styles.permisoDenegadoSub}>
-            {SCANNER_DISPONIBLE
-              ? 'Habilitá el permiso de cámara en Configuración para escanear el QR.'
-              : 'Pedile al cliente el texto del QR e ingresalo manualmente para confirmar la entrega.'}
+            Para confirmar una entrega necesitamos verificar que estés en la parada.
+            Habilitá el permiso de ubicación para continuar.
           </Text>
-          <TouchableOpacity style={styles.btnPrimario} onPress={() => setModalManual(true)}>
-            <Text style={styles.btnPrimarioText}>Ingresar código manualmente</Text>
+          <TouchableOpacity style={styles.btnPrimario} onPress={pedirPermiso}>
+            <Text style={styles.btnPrimarioText}>Reintentar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.btnSecundario} onPress={() => Linking.openSettings()}>
+            <Text style={styles.btnSecundarioText}>Abrir configuración</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Modal manual — necesita estar acá también para el early return de Expo Go */}
-        <Modal visible={modalManual} transparent animationType="slide">
-          <KeyboardAvoidingView
-            style={styles.modalKAV}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          >
-            <TouchableOpacity style={styles.modalDismiss} activeOpacity={1} onPress={() => { setModalManual(false); setCodigoManual(''); }} />
-            <View style={styles.modalSheet}>
-              <Text style={styles.modalTitulo}>Ingresar código QR</Text>
-              <Text style={styles.modalSub}>Copiá el código que muestra el cliente en pantalla</Text>
-              <TextInput
-                style={styles.modalInput}
-                value={codigoManual}
-                onChangeText={setCodigoManual}
-                placeholder="Pegá el código aquí..."
-                placeholderTextColor={colors.textHint}
-                multiline
-                autoFocus
-              />
-              <View style={styles.modalBotones}>
-                <TouchableOpacity style={styles.modalBtnCancelar} onPress={() => { setModalManual(false); setCodigoManual(''); }}>
-                  <Text style={styles.modalBtnCancelarText}>Cancelar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.modalBtnConfirmar, !codigoManual.trim() && { opacity: 0.4 }]}
-                  onPress={handleManual}
-                  disabled={!codigoManual.trim()}
-                >
-                  {validando
-                    ? <ActivityIndicator color={colors.textPrimary} />
-                    : <Text style={styles.modalBtnConfirmarText}>Confirmar</Text>
-                  }
-                </TouchableOpacity>
-              </View>
-            </View>
-          </KeyboardAvoidingView>
-        </Modal>
       </SafeAreaView>
     );
   }
@@ -180,7 +113,7 @@ export default function QREntregaScreen({ navigation, route }) {
     );
   }
 
-  // ── Sin paradas para escanear ───────────────────────────────────────────────
+  // ── Sin paradas para confirmar ──────────────────────────────────────────────
   if (paradasPendientes.length === 0) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -189,7 +122,7 @@ export default function QREntregaScreen({ navigation, route }) {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Entrega QR</Text>
+          <Text style={styles.headerTitle}>Confirmar entrega</Text>
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.centrado}>
@@ -211,7 +144,7 @@ export default function QREntregaScreen({ navigation, route }) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Entrega QR</Text>
+        <Text style={styles.headerTitle}>Confirmar entrega</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -227,7 +160,7 @@ export default function QREntregaScreen({ navigation, route }) {
         </View>
       )}
 
-      {/* ── QR confirmado ───────────────────────────────────────────────────── */}
+      {/* ── Parada confirmada ───────────────────────────────────────────────── */}
       {confirmada ? (
         <View style={styles.content}>
           <View style={styles.exitoHeader}>
@@ -267,81 +200,36 @@ export default function QREntregaScreen({ navigation, route }) {
           </TouchableOpacity>
         </View>
       ) : (
-        /* ── Scanner ──────────────────────────────────────────────────────── */
-        <View style={styles.scannerWrap}>
-          <Text style={styles.instruccion}>
-            {paradaActual?.direccion
-              ? `Escaneá el QR en: ${paradaActual.direccion}`
-              : 'Apuntá la cámara al código QR del destinatario'}
-          </Text>
-
-          <View style={styles.scannerContainer}>
-            <CameraView
-              style={styles.scanner}
-              onBarcodeScanned={handleScan}
-              barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-            />
-            {/* Esquinas del visor */}
-            <View style={styles.overlay}>
-              <View style={styles.qrCorner} />
-              <View style={[styles.qrCorner, styles.qrCornerTR]} />
-              <View style={[styles.qrCorner, styles.qrCornerBL]} />
-              <View style={[styles.qrCorner, styles.qrCornerBR]} />
-              <View style={styles.qrLinea} />
-            </View>
-
-            {validando && (
-              <View style={styles.validandoOverlay}>
-                <ActivityIndicator color={colors.primary} size="large" />
-                <Text style={styles.validandoText}>Validando QR...</Text>
-              </View>
-            )}
+        /* ── Confirmación por ubicación ──────────────────────────────────────── */
+        <View style={styles.confirmarWrap}>
+          <View style={styles.confirmarIconoWrap}>
+            <Ionicons name="location" size={56} color={colors.primary} />
           </View>
 
-          <TouchableOpacity style={styles.btnManual} onPress={() => setModalManual(true)}>
-            <Ionicons name="keypad-outline" size={16} color={colors.textSecondary} />
-            <Text style={styles.btnManualText}> Ingresar código manualmente</Text>
+          <Text style={styles.instruccion}>
+            {paradaActual?.direccion
+              ? `Confirmá tu llegada a: ${paradaActual.direccion}`
+              : 'Confirmá tu llegada a esta parada'}
+          </Text>
+          <Text style={styles.instruccionSub}>
+            Verificamos tu ubicación GPS al confirmar. Tenés que estar cerca de la parada.
+          </Text>
+
+          <View style={{ flex: 1 }} />
+
+          <TouchableOpacity
+            style={[styles.btnAccion, confirmando && styles.btnDisabled]}
+            onPress={handleConfirmar}
+            disabled={confirmando}
+            activeOpacity={0.85}
+          >
+            {confirmando
+              ? <ActivityIndicator color={colors.textPrimary} />
+              : <Text style={styles.btnAccionText}>{esUltimaParada ? 'Finalizar viaje' : 'Confirmar entrega'}</Text>
+            }
           </TouchableOpacity>
         </View>
       )}
-
-      {/* ── Modal ingreso manual ─────────────────────────────────────────────── */}
-      <Modal visible={modalManual} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <Text style={styles.modalTitulo}>Ingresar código manual</Text>
-            <Text style={styles.modalSub}>
-              Encontrá el código en el comprobante del destinatario
-            </Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Código QR"
-              placeholderTextColor={colors.textHint}
-              value={codigoManual}
-              onChangeText={setCodigoManual}
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoFocus
-            />
-            <View style={styles.modalBotones}>
-              <TouchableOpacity
-                style={styles.modalBtnCancelar}
-                onPress={() => { setModalManual(false); setCodigoManual(''); }}
-              >
-                <Text style={styles.modalBtnCancelarText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.btnPrimario, { flex: 2 }]}
-                onPress={handleManual}
-                disabled={!codigoManual.trim()}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.btnPrimarioText}>Validar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -370,44 +258,27 @@ const styles = StyleSheet.create({
 
   centrado: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg, gap: spacing.md },
 
-  scannerWrap: { flex: 1, paddingHorizontal: spacing.md, paddingBottom: spacing.lg },
+  confirmarWrap: { flex: 1, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, paddingTop: spacing.xl },
+  confirmarIconoWrap: {
+    alignSelf: 'center', width: 96, height: 96, borderRadius: radius.full,
+    backgroundColor: `${colors.primary}18`, borderWidth: 2, borderColor: `${colors.primary}44`,
+    alignItems: 'center', justifyContent: 'center', marginBottom: spacing.lg,
+  },
   instruccion: {
+    fontSize: fontSize.h3, fontWeight: '700', color: colors.textPrimary,
+    textAlign: 'center', marginBottom: spacing.xs,
+  },
+  instruccionSub: {
     fontSize: fontSize.body, color: colors.textSecondary,
-    textAlign: 'center', marginBottom: spacing.lg,
-  },
-  scannerContainer: {
-    flex: 1, borderRadius: radius.xl, overflow: 'hidden',
-    backgroundColor: '#000', position: 'relative',
-  },
-  scanner: { flex: 1 },
-  overlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
-
-  qrCorner: {
-    position: 'absolute', top: 40, left: 40,
-    width: 36, height: 36,
-    borderTopWidth: 3, borderLeftWidth: 3,
-    borderColor: colors.primary, borderTopLeftRadius: 4,
-  },
-  qrCornerTR: { left: undefined, right: 40, borderLeftWidth: 0, borderRightWidth: 3, borderTopLeftRadius: 0, borderTopRightRadius: 4 },
-  qrCornerBL: { top: undefined, bottom: 40, borderTopWidth: 0, borderBottomWidth: 3, borderTopLeftRadius: 0, borderBottomLeftRadius: 4 },
-  qrCornerBR: { top: undefined, left: undefined, bottom: 40, right: 40, borderTopWidth: 0, borderLeftWidth: 0, borderRightWidth: 3, borderBottomWidth: 3, borderTopLeftRadius: 0, borderBottomRightRadius: 4 },
-  qrLinea: {
-    position: 'absolute', height: 2, left: 40, right: 40,
-    backgroundColor: `${colors.primary}99`,
+    textAlign: 'center',
   },
 
-  validandoOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    alignItems: 'center', justifyContent: 'center', gap: spacing.sm,
+  btnAccion: {
+    backgroundColor: colors.primary, borderRadius: radius.lg,
+    paddingVertical: spacing.md, alignItems: 'center',
   },
-  validandoText: { color: '#fff', fontSize: fontSize.body, fontWeight: '600' },
-
-  btnManual: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    marginTop: spacing.md, paddingVertical: spacing.sm,
-  },
-  btnManualText: { fontSize: fontSize.body, color: colors.textSecondary, fontWeight: '600' },
+  btnAccionText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnDisabled: { opacity: 0.6 },
 
   content: { flex: 1, paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
   exitoHeader: { alignItems: 'center', paddingVertical: spacing.lg },
@@ -431,42 +302,12 @@ const styles = StyleSheet.create({
 
   btnPrimario: {
     backgroundColor: colors.primary, borderRadius: radius.lg,
-    paddingVertical: spacing.md, alignItems: 'center',
+    paddingVertical: spacing.md, alignItems: 'center', width: '100%',
   },
   btnPrimarioText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnSecundario: { paddingVertical: spacing.sm, alignItems: 'center' },
+  btnSecundarioText: { fontSize: fontSize.body, fontWeight: '600', color: colors.textSecondary },
 
   permisoDenegadoTitulo: { fontSize: fontSize.h2, fontWeight: '700', color: colors.textPrimary, textAlign: 'center' },
   permisoDenegadoSub:    { fontSize: fontSize.body, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
-
-  modalKAV:     { flex: 1, justifyContent: 'flex-end' },
-  modalDismiss: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalSheet: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl,
-    padding: spacing.lg, paddingBottom: spacing.xl + spacing.md,
-    gap: spacing.sm,
-    shadowColor: '#000', shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.12, shadowRadius: 12, elevation: 16,
-  },
-  modalTitulo: { fontSize: fontSize.h2, fontWeight: '800', color: colors.textPrimary },
-  modalSub:    { fontSize: fontSize.body, color: colors.textSecondary },
-  modalInput: {
-    backgroundColor: colors.surface1, borderRadius: radius.md,
-    borderWidth: 1, borderColor: colors.surface3,
-    paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 4,
-    fontSize: fontSize.body, color: colors.textPrimary,
-    minHeight: 80, textAlignVertical: 'top',
-  },
-  modalBotones: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
-  modalBtnCancelar: {
-    flex: 1, borderWidth: 1, borderColor: colors.surface3,
-    borderRadius: radius.lg, paddingVertical: spacing.md, alignItems: 'center',
-    backgroundColor: colors.surface1,
-  },
-  modalBtnCancelarText: { fontSize: fontSize.body, fontWeight: '600', color: colors.textSecondary },
-  modalBtnConfirmar: {
-    flex: 2, backgroundColor: colors.primary,
-    borderRadius: radius.lg, paddingVertical: spacing.md, alignItems: 'center',
-  },
-  modalBtnConfirmarText: { fontSize: fontSize.body, fontWeight: '800', color: colors.textPrimary },
 });

@@ -10,12 +10,6 @@ import api from '../../services/api';
 import LocationPickerModal from '../../components/LocationPickerModal';
 import { formatKm, formatHoras, formatPrecio } from '../../utils/format';
 
-const ZONAS = [
-  { id: 'CABA',      label: 'CABA',      sub: '$/hora' },
-  { id: 'PROVINCIA', label: 'Provincia', sub: '$/km' },
-  { id: 'MIXTO',     label: 'Mixto',     sub: 'hora + km' },
-];
-
 const CONDICIONES = [
   { id: 'FRAGIL',       label: 'Frágil',       color: colors.warning },
   { id: 'REFRIGERADO',  label: 'Refrigerado',  color: '#4FC3F7' },
@@ -30,7 +24,7 @@ function formatFechaHora(d) {
   return `${fecha} · ${hora}`;
 }
 
-const MIN_DATE = () => new Date(Date.now() + 60 * 60 * 1000);
+const MIN_DATE = () => new Date(Date.now() + 1 * 60 * 1000);
 
 // { lat, lng, direccion } | null
 function LocationField({ value, placeholder, onPress }) {
@@ -44,24 +38,6 @@ function LocationField({ value, placeholder, onPress }) {
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.textHint} />
     </TouchableOpacity>
-  );
-}
-
-function ZonaSelector({ value, onChange }) {
-  return (
-    <View style={styles.zonaRow}>
-      {ZONAS.map(z => (
-        <TouchableOpacity
-          key={z.id}
-          style={[styles.zonaChip, value === z.id && styles.zonaChipActivo]}
-          onPress={() => onChange(z.id)}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.zonaLabel, value === z.id && styles.zonaLabelActivo]}>{z.label}</Text>
-          <Text style={[styles.zonaSub,   value === z.id && styles.zonaSubActivo]}>{z.sub}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
   );
 }
 
@@ -81,7 +57,6 @@ export default function CrearViajeScreen({ navigation }) {
   const [origen,      setOrigen]      = useState(null); // { lat, lng, direccion }
   const [destino,     setDestino]     = useState(null);
   const [paradas,     setParadas]     = useState([]);   // array de { lat, lng, direccion }
-  const [zona,        setZona]        = useState('CABA');
   const [fechaHora,   setFechaHora]   = useState(() => {
     const d = new Date(); d.setHours(d.getHours() + 2, 0, 0, 0); return d;
   });
@@ -107,8 +82,6 @@ export default function CrearViajeScreen({ navigation }) {
 
   const agregarParada = () => setParadas(prev => [...prev, null]);
   const quitarParada  = (i) => setParadas(prev => prev.filter((_, j) => j !== i));
-
-  const handleZona = (z) => { setZona(z); setEstimado(null); };
 
   const abrirDatePicker = () => { setModoPicker('date'); setMostrarPicker(true); };
 
@@ -151,7 +124,6 @@ export default function CrearViajeScreen({ navigation }) {
     setEstimado(null);
     try {
       const { data } = await api.post('/api/viajes/estimar-costo', {
-        zona,
         paradas: buildParadas(),
         fecha_programada: fechaHora.toISOString(),
       });
@@ -165,7 +137,6 @@ export default function CrearViajeScreen({ navigation }) {
 
   const handlePublicar = () => {
     const payload = {
-      zona,
       paradas: buildParadas(),
       fecha_programada: fechaHora.toISOString(),
       ...(condiciones.length > 0 && { condiciones_requeridas: condiciones }),
@@ -204,12 +175,6 @@ export default function CrearViajeScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* ── Zona ─────────────────────────────────────────── */}
-        <View style={styles.seccion}>
-          <Text style={styles.seccionLabel}>ZONA</Text>
-          <ZonaSelector value={zona} onChange={handleZona} />
-        </View>
-
         {/* ── Ruta ─────────────────────────────────────────── */}
         <View style={styles.seccion}>
           <Text style={styles.seccionLabel}>RUTA</Text>
@@ -280,7 +245,7 @@ export default function CrearViajeScreen({ navigation }) {
             <Ionicons name="chevron-forward" size={20} color={colors.textHint} />
           </TouchableOpacity>
           {!fechaValida && (
-            <Text style={styles.fechaError}>Debe ser al menos 1 hora desde ahora</Text>
+            <Text style={styles.fechaError}>Debe ser al menos 1 minuto desde ahora</Text>
           )}
         </View>
 
@@ -405,19 +370,6 @@ const styles = StyleSheet.create({
     fontSize: 11, fontWeight: '700', color: colors.textHint,
     letterSpacing: 1, textTransform: 'uppercase', marginBottom: spacing.sm,
   },
-
-  // Zona
-  zonaRow:      { flexDirection: 'row', gap: spacing.sm },
-  zonaChip:     {
-    flex: 1, alignItems: 'center', paddingVertical: spacing.sm,
-    borderRadius: radius.md, borderWidth: 1, borderColor: colors.surface3,
-    backgroundColor: colors.surface1,
-  },
-  zonaChipActivo:  { borderColor: colors.primary, backgroundColor: `${colors.primary}15` },
-  zonaLabel:       { fontSize: fontSize.body, fontWeight: '700', color: colors.textSecondary },
-  zonaLabelActivo: { color: colors.primary },
-  zonaSub:         { fontSize: 10, color: colors.textHint, marginTop: 2 },
-  zonaSubActivo:   { color: `${colors.primary}99` },
 
   // Ruta card
   card: {

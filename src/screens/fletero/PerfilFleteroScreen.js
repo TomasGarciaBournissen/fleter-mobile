@@ -5,6 +5,7 @@ import {
   ActivityIndicator, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -58,7 +59,7 @@ function VehiculoCard({ v, onEliminar }) {
   );
 }
 
-export default function PerfilFleteroScreen() {
+export default function PerfilFleteroScreen({ route, navigation }) {
   const { user, logout } = useAuth();
   const nombre  = user ? `${user.nombre} ${user.apellido}` : 'Conductor';
   const inicial = (user?.nombre ?? 'C').charAt(0).toUpperCase();
@@ -140,6 +141,16 @@ export default function PerfilFleteroScreen() {
 
   const abrirModal = () => { setForm(FORM_VACIO); setModalOpen(true); };
   const cerrarModal = () => setModalOpen(false);
+
+  // Si venimos del popup "agregar vehículo ahora" (DisponiblesScreen), abrir el modal directo
+  useFocusEffect(
+    useCallback(() => {
+      if (route?.params?.abrirVehiculo) {
+        abrirModal();
+        navigation.setParams({ abrirVehiculo: undefined });
+      }
+    }, [route?.params?.abrirVehiculo])
+  );
 
   const toggleCondicion = (id) => {
     setForm(prev => ({

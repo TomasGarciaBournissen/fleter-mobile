@@ -39,6 +39,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
   const { socket } = useSocket();
 
   const [viaje, setViaje]               = useState(null);
+  const [cargandoViaje, setCargandoViaje] = useState(true);
   const [estado, setEstado]             = useState('CONDUCTOR_ASIGNADO');
   const [posicion, setPosicion]         = useState(null);
   const [eta, setEta]                   = useState(null);
@@ -52,16 +53,19 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
   const mapRef      = useRef(null);
   const mapRefFull  = useRef(null);
 
-  // Fetch trip data
+  // Fetch trip data — la pantalla no se renderiza hasta tener el estado real del
+  // servidor, para no mostrar un instante la etapa por defecto (CONDUCTOR_ASIGNADO)
+  // si el viaje ya está más avanzado.
   useEffect(() => {
-    if (!viajeId) return;
+    if (!viajeId) { setCargandoViaje(false); return; }
     api.get(`/api/viajes/${viajeId}`)
       .then(({ data }) => {
         setViaje(data);
         setEstado(data.estado);
         if (data.ruta_planeada) setRutaCoords(routeToCoords(data.ruta_planeada));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setCargandoViaje(false));
   }, [viajeId]);
 
   // GPS setup: permissions + watch position + background task
@@ -176,7 +180,19 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
         await api.post(`/api/viajes/${viajeId}/iniciar`);
         setEstado('EN_CAMINO_A_ORIGEN');
       } catch (e) {
-        Alert.alert('Error', e?.response?.data?.error ?? 'No se pudo iniciar el viaje');
+        // El POST puede fallar del lado del cliente (timeout, cold start del backend)
+        // aunque el viaje ya haya arrancado del lado del servidor — este endpoint no
+        // emite ningún evento que el fletero escuche, así que no hay otra forma de
+        // enterarnos. Reconsultamos el estado real antes de mostrar un error falso.
+        try {
+          const { data } = await api.get(`/api/viajes/${viajeId}`);
+          setEstado(data.estado);
+          if (data.estado === 'CONDUCTOR_ASIGNADO') {
+            Alert.alert('Error', e?.response?.data?.error ?? 'No se pudo iniciar el viaje');
+          }
+        } catch {
+          Alert.alert('Error', e?.response?.data?.error ?? 'No se pudo iniciar el viaje');
+        }
       } finally {
         setCargandoAccion(false);
       }
@@ -193,6 +209,34 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
     try {
       await api.patch(`/api/viajes/${viajeId}/estado`, { estado: nuevoEstado });
       setEstado(nuevoEstado);
+
+      // confirmar-parada solo se puede llamar en EN_RUTA/DESCARGANDO, es decir recién acá.
+      // Si dejamos la parada de origen para el final, ya estamos lejos y la validación de
+      // proximidad GPS la rechaza. La confirmamos ahora mismo, todavía en el origen.
+      if (estado === 'CARGANDO') {
+        const origenParada = viaje?.paradas?.slice().sort((a, b) => a.orden - b.orden)[0];
+        if (origenParada && origenParada.estado !== 'ENTREGADO') {
+          try {
+            const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+            await api.post(`/api/viajes/${viajeId}/confirmar-parada`, {
+              id_parada: origenParada.id_parada,
+              lat: loc.coords.latitude,
+              lng: loc.coords.longitude,
+            });
+            setViaje(prev => prev ? {
+              ...prev,
+              paradas: prev.paradas.map(p =>
+                p.id_parada === origenParada.id_parada ? { ...p, estado: 'ENTREGADO' } : p
+              ),
+            } : prev);
+          } catch (err) {
+            Alert.alert(
+              'No se pudo confirmar el origen',
+              err?.response?.data?.error ?? 'No se pudo confirmar la parada de origen automáticamente. Puede que falle al confirmarla más tarde si ya te alejaste.'
+            );
+          }
+        }
+      }
     } catch (e) {
       Alert.alert('Error', e?.response?.data?.error ?? 'No se pudo actualizar el estado');
     } finally {
@@ -231,7 +275,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
     if (estado === 'EN_CAMINO_A_ORIGEN') return 'Llegué al origen — Iniciar carga';
     if (estado === 'CARGANDO')    return 'Carga lista — Salir hacia destino';
     if (estado === 'EN_RUTA')     return 'Llegué al destino — Iniciar descarga';
-    if (estado === 'DESCARGANDO') return 'Escanear QR de entrega';
+    if (estado === 'DESCARGANDO') return 'Confirmar entrega';
     return null;
   };
 
@@ -297,6 +341,14 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
       ) : null)}
     </>
   );
+
+  if (cargandoViaje) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ActivityIndicator style={{ marginTop: 80 }} color={colors.primary} size="large" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>

@@ -9,7 +9,11 @@ import {
   StatusBar,
   ActivityIndicator,
   Alert,
+  Modal,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import api from '../../services/api';
 import { useSocket } from '../../context/SocketContext';
@@ -17,6 +21,8 @@ import { useAuth } from '../../context/AuthContext';
 import NuevoViajeModal from './NuevoViajeModal';
 import { formatKm, formatPrecio } from '../../utils/format';
 import { getOrCreateVehiculo } from '../../utils/vehiculo';
+
+const vehiculoPopupKey = (userId) => `@fleter_vehiculo_popup_dismissed:${userId}`;
 
 function mapViaje(v) {
   const sorted = [...v.paradas].sort((a, b) => a.orden - b.orden);
@@ -106,10 +112,13 @@ const ESTADOS_ACTIVOS = ['CONDUCTOR_ASIGNADO', 'EN_CAMINO_A_ORIGEN', 'CARGANDO',
 export default function DisponiblesScreen({ navigation }) {
   const [viajes,        setViajes]        = useState([]);
   const [cargando,      setCargando]      = useState(true);
+  const [refrescando,   setRefrescando]   = useState(false);
   const [viajeOferta,   setViajeOferta]   = useState(null);
   const [aceptando,     setAceptando]     = useState(false);
   const aceptandoRef   = useRef(false);
   const resumeChecked  = useRef(false);
+  const vehiculoChecked = useRef(false);
+  const [mostrarPopupVehiculo, setMostrarPopupVehiculo] = useState(false);
   const { socket } = useSocket();
   const { user } = useAuth();
   const timeoutRef = useRef(null);
@@ -131,7 +140,21 @@ export default function DisponiblesScreen({ navigation }) {
     }
   }, []);
 
-  useEffect(() => { fetchViajes(); }, [fetchViajes]);
+  const handleRefresh = useCallback(async () => {
+    setRefrescando(true);
+    try {
+      const { data } = await api.get('/api/viajes/disponibles');
+      setViajes(data.map(mapViaje));
+    } catch (e) {
+      Alert.alert('Error', e?.response?.data?.error ?? 'No se pudieron cargar los viajes');
+    } finally {
+      setRefrescando(false);
+    }
+  }, []);
+
+  // Fetch inicial y cada vez que la pantalla recupera el foco (volver de DetalleViaje,
+  // cambiar de tab y volver, etc.) — antes solo se pedía una vez al montar.
+  useFocusEffect(useCallback(() => { fetchViajes(); }, [fetchViajes]));
 
   // Al abrir la app: retomar viaje activo si existe
   useEffect(() => {
@@ -144,6 +167,30 @@ export default function DisponiblesScreen({ navigation }) {
       })
       .catch(() => {});
   }, [navigation]);
+
+  // Al entrar: si el conductor no tiene ningún vehículo registrado, ofrecer agregarlo ahora o más tarde
+  useEffect(() => {
+    if (vehiculoChecked.current || !user) return;
+    vehiculoChecked.current = true;
+    (async () => {
+      try {
+        const dismissed = await AsyncStorage.getItem(vehiculoPopupKey(user.id_usuario));
+        if (dismissed) return;
+        const { data } = await api.get('/api/conductores/mis-vehiculos');
+        if (!data?.length) setMostrarPopupVehiculo(true);
+      } catch {}
+    })();
+  }, [user]);
+
+  const handleAgregarVehiculoAhora = () => {
+    setMostrarPopupVehiculo(false);
+    navigation.getParent()?.navigate('Perfil', { abrirVehiculo: true });
+  };
+
+  const handleAgregarVehiculoDespues = async () => {
+    setMostrarPopupVehiculo(false);
+    if (user) await AsyncStorage.setItem(vehiculoPopupKey(user.id_usuario), '1');
+  };
 
   // Socket: escuchar viajes nuevos en tiempo real
   useEffect(() => {
@@ -253,8 +300,8 @@ export default function DisponiblesScreen({ navigation }) {
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          onRefresh={fetchViajes}
-          refreshing={cargando}
+          onRefresh={handleRefresh}
+          refreshing={refrescando}
           ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
           renderItem={({ item }) => (
             <ViajeCard
@@ -269,6 +316,27 @@ export default function DisponiblesScreen({ navigation }) {
           }
         />
       )}
+
+      <Modal visible={mostrarPopupVehiculo} transparent animationType="fade">
+        <View style={styles.vehModalOverlay}>
+          <View style={styles.vehModalSheet}>
+            <View style={styles.vehModalIcono}>
+              <Ionicons name="car-outline" size={32} color={colors.primary} />
+            </View>
+            <Text style={styles.vehModalTitulo}>Registrá tu vehículo</Text>
+            <Text style={styles.vehModalSub}>
+              Necesitás al menos un vehículo para poder aceptar viajes. Podés agregarlo ahora
+              o hacerlo más tarde desde tu perfil.
+            </Text>
+            <TouchableOpacity style={styles.vehModalBtnPrimario} onPress={handleAgregarVehiculoAhora} activeOpacity={0.85}>
+              <Text style={styles.vehModalBtnPrimarioText}>Agregar vehículo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.vehModalBtnSecundario} onPress={handleAgregarVehiculoDespues} activeOpacity={0.7}>
+              <Text style={styles.vehModalBtnSecundarioText}>Más tarde</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -345,4 +413,31 @@ const styles = StyleSheet.create({
 
   vacio: { alignItems: 'center', paddingTop: 60 },
   vacioText: { fontSize: fontSize.body, color: colors.textHint },
+
+  vehModalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg,
+  },
+  vehModalSheet: {
+    width: '100%', backgroundColor: colors.surface1, borderRadius: radius.xl,
+    borderWidth: 1, borderColor: colors.surface3,
+    padding: spacing.lg, alignItems: 'center',
+  },
+  vehModalIcono: {
+    width: 64, height: 64, borderRadius: radius.full,
+    backgroundColor: `${colors.primary}18`, borderWidth: 2, borderColor: `${colors.primary}44`,
+    alignItems: 'center', justifyContent: 'center', marginBottom: spacing.md,
+  },
+  vehModalTitulo: { fontSize: fontSize.h2, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.xs },
+  vehModalSub: {
+    fontSize: fontSize.body, color: colors.textSecondary, textAlign: 'center',
+    lineHeight: 20, marginBottom: spacing.lg,
+  },
+  vehModalBtnPrimario: {
+    backgroundColor: colors.primary, borderRadius: radius.lg,
+    paddingVertical: spacing.md, alignItems: 'center', width: '100%',
+  },
+  vehModalBtnPrimarioText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  vehModalBtnSecundario: { paddingVertical: spacing.md, alignItems: 'center', width: '100%' },
+  vehModalBtnSecundarioText: { fontSize: fontSize.body, fontWeight: '600', color: colors.textSecondary },
 });
