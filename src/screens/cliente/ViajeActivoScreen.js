@@ -57,8 +57,11 @@ export default function ViajeActivoScreen({ navigation, route }) {
   const [qrParadas,      setQrParadas]    = useState([]);
   const [modalQR,        setModalQR]      = useState(false);
   const [qrParadaIdx,    setQrParadaIdx]  = useState(0);
+  const [mapaFullscreen, setMapaFullscreen] = useState(false);
   const conductorMarkerRef = useRef(null);
   const finalizadoRef      = useRef(false);
+  const mapRef       = useRef(null);
+  const mapRefFull    = useRef(null);
 
   // Fetch trip data
   useEffect(() => {
@@ -94,6 +97,11 @@ export default function ViajeActivoScreen({ navigation, route }) {
     const onEstadoCambiado = (data) => {
       if (Number(data.id_viaje) !== Number(viajeId)) return;
       setEstado(data.estado_nuevo);
+    };
+
+    const onIniciado = (data) => {
+      if (Number(data.id_viaje) !== Number(viajeId)) return;
+      setEstado('EN_CAMINO_A_ORIGEN');
     };
 
     const onAlertaDesvio = (data) => {
@@ -132,6 +140,7 @@ export default function ViajeActivoScreen({ navigation, route }) {
 
     socket.on('mapa:actualizar',       onMapaActualizar);
     socket.on('viaje:estado_cambiado', onEstadoCambiado);
+    socket.on('viaje:iniciado',        onIniciado);
     socket.on('alerta:desvio',         onAlertaDesvio);
     socket.on('alerta:parada',         onAlertaParada);
     socket.on('eta:actualizar',        onEtaActualizar);
@@ -141,6 +150,7 @@ export default function ViajeActivoScreen({ navigation, route }) {
     return () => {
       socket.off('mapa:actualizar',       onMapaActualizar);
       socket.off('viaje:estado_cambiado', onEstadoCambiado);
+      socket.off('viaje:iniciado',        onIniciado);
       socket.off('alerta:desvio',         onAlertaDesvio);
       socket.off('alerta:parada',         onAlertaParada);
       socket.off('eta:actualizar',        onEtaActualizar);
@@ -176,7 +186,7 @@ export default function ViajeActivoScreen({ navigation, route }) {
           onPress: async () => {
             setCancelando(true);
             try {
-              await api.patch(`/api/viajes/${viajeId}/estado`, { estado: 'CANCELADO' });
+              await api.post(`/api/viajes/${viajeId}/cancelar-cliente`);
               navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
             } catch (e) {
               const msg = e?.response?.data?.error ?? 'No se pudo cancelar el viaje';
@@ -189,6 +199,45 @@ export default function ViajeActivoScreen({ navigation, route }) {
       ]
     );
   };
+
+  const handleCentrarConductor = (ref) => {
+    if (!conductorPos) return;
+    ref.current?.animateToRegion({
+      latitude: conductorPos.latitude,
+      longitude: conductorPos.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    }, 500);
+  };
+
+  const renderMapMarkers = () => (
+    <>
+      {rutaCoords.length > 1 && (
+        <Polyline coordinates={rutaCoords} strokeColor={colors.primary} strokeWidth={3} />
+      )}
+      {conductorPos && (
+        <Marker coordinate={conductorPos} title="Fletero" ref={conductorMarkerRef}>
+          <View style={styles.markerConductor}>
+            <Ionicons name="car" size={14} color={colors.textPrimary} />
+          </View>
+        </Marker>
+      )}
+      {origen?.latitud ? (
+        <Marker
+          coordinate={{ latitude: origen.latitud, longitude: origen.longitud }}
+          title="Origen"
+          pinColor={colors.primary}
+        />
+      ) : null}
+      {destino?.latitud && destino !== origen ? (
+        <Marker
+          coordinate={{ latitude: destino.latitud, longitude: destino.longitud }}
+          title="Destino"
+          pinColor={colors.error}
+        />
+      ) : null}
+    </>
+  );
 
   const precioEstimado = viaje?.precio_estimado ? `$${formatPrecio(viaje.precio_estimado)}` : '—';
   const estadoIdx = estadoIndex(estado);
@@ -265,40 +314,14 @@ export default function ViajeActivoScreen({ navigation, route }) {
         {/* Mapa */}
         <View style={styles.mapaContainer}>
           <MapView
+            ref={mapRef}
             style={styles.mapa}
-            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+            provider={PROVIDER_GOOGLE}
             initialRegion={initialRegion}
             showsUserLocation={false}
             showsMyLocationButton={false}
           >
-            {rutaCoords.length > 1 && (
-              <Polyline
-                coordinates={rutaCoords}
-                strokeColor={colors.primary}
-                strokeWidth={3}
-              />
-            )}
-            {conductorPos && (
-              <Marker coordinate={conductorPos} title="Fletero" ref={conductorMarkerRef}>
-                <View style={styles.markerConductor}>
-                  <Ionicons name="car" size={14} color={colors.textPrimary} />
-                </View>
-              </Marker>
-            )}
-            {origen?.latitud ? (
-              <Marker
-                coordinate={{ latitude: origen.latitud, longitude: origen.longitud }}
-                title="Origen"
-                pinColor={colors.primary}
-              />
-            ) : null}
-            {destino?.latitud && destino !== origen ? (
-              <Marker
-                coordinate={{ latitude: destino.latitud, longitude: destino.longitud }}
-                title="Destino"
-                pinColor={colors.error}
-              />
-            ) : null}
+            {renderMapMarkers()}
           </MapView>
           {!conductorPos && (
             <View style={styles.mapaOverlay}>
@@ -306,6 +329,21 @@ export default function ViajeActivoScreen({ navigation, route }) {
               <Text style={styles.mapaOverlayText}> Esperando posición del fletero...</Text>
             </View>
           )}
+          <View style={styles.mapaBotones}>
+            <TouchableOpacity
+              style={[styles.mapaBotonChico, !conductorPos && styles.mapaBotonDisabled]}
+              onPress={() => handleCentrarConductor(mapRef)}
+              disabled={!conductorPos}
+            >
+              <Ionicons name="locate" size={16} color={conductorPos ? colors.primary : colors.textHint} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.mapaBotonChico}
+              onPress={() => setMapaFullscreen(true)}
+            >
+              <Ionicons name="expand" size={16} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Ruta */}
@@ -479,7 +517,41 @@ export default function ViajeActivoScreen({ navigation, route }) {
         </TouchableOpacity>
       </Modal>
 
-      {estado !== 'FINALIZADO' && estado !== 'CANCELADO' && (
+      {/* Modal mapa pantalla completa */}
+      <Modal visible={mapaFullscreen} animationType="slide" onRequestClose={() => setMapaFullscreen(false)}>
+        <SafeAreaView style={styles.mapaFullSafeArea}>
+          <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+          <View style={styles.mapaFullHeader}>
+            <Text style={styles.headerTitle}>Mapa</Text>
+            <TouchableOpacity onPress={() => setMapaFullscreen(false)} style={styles.backBtn}>
+              <Ionicons name="close" size={22} color={colors.textPrimary} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.mapaFullContainer}>
+            <MapView
+              ref={mapRefFull}
+              style={styles.mapa}
+              provider={PROVIDER_GOOGLE}
+              initialRegion={initialRegion}
+              showsUserLocation={false}
+              showsMyLocationButton={false}
+            >
+              {renderMapMarkers()}
+            </MapView>
+            <View style={styles.mapaBotones}>
+              <TouchableOpacity
+                style={[styles.mapaBotonChico, !conductorPos && styles.mapaBotonDisabled]}
+                onPress={() => handleCentrarConductor(mapRefFull)}
+                disabled={!conductorPos}
+              >
+                <Ionicons name="locate" size={18} color={conductorPos ? colors.primary : colors.textHint} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
+      {estado === 'CONDUCTOR_ASIGNADO' && (
         <View style={styles.footer}>
           <TouchableOpacity
             style={[styles.btnCancelar, cancelando && { opacity: 0.5 }]}
@@ -566,6 +638,25 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.full,
     padding: 6, borderWidth: 2, borderColor: colors.textPrimary,
   },
+
+  mapaBotones: {
+    position: 'absolute', right: spacing.sm, bottom: spacing.sm,
+    gap: spacing.xs,
+  },
+  mapaBotonChico: {
+    width: 34, height: 34, borderRadius: radius.full,
+    backgroundColor: colors.surface1, borderWidth: 1, borderColor: colors.surface3,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 2, elevation: 3,
+  },
+  mapaBotonDisabled: { opacity: 0.5 },
+
+  mapaFullSafeArea: { flex: 1, backgroundColor: colors.background },
+  mapaFullHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: spacing.md, paddingVertical: spacing.md,
+  },
+  mapaFullContainer: { flex: 1, marginHorizontal: spacing.md, marginBottom: spacing.md, borderRadius: radius.lg, overflow: 'hidden', position: 'relative' },
 
   card: {
     backgroundColor: colors.surface1, borderRadius: radius.lg,

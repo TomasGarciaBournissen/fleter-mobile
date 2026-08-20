@@ -104,7 +104,7 @@ export default function ConfirmacionViajeScreen({ navigation, route }) {
         {/* Detalles */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Detalles</Text>
-          <FilaInfo label="Zona" value={ZONA_LABELS[payload.zona] ?? payload.zona} />
+          <FilaInfo label="Zona" value={ZONA_LABELS[estimado?.zona] ?? estimado?.zona ?? ZONA_LABELS[payload.zona] ?? payload.zona} />
           <View style={styles.divider} />
           <FilaInfo
             label="Fecha y hora"

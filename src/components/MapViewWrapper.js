@@ -28,7 +28,7 @@ export function Polyline(props) {
   return <_Polyline {...props} />;
 }
 
-export function MapView({ style, children, ...props }) {
+export const MapView = React.forwardRef(function MapView({ style, children, ...props }, ref) {
   if (!_MapView) {
     return (
       <View style={[style, styles.placeholder]}>
@@ -37,8 +37,8 @@ export function MapView({ style, children, ...props }) {
       </View>
     );
   }
-  return <_MapView style={style} {...props}>{children}</_MapView>;
-}
+  return <_MapView ref={ref} style={style} {...props}>{children}</_MapView>;
+});
 
 export default MapView;
 

@@ -7,20 +7,16 @@ import {
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { formatPrecio } from '../../utils/format';
 import api from '../../services/api';
+import { useMiEmpresa } from '../../hooks/useMiEmpresa';
 
 const FILTROS = ['Todos', 'En curso', 'Finalizados', 'Cancelados'];
-
-const ESTADOS_EN_CURSO = ['CONDUCTOR_ASIGNADO', 'EN_CAMINO_A_ORIGEN', 'CARGANDO', 'EN_RUTA', 'DESCARGANDO'];
+const ESTADOS_EN_CURSO = ['RESERVADO_POR_EMPRESA', 'CONDUCTOR_ASIGNADO', 'EN_CAMINO_A_ORIGEN', 'CARGANDO', 'EN_RUTA', 'DESCARGANDO'];
 
 function estadoInfo(estado) {
-  if (estado === 'FINALIZADO')        return { label: 'Entregado', color: colors.success };
-  if (estado === 'CANCELADO')         return { label: 'Cancelado', color: colors.error };
-  if (estado === 'CONDUCTOR_ASIGNADO') return { label: 'Asignado',  color: colors.warning };
-  if (estado === 'EN_CAMINO_A_ORIGEN') return { label: 'En camino', color: colors.warning };
-  if (estado === 'CARGANDO')           return { label: 'Cargando',  color: colors.warning };
-  if (estado === 'EN_RUTA')            return { label: 'En ruta',   color: colors.warning };
-  if (estado === 'DESCARGANDO')        return { label: 'Descargando', color: colors.warning };
-  return { label: 'En curso', color: colors.warning };
+  if (estado === 'FINALIZADO') return { label: 'Entregado', color: colors.success };
+  if (estado === 'CANCELADO')  return { label: 'Cancelado', color: colors.error };
+  if (ESTADOS_EN_CURSO.includes(estado)) return { label: 'En curso', color: colors.warning };
+  return { label: estado, color: colors.textSecondary };
 }
 
 function formatFecha(isoStr) {
@@ -37,26 +33,14 @@ function formatFecha(isoStr) {
 function agruparPorMes(viajes) {
   const map = new Map();
   for (const v of viajes) {
-    const d = new Date(v.fecha_programada);
+    const d = new Date(v.fecha_programada ?? v.creado_en);
     const label = d.toLocaleDateString('es-AR', { year: 'numeric', month: 'long' });
     const clave = label.charAt(0).toUpperCase() + label.slice(1);
     if (!map.has(clave)) map.set(clave, []);
     map.get(clave).push(v);
   }
-  return Array.from(map.entries()).map(([mes, data]) => ({
-    mes,
-    gananciasMes: data
-      .filter((v) => v.estado === 'FINALIZADO')
-      .reduce((s, v) => s + (v.precio_real ?? v.precio_estimado ?? 0), 0),
-    data,
-  }));
+  return Array.from(map.entries()).map(([mes, data]) => ({ mes, data }));
 }
-
-const PUNTUALIDAD_INFO = {
-  A_TIEMPO:  { label: 'A tiempo',  color: colors.success },
-  TARDE:     { label: 'Tarde',     color: colors.warning },
-  MUY_TARDE: { label: 'Muy tarde', color: colors.error },
-};
 
 function EstadoBadge({ estado }) {
   const { label, color } = estadoInfo(estado);
@@ -72,20 +56,14 @@ function ViajeRow({ item }) {
   const origen  = paradas[0]?.direccion ?? '—';
   const destino = paradas[paradas.length - 1]?.direccion ?? '—';
   const precio  = item.precio_real ?? item.precio_estimado;
-  const puntualidad = PUNTUALIDAD_INFO[item.puntualidad_inicio];
+  const conductor = item.conductor?.usuario ? `${item.conductor.usuario.nombre} ${item.conductor.usuario.apellido}`.trim() : null;
   return (
     <View style={styles.viajeItem}>
       <View style={styles.viajeTop}>
         <View style={{ flex: 1 }}>
           <Text style={styles.viajeRuta} numberOfLines={1}>{origen} → {destino}</Text>
-          <Text style={styles.viajeFecha}>{formatFecha(item.fecha_programada)}</Text>
-          {(item.duracion_real != null || puntualidad) && (
-            <Text style={styles.viajeMeta}>
-              {item.duracion_real != null ? `${item.duracion_real} min` : ''}
-              {item.duracion_real != null && puntualidad ? ' · ' : ''}
-              {puntualidad ? puntualidad.label : ''}
-            </Text>
-          )}
+          <Text style={styles.viajeFecha}>{formatFecha(item.fecha_programada ?? item.creado_en)}</Text>
+          {conductor && <Text style={styles.viajeMeta}>{conductor}</Text>}
         </View>
         <View style={styles.viajeDerecha}>
           <Text style={styles.viajeMonto}>${formatPrecio(precio)}</Text>
@@ -96,24 +74,24 @@ function ViajeRow({ item }) {
   );
 }
 
-export default function HistorialFleteroScreen() {
+export default function HistorialEmpresaScreen() {
+  const { idEmpresa } = useMiEmpresa();
   const [viajes,   setViajes]   = useState([]);
   const [cargando, setCargando] = useState(true);
-  const [error,    setError]    = useState('');
   const [filtro,   setFiltro]   = useState('Todos');
 
   const cargar = useCallback(async () => {
+    if (!idEmpresa) return;
     setCargando(true);
-    setError('');
     try {
-      const { data } = await api.get('/api/viajes/mis-viajes-conductor');
+      const { data } = await api.get(`/api/empresas/${idEmpresa}/viajes`);
       setViajes(data);
-    } catch (e) {
-      setError('No se pudo cargar el historial');
+    } catch {
+      setViajes([]);
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [idEmpresa]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -136,11 +114,7 @@ export default function HistorialFleteroScreen() {
 
       <View style={styles.filtrosRow}>
         {FILTROS.map((f) => (
-          <TouchableOpacity
-            key={f}
-            style={[styles.chip, filtro === f && styles.chipActivo]}
-            onPress={() => setFiltro(f)}
-          >
+          <TouchableOpacity key={f} style={[styles.chip, filtro === f && styles.chipActivo]} onPress={() => setFiltro(f)}>
             <Text style={[styles.chipText, filtro === f && styles.chipTextActivo]}>{f}</Text>
           </TouchableOpacity>
         ))}
@@ -148,27 +122,15 @@ export default function HistorialFleteroScreen() {
 
       {cargando && viajes.length === 0 ? (
         <ActivityIndicator style={{ marginTop: spacing.xl }} color={colors.primary} />
-      ) : error ? (
-        <View style={styles.errorWrap}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity onPress={cargar} style={styles.reintentar}>
-            <Text style={styles.reintentarText}>Reintentar</Text>
-          </TouchableOpacity>
-        </View>
       ) : (
         <SectionList
           sections={secciones}
           keyExtractor={(item) => String(item.id_viaje)}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={cargando} onRefresh={cargar} tintColor={colors.primary} />
-          }
+          refreshControl={<RefreshControl refreshing={cargando} onRefresh={cargar} tintColor={colors.primary} />}
           renderSectionHeader={({ section }) => (
-            <View style={styles.seccionHeader}>
-              <Text style={styles.seccionMes}>{section.mes}</Text>
-              <Text style={styles.seccionGanancias}>${formatPrecio(section.gananciasMes)}</Text>
-            </View>
+            <Text style={styles.seccionMes}>{section.mes}</Text>
           )}
           renderItem={({ item, index, section }) => (
             <View style={styles.cardWrapper}>
@@ -190,69 +152,36 @@ export default function HistorialFleteroScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
-
-  header: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-  },
+  header: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },
   headerTitle: { fontSize: fontSize.h1, fontWeight: '800', color: colors.textPrimary, letterSpacing: -0.5 },
 
-  filtrosRow: {
-    flexDirection: 'row',
-    paddingHorizontal: spacing.md,
-    gap: spacing.xs,
-    marginBottom: spacing.md,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: colors.surface3,
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.sm + 2,
-    paddingVertical: spacing.xs,
-  },
+  filtrosRow: { flexDirection: 'row', paddingHorizontal: spacing.md, gap: spacing.xs, marginBottom: spacing.md, flexWrap: 'wrap' },
+  chip: { borderWidth: 1, borderColor: colors.surface3, borderRadius: radius.full, paddingHorizontal: spacing.sm + 2, paddingVertical: spacing.xs },
   chipActivo: { backgroundColor: `${colors.primary}22`, borderColor: colors.primary },
   chipText: { fontSize: fontSize.caption, color: colors.textSecondary, fontWeight: '600' },
   chipTextActivo: { color: colors.primary },
 
   listContent: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
-
-  seccionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  seccionMes:       { fontSize: fontSize.caption, fontWeight: '700', color: colors.textHint, textTransform: 'uppercase', letterSpacing: 1 },
-  seccionGanancias: { fontSize: fontSize.body, fontWeight: '700', color: colors.primary },
+  seccionMes: { fontSize: fontSize.caption, fontWeight: '700', color: colors.textHint, textTransform: 'uppercase', letterSpacing: 1, marginBottom: spacing.sm },
 
   cardWrapper: {
-    backgroundColor: colors.surface1,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.surface3,
-    paddingHorizontal: spacing.md,
-    overflow: 'hidden',
-    marginBottom: spacing.sm,
+    backgroundColor: colors.surface1, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: colors.surface3,
+    paddingHorizontal: spacing.md, overflow: 'hidden', marginBottom: spacing.sm,
   },
-
-  viajeItem:    { paddingVertical: spacing.md },
-  viajeTop:     { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
-  viajeRuta:    { fontSize: fontSize.body, fontWeight: '600', color: colors.textPrimary },
-  viajeFecha:   { fontSize: fontSize.caption, color: colors.textHint, marginTop: 2 },
-  viajeMeta:    { fontSize: fontSize.caption, color: colors.textHint, marginTop: 2 },
+  viajeItem: { paddingVertical: spacing.md },
+  viajeTop: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  viajeRuta: { fontSize: fontSize.body, fontWeight: '600', color: colors.textPrimary },
+  viajeFecha: { fontSize: fontSize.caption, color: colors.textHint, marginTop: 2 },
+  viajeMeta: { fontSize: fontSize.caption, color: colors.textHint, marginTop: 2 },
   viajeDerecha: { alignItems: 'flex-end', gap: spacing.xs },
-  viajeMonto:   { fontSize: fontSize.h3, fontWeight: '800', color: colors.primary },
+  viajeMonto: { fontSize: fontSize.body, fontWeight: '700', color: colors.textPrimary },
 
-  badge:     { borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 2 },
+  badge: { borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 2 },
   badgeText: { fontSize: 10, fontWeight: '700', letterSpacing: 0.4 },
 
   divider: { height: 1, backgroundColor: colors.surface3 },
 
-  vacio:     { alignItems: 'center', paddingTop: spacing.xl },
+  vacio: { alignItems: 'center', paddingTop: spacing.xl },
   vacioText: { fontSize: fontSize.body, color: colors.textHint },
-
-  errorWrap:      { alignItems: 'center', paddingTop: spacing.xl, gap: spacing.md },
-  errorText:      { fontSize: fontSize.body, color: colors.error },
-  reintentar:     { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, backgroundColor: `${colors.primary}22`, borderRadius: radius.full },
-  reintentarText: { fontSize: fontSize.body, color: colors.primary, fontWeight: '700' },
 });

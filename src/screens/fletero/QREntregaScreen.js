@@ -3,9 +3,12 @@ import {
   View, Text, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform,
   SafeAreaView, StatusBar, ActivityIndicator, Alert, TextInput, Modal, ScrollView,
 } from 'react-native';
-let BarCodeScanner = null;
-try { BarCodeScanner = require('expo-barcode-scanner').BarCodeScanner; } catch {}
-const SCANNER_DISPONIBLE = BarCodeScanner != null;
+let CameraView = null;
+let Camera = null;
+try {
+  ({ CameraView, Camera } = require('expo-camera'));
+} catch {}
+const SCANNER_DISPONIBLE = CameraView != null;
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
@@ -37,7 +40,7 @@ export default function QREntregaScreen({ navigation, route }) {
       setPermisoOk(false);
       return;
     }
-    BarCodeScanner.requestPermissionsAsync().then(({ status }) => {
+    Camera.requestCameraPermissionsAsync().then(({ status }) => {
       setPermisoOk(status === 'granted');
     });
   }, []);
@@ -273,10 +276,10 @@ export default function QREntregaScreen({ navigation, route }) {
           </Text>
 
           <View style={styles.scannerContainer}>
-            <BarCodeScanner
+            <CameraView
               style={styles.scanner}
-              onBarCodeScanned={handleScan}
-              barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
+              onBarcodeScanned={handleScan}
+              barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
             />
             {/* Esquinas del visor */}
             <View style={styles.overlay}>

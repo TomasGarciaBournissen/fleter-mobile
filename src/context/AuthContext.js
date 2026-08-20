@@ -24,6 +24,13 @@ const DEV_USERS = {
     email: 'carlos@fletero.com',
     rol: 'CONDUCTOR',
   },
+  GERENTE: {
+    id_usuario: 3,
+    nombre: 'Laura',
+    apellido: 'Gómez',
+    email: 'laura@empresa.com',
+    rol: 'GERENTE',
+  },
 };
 
 const AuthContext = createContext(null);

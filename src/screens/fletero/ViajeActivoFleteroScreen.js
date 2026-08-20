@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar,
-  ScrollView, ActivityIndicator, Alert, Linking, Platform,
+  ScrollView, ActivityIndicator, Alert, Linking, Platform, Modal,
 } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
 import * as Location from 'expo-location';
@@ -47,8 +47,10 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
   const [cargandoAccion, setCargandoAccion] = useState(false);
   const [cancelando, setCancelando]     = useState(false);
   const [debugGps, setDebugGps]         = useState(null);
+  const [mapaFullscreen, setMapaFullscreen] = useState(false);
   const posicionRef = useRef(null);
   const mapRef      = useRef(null);
+  const mapRefFull  = useRef(null);
 
   // Fetch trip data
   useEffect(() => {
@@ -63,8 +65,13 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
   }, [viajeId]);
 
   // GPS setup: permissions + watch position + background task
+  // Solo arranca una vez que el viaje ya fue iniciado (POST /iniciar) — antes de eso
+  // el backend rechaza cualquier ping GPS. Depende de `iniciado` (booleano) y no de
+  // `estado` directo para no reiniciar el tracking en cada transición manual posterior.
+  const iniciado = estado !== 'CONDUCTOR_ASIGNADO';
+
   useEffect(() => {
-    if (!socket || !viajeId) return;
+    if (!socket || !viajeId || !iniciado) return;
 
     let watchSub   = null;
     let intervalId = null;
@@ -118,7 +125,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
       if (intervalId) clearInterval(intervalId);
       stopLocationTracking();
     };
-  }, [socket, viajeId]);
+  }, [socket, viajeId, iniciado]);
 
   // Socket: estado_cambiado, viaje:finalizado, eta, ruta
   useEffect(() => {
@@ -163,8 +170,21 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
       return;
     }
 
+    if (estado === 'CONDUCTOR_ASIGNADO') {
+      setCargandoAccion(true);
+      try {
+        await api.post(`/api/viajes/${viajeId}/iniciar`);
+        setEstado('EN_CAMINO_A_ORIGEN');
+      } catch (e) {
+        Alert.alert('Error', e?.response?.data?.error ?? 'No se pudo iniciar el viaje');
+      } finally {
+        setCargandoAccion(false);
+      }
+      return;
+    }
+
     let nuevoEstado = null;
-    if (estado === 'CONDUCTOR_ASIGNADO' || estado === 'EN_CAMINO_A_ORIGEN') nuevoEstado = 'CARGANDO';
+    if (estado === 'EN_CAMINO_A_ORIGEN') nuevoEstado = 'CARGANDO';
     else if (estado === 'CARGANDO') nuevoEstado = 'EN_RUTA';
     else if (estado === 'EN_RUTA') nuevoEstado = 'DESCARGANDO';
     if (!nuevoEstado) return;
@@ -207,7 +227,8 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
   };
 
   const getBotonLabel = () => {
-    if (estado === 'CONDUCTOR_ASIGNADO' || estado === 'EN_CAMINO_A_ORIGEN') return 'Llegué al origen — Iniciar carga';
+    if (estado === 'CONDUCTOR_ASIGNADO') return 'Iniciar viaje';
+    if (estado === 'EN_CAMINO_A_ORIGEN') return 'Llegué al origen — Iniciar carga';
     if (estado === 'CARGANDO')    return 'Carga lista — Salir hacia destino';
     if (estado === 'EN_RUTA')     return 'Llegué al destino — Iniciar descarga';
     if (estado === 'DESCARGANDO') return 'Escanear QR de entrega';
@@ -230,6 +251,53 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
       ? { latitude: origen.latitud, longitude: origen.longitud, latitudeDelta: 0.05, longitudeDelta: 0.05 }
       : { latitude: -34.6037, longitude: -58.3816, latitudeDelta: 0.1, longitudeDelta: 0.1 };
 
+  const handleCentrarMiPosicion = (ref) => {
+    if (!posicion) return;
+    ref.current?.animateToRegion({
+      latitude: posicion.latitude,
+      longitude: posicion.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    }, 500);
+  };
+
+  const renderMapMarkers = () => (
+    <>
+      {rutaCoords.length > 1 && (
+        <Polyline coordinates={rutaCoords} strokeColor={colors.primary} strokeWidth={3} />
+      )}
+      {posicion && (
+        <Marker coordinate={posicion} title="Yo">
+          <View style={styles.markerConductor}>
+            <Ionicons name="car" size={14} color={colors.textPrimary} />
+          </View>
+        </Marker>
+      )}
+      {origen?.latitud ? (
+        <Marker
+          coordinate={{ latitude: origen.latitud, longitude: origen.longitud }}
+          title="Origen"
+          pinColor={colors.primary}
+        />
+      ) : null}
+      {destino?.latitud && destino !== origen ? (
+        <Marker
+          coordinate={{ latitude: destino.latitud, longitude: destino.longitud }}
+          title="Destino"
+          pinColor={colors.error}
+        />
+      ) : null}
+      {paradas.slice(1, -1).map((p, i) => p?.latitud ? (
+        <Marker
+          key={p.id_parada ?? i}
+          coordinate={{ latitude: p.latitud, longitude: p.longitud }}
+          title={`Parada ${i + 1}`}
+          pinColor={colors.warning}
+        />
+      ) : null)}
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
@@ -250,48 +318,28 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
           <MapView
             ref={mapRef}
             style={styles.mapa}
-            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+            provider={PROVIDER_GOOGLE}
             initialRegion={initialRegion}
             showsUserLocation={false}
             showsMyLocationButton={false}
           >
-            {rutaCoords.length > 1 && (
-              <Polyline
-                coordinates={rutaCoords}
-                strokeColor={colors.primary}
-                strokeWidth={3}
-              />
-            )}
-            {posicion && (
-              <Marker coordinate={posicion} title="Yo">
-                <View style={styles.markerConductor}>
-                  <Ionicons name="car" size={14} color={colors.textPrimary} />
-                </View>
-              </Marker>
-            )}
-            {origen?.latitud ? (
-              <Marker
-                coordinate={{ latitude: origen.latitud, longitude: origen.longitud }}
-                title="Origen"
-                pinColor={colors.primary}
-              />
-            ) : null}
-            {destino?.latitud && destino !== origen ? (
-              <Marker
-                coordinate={{ latitude: destino.latitud, longitude: destino.longitud }}
-                title="Destino"
-                pinColor={colors.error}
-              />
-            ) : null}
-            {paradas.slice(1, -1).map((p, i) => p?.latitud ? (
-              <Marker
-                key={p.id_parada ?? i}
-                coordinate={{ latitude: p.latitud, longitude: p.longitud }}
-                title={`Parada ${i + 1}`}
-                pinColor={colors.warning}
-              />
-            ) : null)}
+            {renderMapMarkers()}
           </MapView>
+          <View style={styles.mapaBotones}>
+            <TouchableOpacity
+              style={[styles.mapaBotonChico, !posicion && styles.mapaBotonDisabled]}
+              onPress={() => handleCentrarMiPosicion(mapRef)}
+              disabled={!posicion}
+            >
+              <Ionicons name="locate" size={16} color={posicion ? colors.primary : colors.textHint} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.mapaBotonChico}
+              onPress={() => setMapaFullscreen(true)}
+            >
+              <Ionicons name="expand" size={16} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Debug GPS — visible solo mientras no hay build nativa */}
@@ -395,6 +443,40 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
 
       </ScrollView>
 
+      {/* Modal mapa pantalla completa */}
+      <Modal visible={mapaFullscreen} animationType="slide" onRequestClose={() => setMapaFullscreen(false)}>
+        <SafeAreaView style={styles.mapaFullSafeArea}>
+          <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+          <View style={styles.mapaFullHeader}>
+            <Text style={styles.headerTitle}>Mapa</Text>
+            <TouchableOpacity onPress={() => setMapaFullscreen(false)} style={styles.cerrarBtn}>
+              <Ionicons name="close" size={22} color={colors.textPrimary} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.mapaFullContainer}>
+            <MapView
+              ref={mapRefFull}
+              style={styles.mapa}
+              provider={PROVIDER_GOOGLE}
+              initialRegion={initialRegion}
+              showsUserLocation={false}
+              showsMyLocationButton={false}
+            >
+              {renderMapMarkers()}
+            </MapView>
+            <View style={styles.mapaBotones}>
+              <TouchableOpacity
+                style={[styles.mapaBotonChico, !posicion && styles.mapaBotonDisabled]}
+                onPress={() => handleCentrarMiPosicion(mapRefFull)}
+                disabled={!posicion}
+              >
+                <Ionicons name="locate" size={18} color={posicion ? colors.primary : colors.textHint} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
       {botonLabel ? (
         <View style={styles.footer}>
           <TouchableOpacity
@@ -455,6 +537,30 @@ const styles = StyleSheet.create({
   markerConductor: {
     backgroundColor: colors.primary, borderRadius: radius.full,
     padding: 6, borderWidth: 2, borderColor: colors.textPrimary,
+  },
+
+  mapaBotones: {
+    position: 'absolute', right: spacing.sm, bottom: spacing.sm,
+    gap: spacing.xs,
+  },
+  mapaBotonChico: {
+    width: 34, height: 34, borderRadius: radius.full,
+    backgroundColor: colors.surface1, borderWidth: 1, borderColor: colors.surface3,
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 2, elevation: 3,
+  },
+  mapaBotonDisabled: { opacity: 0.5 },
+
+  mapaFullSafeArea: { flex: 1, backgroundColor: colors.background },
+  mapaFullHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: spacing.md, paddingVertical: spacing.md,
+  },
+  mapaFullContainer: { flex: 1, marginHorizontal: spacing.md, marginBottom: spacing.md, borderRadius: radius.lg, overflow: 'hidden', position: 'relative' },
+  cerrarBtn: {
+    width: 40, height: 40, borderRadius: radius.full,
+    backgroundColor: colors.surface1, borderWidth: 1, borderColor: colors.surface3,
+    alignItems: 'center', justifyContent: 'center',
   },
 
   debugCard: {

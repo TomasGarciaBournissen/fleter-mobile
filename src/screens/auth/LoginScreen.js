@@ -134,6 +134,14 @@ export default function LoginScreen({ navigation }) {
             >
               <Text style={styles.btnSecondaryText}>Registrarme como conductor</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.btnSecondary, { marginTop: spacing.sm }]}
+              onPress={() => navigation.navigate('RegisterGerente')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.btnSecondaryText}>Registrar mi empresa</Text>
+            </TouchableOpacity>
           </View>
 
           {/* ── PANEL DEV ── solo visible con DEV_MODE = true */}
@@ -153,6 +161,13 @@ export default function LoginScreen({ navigation }) {
                 activeOpacity={0.7}
               >
                 <Text style={styles.devBtnText}>Entrar como CONDUCTOR →</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.devBtn, { marginTop: spacing.xs }]}
+                onPress={() => mockLogin('GERENTE')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.devBtnText}>Entrar como GERENTE →</Text>
               </TouchableOpacity>
             </View>
           )}

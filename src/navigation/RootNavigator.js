@@ -6,6 +6,7 @@ import { colors, fontSize, spacing, radius } from '../theme';
 import AuthStack from './AuthStack';
 import ClienteStack from './ClienteStack';
 import FleteroStack from './FleteroStack';
+import GerenteStack from './GerenteStack';
 
 function RolNoSoportado({ onLogout }) {
   return (
@@ -37,7 +38,7 @@ export default function RootNavigator() {
     );
   }
 
-  const rolNoSoportado = user && !['CLIENTE', 'CONDUCTOR', 'FLETERO'].includes(user.rol);
+  const rolNoSoportado = user && !['CLIENTE', 'CONDUCTOR', 'FLETERO', 'GERENTE'].includes(user.rol);
   if (rolNoSoportado) {
     return <RolNoSoportado onLogout={logout} />;
   }
@@ -47,6 +48,7 @@ export default function RootNavigator() {
       {!user && <AuthStack />}
       {user?.rol === 'CLIENTE' && <ClienteStack />}
       {(user?.rol === 'CONDUCTOR' || user?.rol === 'FLETERO') && <FleteroStack />}
+      {user?.rol === 'GERENTE' && <GerenteStack />}
     </NavigationContainer>
   );
 }

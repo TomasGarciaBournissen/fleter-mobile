@@ -29,6 +29,15 @@ export async function registroConductor(datos) {
   await signInWithEmailAndPassword(auth, datos.email, datos.contrasena);
 }
 
+// Registro de gerente — crea al gerente y su primera empresa en una sola operación
+export async function registroGerente(datos) {
+  // datos: { nombre, apellido, dni, email, contrasena, telefono?, cuit_empresa, nombre_empresa }
+  await api.post('/api/auth/registro-gerente', datos);
+
+  // Activar sesión Firebase
+  await signInWithEmailAndPassword(auth, datos.email, datos.contrasena);
+}
+
 // Cierra sesión
 export async function logout() {
   await signOut(auth);

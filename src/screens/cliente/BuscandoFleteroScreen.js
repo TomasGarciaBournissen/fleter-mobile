@@ -1,15 +1,17 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, StatusBar,
-  TouchableOpacity, Animated, Easing, Alert,
+  TouchableOpacity, Animated, Easing, Alert, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
 import { useSocket } from '../../context/SocketContext';
+import api from '../../services/api';
 
 export default function BuscandoFleteroScreen({ navigation, route }) {
   const { idViaje } = route.params ?? {};
   const { socket } = useSocket();
+  const [cancelando, setCancelando] = useState(false);
 
   const pulse1 = useRef(new Animated.Value(1)).current;
   const pulse2 = useRef(new Animated.Value(1)).current;
@@ -37,26 +39,53 @@ export default function BuscandoFleteroScreen({ navigation, route }) {
       navigation.replace('ViajeActivo', { viajeId: data.id_viaje, conductor: data.conductor, vehiculo: data.vehiculo });
     };
 
-    const onCancelado = (data) => {
-      if (idViaje && Number(data.id_viaje) !== Number(idViaje)) return;
-      Alert.alert(
-        'Sin fletero disponible',
-        data.mensaje ?? 'No se encontró un fletero en el tiempo límite. Podés volver a publicar el viaje.',
-        [{ text: 'Volver al inicio', onPress: () => navigation.reset({ index: 0, routes: [{ name: 'Home' }] }) }]
-      );
-    };
-
-    socket.on('viaje:conductor_asignado',      onAsignado);
-    socket.on('viaje:cancelado_sin_conductor', onCancelado);
+    socket.on('viaje:conductor_asignado', onAsignado);
     return () => {
-      socket.off('viaje:conductor_asignado',      onAsignado);
-      socket.off('viaje:cancelado_sin_conductor', onCancelado);
+      socket.off('viaje:conductor_asignado', onAsignado);
     };
   }, [socket, navigation, idViaje]);
+
+  const handleCancelar = () => {
+    if (!idViaje) {
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+      return;
+    }
+    Alert.alert(
+      'Cancelar búsqueda',
+      '¿Seguro que querés cancelar? Ya no se va a poder recuperar este viaje.',
+      [
+        { text: 'No, seguir esperando', style: 'cancel' },
+        {
+          text: 'Sí, cancelar',
+          style: 'destructive',
+          onPress: async () => {
+            setCancelando(true);
+            try {
+              await api.post(`/api/viajes/${idViaje}/cancelar-cliente`);
+              navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+            } catch (e) {
+              const msg = e?.response?.data?.error ?? 'No se pudo cancelar el viaje';
+              Alert.alert('Error', msg);
+              setCancelando(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Home' }] })}
+          style={styles.backBtn}
+        >
+          <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.wrap}>
         {/* Animación de pulsos */}
@@ -86,11 +115,15 @@ export default function BuscandoFleteroScreen({ navigation, route }) {
         )}
 
         <TouchableOpacity
-          style={styles.btnCancelar}
-          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Home' }] })}
+          style={[styles.btnCancelar, cancelando && { opacity: 0.6 }]}
+          onPress={handleCancelar}
+          disabled={cancelando}
           activeOpacity={0.8}
         >
-          <Text style={styles.btnCancelarText}>Volver al inicio</Text>
+          {cancelando
+            ? <ActivityIndicator color={colors.textSecondary} />
+            : <Text style={styles.btnCancelarText}>Cancelar búsqueda</Text>
+          }
         </TouchableOpacity>
         <Text style={styles.nota}>
           El viaje sigue activo. Te avisamos cuando un fletero acepte.
@@ -102,6 +135,12 @@ export default function BuscandoFleteroScreen({ navigation, route }) {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
+  header: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },
+  backBtn: {
+    width: 40, height: 40, borderRadius: radius.full,
+    backgroundColor: colors.surface1, borderWidth: 1, borderColor: colors.surface3,
+    alignItems: 'center', justifyContent: 'center',
+  },
   wrap: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
     paddingHorizontal: spacing.lg,

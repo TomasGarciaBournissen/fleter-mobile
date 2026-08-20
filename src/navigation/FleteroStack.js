@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../theme';
 
 import DisponiblesScreen       from '../screens/fletero/DisponiblesScreen';
+import AsignadosScreen         from '../screens/fletero/AsignadosScreen';
 import DetalleViajeScreen      from '../screens/fletero/DetalleViajeScreen';
 import ViajeActivoFleteroScreen from '../screens/fletero/ViajeActivoFleteroScreen';
 import QREntregaScreen         from '../screens/fletero/QREntregaScreen';
@@ -25,6 +26,18 @@ function DisponiblesStack() {
       <Stack.Screen name="ViajeActivo"     component={ViajeActivoFleteroScreen} />
       <Stack.Screen name="QREntrega"       component={QREntregaScreen} />
       <Stack.Screen name="Cobro"           component={CobroScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Stack interno para viajes asignados por una empresa
+function AsignadosStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="AsignadosHome" component={AsignadosScreen} />
+      <Stack.Screen name="ViajeActivo"    component={ViajeActivoFleteroScreen} />
+      <Stack.Screen name="QREntrega"      component={QREntregaScreen} />
+      <Stack.Screen name="Cobro"          component={CobroScreen} />
     </Stack.Navigator>
   );
 }
@@ -57,6 +70,15 @@ export default function FleteroStack() {
         options={{
           tabBarIcon: ({ focused, color }) => (
             <Ionicons name={focused ? 'car' : 'car-outline'} size={22} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Asignados"
+        component={AsignadosStack}
+        options={{
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? 'briefcase' : 'briefcase-outline'} size={22} color={color} />
           ),
         }}
       />

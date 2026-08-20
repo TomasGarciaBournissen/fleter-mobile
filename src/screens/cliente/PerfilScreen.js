@@ -9,6 +9,8 @@ import {
   SafeAreaView,
   StatusBar,
   Switch,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
@@ -79,10 +81,12 @@ export default function PerfilScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Avatar + stats */}
         <View style={styles.avatarSection}>
@@ -172,6 +176,7 @@ export default function PerfilScreen({ navigation }) {
           <Text style={styles.btnCerrarSesionText}>Cerrar sesión</Text>
         </TouchableOpacity>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

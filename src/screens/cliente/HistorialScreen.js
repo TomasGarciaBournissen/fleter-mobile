@@ -49,6 +49,12 @@ function agruparPorMes(viajes) {
   }));
 }
 
+const PUNTUALIDAD_INFO = {
+  A_TIEMPO:  { label: 'A tiempo',  color: colors.success },
+  TARDE:     { label: 'Tarde',     color: colors.warning },
+  MUY_TARDE: { label: 'Muy tarde', color: colors.error },
+};
+
 function EstadoBadge({ estado }) {
   const { label, color } = estadoInfo(estado);
   return (
@@ -63,12 +69,20 @@ function ViajeItem({ item }) {
   const origen  = paradas[0]?.direccion ?? '—';
   const destino = paradas[paradas.length - 1]?.direccion ?? '—';
   const precio  = item.precio_real ?? item.precio_estimado;
+  const puntualidad = PUNTUALIDAD_INFO[item.puntualidad_inicio];
   return (
     <View style={styles.viajeItem}>
       <View style={styles.viajeTop}>
         <View style={{ flex: 1 }}>
           <Text style={styles.viajeRuta} numberOfLines={1}>{origen} → {destino}</Text>
           <Text style={styles.viajeFecha}>{formatFecha(item.fecha_programada ?? item.creado_en)}</Text>
+          {(item.duracion_real != null || puntualidad) && (
+            <Text style={styles.viajeMeta}>
+              {item.duracion_real != null ? `${item.duracion_real} min` : ''}
+              {item.duracion_real != null && puntualidad ? ' · ' : ''}
+              {puntualidad ? puntualidad.label : ''}
+            </Text>
+          )}
         </View>
         <View style={styles.viajeDerecha}>
           <Text style={styles.viajeMonto}>${formatPrecio(precio)}</Text>
@@ -236,6 +250,7 @@ const styles = StyleSheet.create({
   viajeTop:    { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
   viajeRuta:   { fontSize: fontSize.body, fontWeight: '600', color: colors.textPrimary },
   viajeFecha:  { fontSize: fontSize.caption, color: colors.textHint, marginTop: 2 },
+  viajeMeta:   { fontSize: fontSize.caption, color: colors.textHint, marginTop: 2 },
   viajeDerecha: { alignItems: 'flex-end', gap: spacing.xs },
   viajeMonto:  { fontSize: fontSize.body, fontWeight: '700', color: colors.textPrimary },
 

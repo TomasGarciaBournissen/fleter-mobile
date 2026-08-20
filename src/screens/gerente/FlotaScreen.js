@@ -6,9 +6,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
-import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { clearVehiculoCache } from '../../utils/vehiculo';
+import { useMiEmpresa } from '../../hooks/useMiEmpresa';
 
 const TIPOS_VEHICULO = ['furgon', 'camioneta', 'camion', 'pick-up', 'utilitario'];
 
@@ -58,88 +57,30 @@ function VehiculoCard({ v, onEliminar }) {
   );
 }
 
-export default function PerfilFleteroScreen() {
-  const { user, logout } = useAuth();
-  const nombre  = user ? `${user.nombre} ${user.apellido}` : 'Conductor';
-  const inicial = (user?.nombre ?? 'C').charAt(0).toUpperCase();
-
-  const [vehiculos,  setVehiculos]  = useState([]);
-  const [cargando,   setCargando]   = useState(true);
-  const [modalOpen,  setModalOpen]  = useState(false);
-  const [guardando,  setGuardando]  = useState(false);
-  const [form,       setForm]       = useState(FORM_VACIO);
-
-  const [afiliaciones,      setAfiliaciones]      = useState([]);
-  const [cargandoAfil,      setCargandoAfil]      = useState(true);
-  const [codigoAfiliacion,  setCodigoAfiliacion]  = useState('');
-  const [afiliando,         setAfiliando]         = useState(false);
+export default function FlotaScreen() {
+  const { idEmpresa } = useMiEmpresa();
+  const [vehiculos, setVehiculos] = useState([]);
+  const [cargando,  setCargando]  = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+  const [form,      setForm]      = useState(FORM_VACIO);
 
   const cargarVehiculos = useCallback(async () => {
+    if (!idEmpresa) return;
     setCargando(true);
     try {
-      const { data } = await api.get('/api/conductores/mis-vehiculos');
+      const { data } = await api.get(`/api/empresas/${idEmpresa}/vehiculos`);
       setVehiculos(data);
     } catch {
       setVehiculos([]);
     } finally {
       setCargando(false);
     }
-  }, []);
-
-  const cargarAfiliaciones = useCallback(async () => {
-    setCargandoAfil(true);
-    try {
-      const { data } = await api.get('/api/afiliaciones/mias');
-      setAfiliaciones(data);
-    } catch {
-      setAfiliaciones([]);
-    } finally {
-      setCargandoAfil(false);
-    }
-  }, []);
+  }, [idEmpresa]);
 
   useEffect(() => { cargarVehiculos(); }, [cargarVehiculos]);
-  useEffect(() => { cargarAfiliaciones(); }, [cargarAfiliaciones]);
-
-  const handleAfiliar = async () => {
-    const codigo = codigoAfiliacion.trim();
-    if (!codigo) return;
-    setAfiliando(true);
-    try {
-      await api.post('/api/afiliaciones', { codigo_afiliacion: codigo });
-      setCodigoAfiliacion('');
-      cargarAfiliaciones();
-      Alert.alert('Listo', 'Solicitud enviada. Queda pendiente hasta que la empresa la apruebe.');
-    } catch (e) {
-      Alert.alert('Error', e?.response?.data?.error ?? 'No se pudo afiliar con ese código.');
-    } finally {
-      setAfiliando(false);
-    }
-  };
-
-  const handleDesafiliar = (afiliacion) => {
-    Alert.alert(
-      'Desafiliarse',
-      `¿Salir de ${afiliacion.empresa?.nombre ?? 'esta empresa'}?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Salir', style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.delete(`/api/afiliaciones/${afiliacion.id_conductor_empresa}`);
-              setAfiliaciones(prev => prev.filter(a => a.id_conductor_empresa !== afiliacion.id_conductor_empresa));
-            } catch (e) {
-              Alert.alert('Error', e?.response?.data?.error ?? 'No se pudo desafiliar.');
-            }
-          },
-        },
-      ]
-    );
-  };
 
   const abrirModal = () => { setForm(FORM_VACIO); setModalOpen(true); };
-  const cerrarModal = () => setModalOpen(false);
 
   const toggleCondicion = (id) => {
     setForm(prev => ({
@@ -158,11 +99,10 @@ export default function PerfilFleteroScreen() {
     }
     setGuardando(true);
     try {
-      const { data } = await api.post('/api/conductores/mis-vehiculos', {
+      const { data } = await api.post(`/api/empresas/${idEmpresa}/vehiculos`, {
         ...form,
         anio: parseInt(form.anio, 10),
       });
-      clearVehiculoCache();
       setVehiculos(prev => [...prev, data]);
       setModalOpen(false);
     } catch (e) {
@@ -174,7 +114,7 @@ export default function PerfilFleteroScreen() {
 
   const handleEliminar = (v) => {
     Alert.alert(
-      'Eliminar vehículo',
+      'Dar de baja vehículo',
       `¿Eliminar ${v.marca} ${v.modelo} (${v.patente})?`,
       [
         { text: 'Cancelar', style: 'cancel' },
@@ -182,8 +122,7 @@ export default function PerfilFleteroScreen() {
           text: 'Eliminar', style: 'destructive',
           onPress: async () => {
             try {
-              await api.delete(`/api/conductores/mis-vehiculos/${v.id_vehiculo}`);
-              clearVehiculoCache();
+              await api.delete(`/api/empresas/${idEmpresa}/vehiculos/${v.id_vehiculo}`);
               setVehiculos(prev => prev.filter(x => x.id_vehiculo !== v.id_vehiculo));
             } catch (e) {
               Alert.alert('Error', e?.response?.data?.error ?? 'No se pudo eliminar.');
@@ -199,119 +138,38 @@ export default function PerfilFleteroScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Mi perfil</Text>
+        <Text style={styles.headerTitle}>Flota</Text>
+        <TouchableOpacity style={styles.agregarBtn} onPress={abrirModal}>
+          <Ionicons name="add" size={16} color={colors.primary} />
+          <Text style={styles.agregarText}>Agregar</Text>
+        </TouchableOpacity>
       </View>
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-
-        {/* Avatar */}
-        <View style={styles.avatarCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{inicial}</Text>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {cargando ? (
+          <ActivityIndicator color={colors.primary} style={{ paddingVertical: spacing.lg }} />
+        ) : vehiculos.length === 0 ? (
+          <View style={styles.vehVacio}>
+            <Ionicons name="car-outline" size={32} color={colors.textHint} />
+            <Text style={styles.vehVacioText}>Todavía no hay vehículos en la flota</Text>
           </View>
-          <Text style={styles.nombre}>{nombre}</Text>
-          <Text style={styles.rol}>Conductor</Text>
-        </View>
-
-        {/* Datos */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Datos personales</Text>
-          <View style={styles.fila}>
-            <Text style={styles.filaLabel}>Email</Text>
-            <Text style={styles.filaValor}>{user?.email ?? '—'}</Text>
-          </View>
-        </View>
-
-        {/* Vehículos */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Mis vehículos</Text>
-            <TouchableOpacity style={styles.agregarBtn} onPress={abrirModal}>
-              <Ionicons name="add" size={16} color={colors.primary} />
-              <Text style={styles.agregarText}>Agregar</Text>
-            </TouchableOpacity>
-          </View>
-
-          {cargando ? (
-            <ActivityIndicator color={colors.primary} style={{ paddingVertical: spacing.md }} />
-          ) : vehiculos.length === 0 ? (
-            <View style={styles.vehVacio}>
-              <Ionicons name="car-outline" size={32} color={colors.textHint} />
-              <Text style={styles.vehVacioText}>No tenés vehículos registrados</Text>
-              <Text style={styles.vehVacioSub}>Agregá uno para poder aceptar viajes</Text>
-            </View>
-          ) : (
-            vehiculos.map((v, i) => (
+        ) : (
+          <View style={styles.card}>
+            {vehiculos.map((v, i) => (
               <React.Fragment key={v.id_vehiculo}>
                 {i > 0 && <View style={styles.divider} />}
                 <VehiculoCard v={v} onEliminar={handleEliminar} />
               </React.Fragment>
-            ))
-          )}
-        </View>
-
-        {/* Empresas afiliadas */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Mis empresas</Text>
-
-          <View style={styles.afiliarRow}>
-            <TextInput
-              style={styles.afiliarInput}
-              value={codigoAfiliacion}
-              onChangeText={setCodigoAfiliacion}
-              placeholder="Código de afiliación"
-              placeholderTextColor={colors.textHint}
-              autoCapitalize="characters"
-            />
-            <TouchableOpacity
-              style={[styles.afiliarBtn, (!codigoAfiliacion.trim() || afiliando) && { opacity: 0.5 }]}
-              onPress={handleAfiliar}
-              disabled={!codigoAfiliacion.trim() || afiliando}
-            >
-              {afiliando
-                ? <ActivityIndicator color={colors.textPrimary} size="small" />
-                : <Text style={styles.afiliarBtnText}>Unirme</Text>
-              }
-            </TouchableOpacity>
+            ))}
           </View>
-
-          {cargandoAfil ? (
-            <ActivityIndicator color={colors.primary} style={{ paddingVertical: spacing.md }} />
-          ) : afiliaciones.length === 0 ? (
-            <Text style={styles.vehVacioSub}>No estás afiliado a ninguna empresa todavía.</Text>
-          ) : (
-            afiliaciones.map((a, i) => (
-              <React.Fragment key={a.id_conductor_empresa}>
-                {i > 0 && <View style={styles.divider} />}
-                <View style={styles.afilRow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.vehNombre}>{a.empresa?.nombre ?? 'Empresa'}</Text>
-                    <Text style={[styles.vehTipo, a.estado === 'PENDIENTE' && { color: colors.warning }]}>
-                      {a.estado === 'PENDIENTE' ? 'Pendiente de aprobación' : 'Activo'}
-                    </Text>
-                  </View>
-                  <TouchableOpacity onPress={() => handleDesafiliar(a)} style={styles.eliminarBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                    <Ionicons name="exit-outline" size={18} color={colors.error} />
-                  </TouchableOpacity>
-                </View>
-              </React.Fragment>
-            ))
-          )}
-        </View>
-
-        <TouchableOpacity style={styles.btnCerrar} onPress={logout} activeOpacity={0.8}>
-          <Text style={styles.btnCerrarText}>Cerrar sesión</Text>
-        </TouchableOpacity>
+        )}
       </ScrollView>
-      </KeyboardAvoidingView>
 
-      {/* Modal agregar vehículo */}
       <Modal visible={modalOpen} animationType="slide" statusBarTranslucent>
         <SafeAreaView style={styles.modalSafe}>
           <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <View style={styles.modalHeader}>
-              <TouchableOpacity onPress={cerrarModal} style={styles.modalCerrar}>
+              <TouchableOpacity onPress={() => setModalOpen(false)} style={styles.modalCerrar}>
                 <Ionicons name="close" size={20} color={colors.textPrimary} />
               </TouchableOpacity>
               <Text style={styles.modalTitulo}>Nuevo vehículo</Text>
@@ -319,7 +177,6 @@ export default function PerfilFleteroScreen() {
             </View>
 
             <ScrollView style={styles.modalScroll} contentContainerStyle={styles.modalContent} keyboardShouldPersistTaps="handled">
-
               <CampoTexto label="Patente *" value={form.patente} onChangeText={v => setForm(p => ({ ...p, patente: v.toUpperCase() }))} placeholder="ABC123" maxLength={8} autoCapitalize="characters" />
               <CampoTexto label="Marca *" value={form.marca} onChangeText={v => setForm(p => ({ ...p, marca: v }))} placeholder="Ford" />
               <CampoTexto label="Modelo *" value={form.modelo} onChangeText={v => setForm(p => ({ ...p, modelo: v }))} placeholder="Transit" />
@@ -366,7 +223,6 @@ export default function PerfilFleteroScreen() {
                   : <Text style={styles.btnGuardarText}>Guardar vehículo</Text>
                 }
               </TouchableOpacity>
-
             </ScrollView>
           </KeyboardAvoidingView>
         </SafeAreaView>
@@ -395,52 +251,29 @@ function CampoTexto({ label, value, onChangeText, placeholder, keyboardType, max
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: spacing.md, paddingVertical: spacing.md,
+  },
   headerTitle: { fontSize: fontSize.h1, fontWeight: '800', color: colors.textPrimary, letterSpacing: -0.5 },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
 
-  avatarCard: {
-    alignItems: 'center', paddingVertical: spacing.xl,
-    backgroundColor: colors.surface1, borderRadius: radius.lg,
-    borderWidth: 1, borderColor: colors.surface3, marginBottom: spacing.md,
-  },
-  avatar: {
-    width: 72, height: 72, borderRadius: radius.full,
-    backgroundColor: `${colors.primary}22`,
-    borderWidth: 2, borderColor: `${colors.primary}44`,
-    alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm,
-  },
-  avatarText: { fontSize: 32, fontWeight: '800', color: colors.primary },
-  nombre: { fontSize: fontSize.h2, fontWeight: '700', color: colors.textPrimary },
-  rol: { fontSize: fontSize.body, color: colors.textSecondary, marginTop: 4 },
-
-  card: {
-    backgroundColor: colors.surface1, borderRadius: radius.lg,
-    borderWidth: 1, borderColor: colors.surface3,
-    padding: spacing.md, marginBottom: spacing.md,
-  },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
-  cardTitle: { fontSize: fontSize.h3, fontWeight: '700', color: colors.textPrimary },
-  fila: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-  },
-  filaLabel: { fontSize: fontSize.body, color: colors.textSecondary },
-  filaValor: { fontSize: fontSize.body, fontWeight: '600', color: colors.textPrimary, maxWidth: '60%', textAlign: 'right' },
-  divider: { height: 1, backgroundColor: colors.surface3, marginVertical: spacing.xs },
-
   agregarBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: spacing.sm, paddingVertical: 4,
+    paddingHorizontal: spacing.sm, paddingVertical: spacing.xs,
     borderRadius: radius.full, borderWidth: 1, borderColor: colors.primary,
     backgroundColor: `${colors.primary}12`,
   },
   agregarText: { fontSize: fontSize.caption, fontWeight: '700', color: colors.primary },
 
-  vehVacio: { alignItems: 'center', paddingVertical: spacing.lg, gap: spacing.xs },
+  card: {
+    backgroundColor: colors.surface1, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: colors.surface3, padding: spacing.md,
+  },
+
+  vehVacio: { alignItems: 'center', paddingVertical: spacing.xl, gap: spacing.xs },
   vehVacioText: { fontSize: fontSize.body, fontWeight: '600', color: colors.textSecondary },
-  vehVacioSub: { fontSize: fontSize.caption, color: colors.textHint },
 
   vehCard: { paddingVertical: spacing.sm },
   vehTop: { flexDirection: 'row', alignItems: 'flex-start' },
@@ -451,28 +284,8 @@ const styles = StyleSheet.create({
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.xs },
   tag: { borderWidth: 1, borderRadius: radius.full, paddingHorizontal: 8, paddingVertical: 2 },
   tagText: { fontSize: 10, fontWeight: '700' },
+  divider: { height: 1, backgroundColor: colors.surface3, marginVertical: spacing.xs },
 
-  afiliarRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.sm },
-  afiliarInput: {
-    flex: 1, backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.surface3,
-    borderRadius: radius.md, paddingHorizontal: spacing.md, height: 44,
-    fontSize: fontSize.body, color: colors.textPrimary,
-  },
-  afiliarBtn: {
-    backgroundColor: colors.primary, borderRadius: radius.md,
-    paddingHorizontal: spacing.md, alignItems: 'center', justifyContent: 'center',
-  },
-  afiliarBtnText: { fontSize: fontSize.body, fontWeight: '700', color: colors.textPrimary },
-  afilRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm },
-
-  btnCerrar: {
-    borderWidth: 1, borderColor: colors.error,
-    borderRadius: radius.lg, paddingVertical: spacing.md,
-    alignItems: 'center', marginTop: spacing.sm,
-  },
-  btnCerrarText: { fontSize: fontSize.h3, fontWeight: '700', color: colors.error },
-
-  // Modal
   modalSafe: { flex: 1, backgroundColor: colors.background },
   modalHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

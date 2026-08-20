@@ -13,9 +13,10 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
+      "bundleIdentifier": "com.movix.fletermobile",
       "supportsTablet": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "Movix necesita la cámara para escanear el código QR de entrega."
+      "config": {
+        "googleMapsApiKey": "AIzaSyDpWEEvdenhCI6cpSvG4Kj3qnITIFDYn04"
       }
     },
     "android": {
@@ -25,16 +26,21 @@
       },
       "edgeToEdgeEnabled": true,
       "config": {
-        "googleMaps": { "apiKey": "AIzaSyDpWEEvdenhCI6cpSvG4Kj3qnITIFDYn04" }
+        "googleMaps": {
+          "apiKey": "AIzaSyDpWEEvdenhCI6cpSvG4Kj3qnITIFDYn04"
+        }
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-barcode-scanner",
-      "@react-native-firebase/app",
-      "@react-native-firebase/auth",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Movix necesita la cámara para escanear el código QR de entrega."
+        }
+      ],
       "@react-native-community/datetimepicker",
       [
         "expo-location",
@@ -42,7 +48,8 @@
           "locationAlwaysAndWhenInUsePermission": "Movix necesita tu ubicación para mostrar tu posición al cliente durante el viaje.",
           "isIosBackgroundLocationEnabled": true
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

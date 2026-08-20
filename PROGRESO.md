@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-07-01  
-> Branch: master | Commits totales: 31
+> Última actualización: 2026-08-19  
+> Branch: master | Commits totales: 33
 
 ---
 
@@ -44,6 +44,9 @@
 | (pendiente) | 30 Jun 2026 | Feat — retomar viaje activo, ETA, ruta recalculada, Polyline, CalificacionScreen, historial real, GERENTE |
 | (pendiente) | 01 Jul 2026 | Docs — api.md sincronizado con contrato real (ruta_planeada, eta:actualizar, ruta:recalculada, mis-viajes-conductor, cancelar-conductor) |
 | (pendiente) | 01 Jul 2026 | Feat — cancelación de viaje por el conductor en ViajeActivoFleteroScreen (POST /api/viajes/:id/cancelar-conductor) |
+| (pendiente) | 14 Ago 2026 | Feat — build nativa iOS funcionando en dispositivo físico (Xcode + Google Maps SDK), mapa expandible + centrar en conductor/fletero |
+| (pendiente) | 14 Ago 2026 | Feat — implementación completa del contrato nuevo de api.md: flujo "Iniciar viaje" manual, cancelar-cliente, zona calculada por servidor, duración/puntualidad en historiales, conductor afiliado (tab Asignados), y rol GERENTE completo (empresas, flota, conductores, reservar/asignar/reasignar, tracking) |
+| (pendiente) | 19 Ago 2026 | Fix — api.md en disco había quedado desactualizado (se había revertido a la versión "Fase 5", sin zona/iniciar/admin/jerarquía) pese a que el código ya implementaba todo eso; resincronizado con el contrato completo. Agrega botón "Liberar viaje" (`POST /viajes/:id/cancelar-reserva`) en `AsignarConductorScreen` y link a remito PDF en `ViajeActivoGerenteScreen` al finalizar |
 
 ---
 
@@ -55,6 +58,7 @@
 | `LoginScreen` | ✅ Funcional | Firebase Auth real. Funciona en mobile, **falla en web** (SDK diferente) |
 | `RegisterClienteScreen` | ✅ Funcional | POST /api/auth/registro-cliente |
 | `RegisterFleteroScreen` | ⚠️ Incompleto | Falta sección de **vehículo y condiciones** — solo pide datos personales + licencia |
+| `RegisterGerenteScreen` | ✅ Funcional | POST /api/auth/registro-gerente (crea gerente + primera empresa), sin pantalla de revisión (acceso inmediato) |
 | `CuentaPendienteScreen` | ✅ Funcional | Pantalla post-registro conductor, muestra estado de revisión |
 
 ### Cliente
@@ -63,8 +67,8 @@
 | `HomeScreen` | ✅ Funcional | Últimos 3 viajes reales vía GET /api/viajes/mis-viajes, pull-to-refresh, FAB nuevo viaje |
 | `CrearViajeScreen` | ✅ Funcional | Google Places Legacy API para origen/destino/paradas, coords reales en payload, POST /api/viajes/estimar-costo |
 | `ConfirmacionViajeScreen` | ✅ Funcional | Resumen + POST /api/viajes, navega a BuscandoFletero |
-| `BuscandoFleteroScreen` | ✅ Funcional | Animación de búsqueda, escucha `viaje:conductor_asignado` via socket |
-| `ViajeActivoScreen` | ✅ Funcional | MapView con marcador del conductor en tiempo real, mapa:actualizar, alerta:desvio, timeline de estados, QR por parada via GET /qr-paradas, expandible, paginador si hay múltiples paradas, viaje:finalizado |
+| `BuscandoFleteroScreen` | ✅ Funcional | Animación de búsqueda, escucha `viaje:conductor_asignado` via socket, botón "Cancelar búsqueda" (POST /cancelar-cliente, funciona en BUSCANDO_CONDUCTOR ya que el timeout automático de 10min se eliminó del backend) |
+| `ViajeActivoScreen` | ✅ Funcional | MapView con marcador del conductor en tiempo real, mapa expandible a pantalla completa + botón centrar, Google Maps en iOS y Android, mapa:actualizar, alerta:desvio, timeline de estados, escucha `viaje:iniciado` (reemplaza el auto-inicio por GPS), botón cancelar (POST /cancelar-cliente) solo en CONDUCTOR_ASIGNADO, QR por parada via GET /qr-paradas, expandible, paginador si hay múltiples paradas, viaje:finalizado |
 | `HistorialScreen` | ✅ Funcional | GET /api/viajes/mis-viajes, agrupado por mes, filtros (Todos/Finalizados/Cancelados/En curso), back button |
 | `PerfilScreen` | ✅ Funcional | Nombre y email reales del AuthContext, edición local, logout |
 
@@ -74,12 +78,30 @@
 | `DisponiblesScreen` | ✅ Funcional | GET /api/viajes/disponibles + socket `viaje:disponible`, bug fix stale closure en acceptance flow |
 | `NuevoViajeModal` | ✅ Funcional | Bottom sheet con countdown 30s, barra animada, Aceptar/Rechazar |
 | `DetalleViajeScreen` | ✅ Funcional | Fetch /api/viajes/:id para nombre real del cliente, bug fix stale closure, timeout 10s en handleAceptar |
-| `ViajeActivoFleteroScreen` | ✅ Funcional | GPS real (expo-location + background task), MapView con posición propia + paradas, PATCH CARGANDO/DESCARGANDO, timeline reactivo a viaje:estado_cambiado, botón "Cancelar viaje" (POST /cancelar-conductor) visible solo en estado CONDUCTOR_ASIGNADO |
-| `HistorialFleteroScreen` | ✅ Funcional | API real GET /api/viajes/mis-viajes-conductor, filtros Todos/En curso/Finalizados/Cancelados |
-| `PerfilFleteroScreen` | ✅ Funcional | Datos del usuario, gestión de vehículos (listar/agregar/eliminar), logout |
+| `ViajeActivoFleteroScreen` | ✅ Funcional | GPS real (expo-location + background task) gateado detrás de "Iniciar viaje" (POST /api/viajes/:id/iniciar) — ya no arranca solo con el primer ping, MapView con posición propia + paradas, mapa expandible + centrar, PATCH CARGANDO/EN_RUTA/DESCARGANDO, timeline reactivo a viaje:estado_cambiado, botón "Cancelar viaje" (POST /cancelar-conductor) visible solo en estado CONDUCTOR_ASIGNADO |
+| `AsignadosScreen` | ✅ Funcional (nueva) | GET /api/viajes/asignados + socket `viaje:asignado`, para conductores afiliados a una empresa que reciben viajes sin tener que aceptarlos — tab nueva en FleteroStack |
+| `HistorialFleteroScreen` | ✅ Funcional | API real GET /api/viajes/mis-viajes-conductor, filtros Todos/En curso/Finalizados/Cancelados, duración/puntualidad si vienen en la respuesta |
+| `PerfilFleteroScreen` | ✅ Funcional | Datos del usuario, gestión de vehículos (listar/agregar/eliminar), sección "Mis empresas" (afiliarse con código, listar afiliaciones PENDIENTE/ACTIVO, desafiliarse), logout |
 | `CobroScreen` | ✅ Funcional | Muestra precio_real y remito PDF reales de route params, navega a DisponiblesHome |
 | `CalificacionScreen` | ✅ Funcional | Rating 1-5 + comentario opcional, POST /api/viajes/:id/calificacion, link remito PDF |
-| `QREntregaScreen` | ✅ Funcional | expo-barcode-scanner real, validación POST /confirmar-parada con lat/lng, soporta múltiples paradas, modal manual, cierre automático al confirmar última parada |
+| `QREntregaScreen` | ✅ Funcional | `expo-camera` (migrado desde `expo-barcode-scanner`, deprecado y sin build contra Expo SDK 54), validación POST /confirmar-parada con lat/lng, soporta múltiples paradas, modal manual, cierre automático al confirmar última parada |
+
+### Gerente (nuevo — rol completo)
+| Pantalla | Estado | Notas |
+|----------|--------|-------|
+| `EmpresaHomeScreen` | ✅ Funcional | Dashboard: nombre, CUIT, código de afiliación (regenerar + compartir vía `Share`), calificación promedio, cantidad de conductores activos. Escucha `viaje:requiere_reasignacion` → alerta + navega a asignar |
+| `FlotaScreen` | ✅ Funcional | CRUD de vehículos de la flota vía `/api/empresas/:id/vehiculos` (mismo patrón que vehículos propios del conductor) |
+| `ConductoresScreen` | ✅ Funcional | Lista conductores PENDIENTE/ACTIVO, aprobar solicitudes, desafiliar |
+| `DisponiblesGerenteScreen` | ✅ Funcional | Pull `GET /api/empresas/:id/viajes-disponibles` + push `viaje:disponible` |
+| `DetalleViajeGerenteScreen` | ✅ Funcional | Detalle del viaje + botón "Reservar" (`POST /api/viajes/:id/reservar`) |
+| `AsignarConductorScreen` | ✅ Funcional | Elegir conductor ACTIVO + vehículo (filtrado por `condiciones_req` del viaje) → `asignar` o `reasignar` según corresponda. Botón "Liberar viaje" (`POST /viajes/:id/cancelar-reserva`) para soltar la reserva sin esperar el timeout de 10min |
+| `ViajeActivoGerenteScreen` | ✅ Funcional | Tracking en vivo: mapa, ETA, costo acumulado, timeline, datos de cliente/conductor. Al recibir `viaje:finalizado` muestra link "Ver remito PDF" (o lo pide a `GET /viajes/:id/remito` si se reabre la pantalla ya finalizado) |
+| `HistorialEmpresaScreen` | ✅ Funcional | `GET /api/empresas/:id/viajes`, filtros Todos/En curso/Finalizados/Cancelados |
+| `PerfilGerenteScreen` | ✅ Funcional | Datos del usuario + logout |
+
+> Nota: helper compartido `src/hooks/useMiEmpresa.js` resuelve la empresa activa del gerente (primera de `GET /api/empresas/mias`) — no hay selector de múltiples empresas todavía, se agregaría ahí si hace falta.
+
+> **Sin probar de punta a punta contra el backend real** — no había una cuenta GERENTE real disponible en esta sesión. El bundle compila sin errores (verificado pidiéndole a Metro que bundlee la app completa), pero falta validar los flujos reales de reservar/asignar/afiliación en dispositivo.
 
 ---
 
@@ -100,10 +122,11 @@
 
 | Stack | Estado | Pantallas |
 |-------|--------|-----------|
-| `AuthStack` | ✅ | Login → RegisterCliente / RegisterFletero → CuentaPendiente |
+| `AuthStack` | ✅ | Login → RegisterCliente / RegisterFletero / RegisterGerente → CuentaPendiente |
 | `ClienteStack` | ✅ | Bottom tabs: Inicio, Crear, Historial, Perfil + modales de viaje activo |
-| `FleteroStack` | ✅ | Bottom tabs: Disponibles, Historial, Perfil + DetalleViaje, ViajeActivo |
-| `RootNavigator` | ✅ | Detecta rol del JWT y redirige al stack correcto |
+| `FleteroStack` | ✅ | Bottom tabs: Disponibles, **Asignados** (nueva), Historial, Perfil + DetalleViaje, ViajeActivo |
+| `GerenteStack` | ✅ (nueva) | Bottom tabs: Disponibles, Empresa, Historial, Perfil — stacks anidados para reservar/asignar y flota/conductores |
+| `RootNavigator` | ✅ | Detecta rol (CLIENTE/CONDUCTOR/FLETERO/GERENTE) y redirige al stack correcto; ADMIN sigue en placeholder "Acceso no disponible" (decisión: panel admin no va en mobile) |
 
 ---
 
@@ -115,8 +138,13 @@
 | `viaje:aceptar` | conductor → servidor | `DisponiblesScreen`, `DetalleViajeScreen` | ✅ |
 | `viaje:conductor_asignado` | servidor → room | `DisponiblesScreen`, `DetalleViajeScreen`, `BuscandoFleteroScreen` | ✅ Distingue por `id_usuario_conductor` |
 | `viaje:ya_asignado` | servidor → conductor | `DisponiblesScreen`, `DetalleViajeScreen` | ✅ Muestra alerta |
-| `viaje:cancelado_sin_conductor` | servidor → cliente | `BuscandoFleteroScreen` | ✅ Alert con mensaje y botón volver al inicio |
-| `conductor:ubicacion` | conductor → servidor | `ViajeActivoFleteroScreen` | ✅ Background task cada 15s |
+| `viaje:cancelado_sin_conductor` | servidor → cliente | — | ❌ Removido — el backend eliminó el timeout automático de 10min, se sacó el listener de `BuscandoFleteroScreen` |
+| `viaje:iniciado` | servidor → room personal cliente | `ViajeActivoScreen` | ✅ Reemplaza el auto-inicio por GPS |
+| `viaje:asignado` | servidor → room personal conductor | `AsignadosScreen` | ✅ Refresca la lista de asignados |
+| `viaje:reservado` | servidor → room del viaje | `DisponiblesGerenteScreen` | ✅ Saca el viaje de la lista |
+| `viaje:reserva_cancelada` | servidor → room del viaje | — | ⚠️ No escuchado todavía (el viaje vuelve al mercado, `DisponiblesGerenteScreen` lo vuelve a ver por `viaje:disponible`) |
+| `viaje:requiere_reasignacion` | servidor → room personal gerente | `EmpresaHomeScreen` | ✅ Alert + navega a `AsignarConductorScreen` |
+| `conductor:ubicacion` | conductor → servidor | `ViajeActivoFleteroScreen` | ✅ Background task cada 15s, solo después de `POST /iniciar` |
 | `mapa:actualizar` | servidor → room | `ViajeActivoScreen` | ✅ Actualiza marcador del conductor |
 | `costo:actualizar` | servidor → room | `ViajeActivoScreen` | ✅ Actualiza costo acumulado |
 | `viaje:estado_cambiado` | servidor → room | `ViajeActivoFleteroScreen`, `ViajeActivoScreen` | ✅ Timeline reactivo |
@@ -140,9 +168,14 @@
 | Acceptance flow no responde | Backend no procesa `viaje:aceptar` — frontend ya tiene timeout 10s como safety net | ❌ Requiere fix en backend |
 | GPS background en Expo Go | `startLocationUpdatesAsync` requiere build nativa — fallback a interval foreground activo | ⚠️ Funciona en foreground, background requiere build nativa |
 | MapView no disponible en Expo Go | `react-native-maps` requiere módulo nativo — MapViewWrapper muestra placeholder | ⚠️ Funciona en build nativa |
-| Transición CARGANDO → EN_RUTA | No documentada en api.md — frontend asume que el backend la auto-dispara con GPS | ⚠️ Pendiente confirmar con backend |
+| Transición CARGANDO → EN_RUTA | Confirmado en api.md nuevo: es manual, vía `PATCH /api/viajes/:id/estado` con `estado: 'EN_RUTA'` (agregado a la lista de estados válidos de ese endpoint) | ✅ Resuelto — ya lo hace `ViajeActivoFleteroScreen` |
 | `id_usuario_conductor` removido del payload | API nueva no incluye ese campo en `viaje:conductor_asignado` — lógica de navegación actualizada para no depender de él | ✅ Resuelto |
-| Cancelación del cliente rota | `ViajeActivoScreen` (cliente) llama `PATCH /api/viajes/:id/estado` con `estado: 'CANCELADO'`, pero el contrato solo permite rol `CONDUCTOR` y valores `CARGANDO`/`DESCARGANDO` en ese endpoint — no hay endpoint de cancelación documentado para el cliente | ❌ Pendiente, requiere endpoint nuevo en backend |
+| Cancelación del cliente rota | `ViajeActivoScreen` (cliente) llamaba `PATCH /api/viajes/:id/estado` con `estado: 'CANCELADO'`, que nunca fue válido para rol CLIENTE | ✅ Resuelto — el backend agregó `POST /api/viajes/:id/cancelar-cliente`, ya conectado en `ViajeActivoScreen` y `BuscandoFleteroScreen` |
+| GERENTE sin probar contra backend real | No había cuenta GERENTE disponible en la sesión que se implementó el rol completo | ⚠️ Pendiente — el bundle compila (verificado con Metro) pero falta test end-to-end de reservar/asignar/afiliación en dispositivo |
+| `viaje:reserva_cancelada` no escuchado | El viaje vuelve al mercado, pero `DisponiblesGerenteScreen` no lo saca proactivamente de otras listas (sí lo vuelve a agregar `viaje:disponible` si se re-publica) | ⚠️ Menor, sin resolver |
+| `api.md` desincronizado del código | El archivo en disco había quedado en la versión "Fase 5" (sin zona/iniciar/admin/jerarquía) aunque el código del rol GERENTE ya estaba implementado — probablemente una escritura anterior no se guardó bien | ✅ Resuelto — resincronizado con el contrato completo, verificado contra cada pantalla existente |
+| Gerente no podía soltar una reserva | `POST /viajes/:id/cancelar-reserva` existe en el contrato pero nada lo llamaba — un gerente que reservaba y se arrepentía dejaba el viaje bloqueado hasta el timeout de 10min | ✅ Resuelto — botón "Liberar viaje" en `AsignarConductorScreen` |
+| Gerente sin acceso al remito | `GET /viajes/:id/remito` acepta rol GERENTE pero `ViajeActivoGerenteScreen` no mostraba nada al finalizar el viaje | ✅ Resuelto — link "Ver remito PDF" usando `remito_url` de `viaje:finalizado` (o fetch de respaldo si la pantalla se reabre) |
 
 ---
 
@@ -184,7 +217,19 @@
 - [x] `ruta:recalculada` en ambas pantallas — actualiza Polyline + banner info
 - [x] Polyline en mapa exportada desde `MapViewWrapper` y renderizada con `ruta_planeada` del backend
 - [x] Retomar viaje activo: `DisponiblesScreen` detecta en mount si hay viaje activo y navega a `ViajeActivoFleteroScreen`
-- [x] `RootNavigator` maneja rol `GERENTE`/`ADMIN` con pantalla "Acceso no disponible"
+- [x] Google Maps en iOS (antes solo Android) + mapa expandible a pantalla completa + botón centrar (cliente y fletero)
+
+### Fase 6 — Estructura jerárquica: empresas y rol GERENTE (completo, sin probar contra backend real)
+- [x] Flujo "Iniciar viaje" manual (`POST /api/viajes/:id/iniciar`) reemplaza el auto-inicio por GPS — gatea el `useEffect` de tracking en `ViajeActivoFleteroScreen`
+- [x] `viaje:iniciado` en `ViajeActivoScreen` (cliente)
+- [x] Cancelación de búsqueda del cliente (`BuscandoFleteroScreen`, ya no hay timeout automático)
+- [x] Zona mostrada en `ConfirmacionViajeScreen` usa la calculada por el servidor, no la elegida por el usuario
+- [x] Duración real y puntualidad en `HistorialScreen` y `HistorialFleteroScreen`
+- [x] Conductor afiliado: tab "Asignados" + gestión de afiliaciones en `PerfilFleteroScreen`
+- [x] Rol GERENTE completo: registro, `GerenteStack`, empresa/flota/conductores, reservar/asignar/reasignar, tracking, historial
+- [ ] Probar contra un backend real con cuenta GERENTE (reservar → asignar → iniciar → tracking → finalizar de punta a punta)
+- [ ] Escuchar `viaje:reserva_cancelada` en `DisponiblesGerenteScreen`
+- [ ] Selector de múltiples empresas en `useMiEmpresa` si un gerente llega a tener más de una
 
 ---
 
