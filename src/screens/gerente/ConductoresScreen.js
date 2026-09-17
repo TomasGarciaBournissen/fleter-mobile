@@ -4,9 +4,13 @@ import {
   SafeAreaView, StatusBar, ActivityIndicator, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import api from '../../services/api';
 import { useMiEmpresa } from '../../hooks/useMiEmpresa';
+
+let colors;
+let styles;
 
 function ConductorCard({ c, onAprobar, onDesafiliar }) {
   const nombre = `${c.usuario?.nombre ?? ''} ${c.usuario?.apellido ?? ''}`.trim();
@@ -35,6 +39,8 @@ function ConductorCard({ c, onAprobar, onDesafiliar }) {
 }
 
 export default function ConductoresScreen() {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { idEmpresa } = useMiEmpresa();
   const [conductores, setConductores] = useState([]);
   const [cargando,    setCargando]    = useState(true);
@@ -87,7 +93,7 @@ export default function ConductoresScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Conductores</Text>
@@ -118,7 +124,7 @@ export default function ConductoresScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },
   headerTitle: { fontSize: fontSize.h1, fontWeight: '800', color: colors.textPrimary, letterSpacing: -0.5 },
@@ -146,7 +152,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.md,
     paddingHorizontal: spacing.sm, paddingVertical: spacing.xs,
   },
-  btnAprobarText: { fontSize: fontSize.caption, fontWeight: '700', color: colors.textPrimary },
+  btnAprobarText: { fontSize: fontSize.caption, fontWeight: '700', color: colors.onAccent },
 
   divider: { height: 1, backgroundColor: colors.surface3, marginVertical: spacing.xs },
 

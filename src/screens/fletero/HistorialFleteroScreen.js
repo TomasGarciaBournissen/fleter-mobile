@@ -4,9 +4,13 @@ import {
   SafeAreaView, StatusBar, ActivityIndicator,
   RefreshControl, TouchableOpacity,
 } from 'react-native';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { formatPrecio } from '../../utils/format';
 import api from '../../services/api';
+
+let colors;
+let styles;
 
 const FILTROS = ['Todos', 'En curso', 'Finalizados', 'Cancelados'];
 
@@ -52,11 +56,11 @@ function agruparPorMes(viajes) {
   }));
 }
 
-const PUNTUALIDAD_INFO = {
+const PUNTUALIDAD_INFO = () => ({
   A_TIEMPO:  { label: 'A tiempo',  color: colors.success },
   TARDE:     { label: 'Tarde',     color: colors.warning },
   MUY_TARDE: { label: 'Muy tarde', color: colors.error },
-};
+});
 
 function EstadoBadge({ estado }) {
   const { label, color } = estadoInfo(estado);
@@ -72,7 +76,7 @@ function ViajeRow({ item }) {
   const origen  = paradas[0]?.direccion ?? '—';
   const destino = paradas[paradas.length - 1]?.direccion ?? '—';
   const precio  = item.precio_real ?? item.precio_estimado;
-  const puntualidad = PUNTUALIDAD_INFO[item.puntualidad_inicio];
+  const puntualidad = PUNTUALIDAD_INFO()[item.puntualidad_inicio];
   return (
     <View style={styles.viajeItem}>
       <View style={styles.viajeTop}>
@@ -97,6 +101,8 @@ function ViajeRow({ item }) {
 }
 
 export default function HistorialFleteroScreen() {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const [viajes,   setViajes]   = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error,    setError]    = useState('');
@@ -128,7 +134,7 @@ export default function HistorialFleteroScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Historial</Text>
@@ -188,7 +194,7 @@ export default function HistorialFleteroScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {

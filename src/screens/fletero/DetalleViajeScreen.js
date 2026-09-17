@@ -4,11 +4,15 @@ import {
   SafeAreaView, StatusBar, Alert, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useSocket } from '../../context/SocketContext';
 import { formatPrecio } from '../../utils/format';
 import api from '../../services/api';
 import { getOrCreateVehiculo } from '../../utils/vehiculo';
+
+let colors;
+let styles;
 
 const ZONA_LABELS = { CABA: 'CABA', PROVINCIA: 'Provincia', MIXTO: 'CABA + Prov.' };
 
@@ -16,13 +20,13 @@ const COND_LABELS = {
   FRAGIL: 'Frágil', REFRIGERADO: 'Refrigerado', CARGA_PESADA: 'Carga pesada',
   PELIGROSO: 'Peligroso', VOLUMINOSO: 'Voluminoso',
 };
-const COND_COLORS = {
-  FRAGIL: colors.warning, REFRIGERADO: '#4FC3F7', CARGA_PESADA: colors.textSecondary,
+const COND_COLORS = () => ({
+  FRAGIL: colors.warning, REFRIGERADO: colors.info, CARGA_PESADA: colors.textSecondary,
   PELIGROSO: colors.error, VOLUMINOSO: colors.textSecondary,
-};
+});
 
 function CondTag({ id }) {
-  const color = COND_COLORS[id] ?? colors.textSecondary;
+  const color = COND_COLORS()[id] ?? colors.textSecondary;
   return (
     <View style={[styles.tag, { borderColor: `${color}66`, backgroundColor: `${color}18` }]}>
       <Text style={[styles.tagText, { color }]}>{COND_LABELS[id] ?? id}</Text>
@@ -46,6 +50,8 @@ function mapViaje(v) {
 }
 
 export default function DetalleViajeScreen({ navigation, route }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const rawParams = route?.params?.viaje;
   const [viaje, setViaje] = useState(rawParams ? mapViaje(rawParams) : null);
   const [cargandoDetalle, setCargandoDetalle] = useState(!rawParams);
@@ -143,7 +149,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -261,7 +267,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {
@@ -359,6 +365,6 @@ const styles = StyleSheet.create({
     flex: 2, backgroundColor: colors.primary,
     borderRadius: radius.lg, paddingVertical: spacing.md, alignItems: 'center',
   },
-  btnAceptarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnAceptarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.onAccent },
   btnDisabled: { opacity: 0.6 },
 });

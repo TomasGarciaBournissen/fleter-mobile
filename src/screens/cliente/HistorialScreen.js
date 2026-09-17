@@ -4,9 +4,13 @@ import {
   SafeAreaView, StatusBar, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import api from '../../services/api';
 import { formatPrecio } from '../../utils/format';
+
+let colors;
+let styles;
 
 const FILTROS = ['Todos', 'Finalizados', 'Cancelados', 'En curso'];
 
@@ -49,11 +53,11 @@ function agruparPorMes(viajes) {
   }));
 }
 
-const PUNTUALIDAD_INFO = {
+const PUNTUALIDAD_INFO = () => ({
   A_TIEMPO:  { label: 'A tiempo',  color: colors.success },
   TARDE:     { label: 'Tarde',     color: colors.warning },
   MUY_TARDE: { label: 'Muy tarde', color: colors.error },
-};
+});
 
 function EstadoBadge({ estado }) {
   const { label, color } = estadoInfo(estado);
@@ -69,7 +73,7 @@ function ViajeItem({ item }) {
   const origen  = paradas[0]?.direccion ?? '—';
   const destino = paradas[paradas.length - 1]?.direccion ?? '—';
   const precio  = item.precio_real ?? item.precio_estimado;
-  const puntualidad = PUNTUALIDAD_INFO[item.puntualidad_inicio];
+  const puntualidad = PUNTUALIDAD_INFO()[item.puntualidad_inicio];
   return (
     <View style={styles.viajeItem}>
       <View style={styles.viajeTop}>
@@ -94,6 +98,8 @@ function ViajeItem({ item }) {
 }
 
 export default function HistorialScreen({ navigation }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const [viajes,   setViajes]   = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error,    setError]    = useState('');
@@ -125,7 +131,7 @@ export default function HistorialScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -189,7 +195,7 @@ export default function HistorialScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {

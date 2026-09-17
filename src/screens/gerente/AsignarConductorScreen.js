@@ -4,9 +4,13 @@ import {
   SafeAreaView, StatusBar, Alert, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import api from '../../services/api';
 import { useMiEmpresa } from '../../hooks/useMiEmpresa';
+
+let colors;
+let styles;
 
 function cumpleCondiciones(vehiculo, condicionesReq) {
   if (!condicionesReq.length) return true;
@@ -15,6 +19,8 @@ function cumpleCondiciones(vehiculo, condicionesReq) {
 }
 
 export default function AsignarConductorScreen({ navigation, route }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { viajeId, reasignar } = route.params ?? {};
   const { idEmpresa } = useMiEmpresa();
 
@@ -101,7 +107,7 @@ export default function AsignarConductorScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -165,7 +171,7 @@ export default function AsignarConductorScreen({ navigation, route }) {
           activeOpacity={0.85}
         >
           {asignando
-            ? <ActivityIndicator color={colors.textPrimary} />
+            ? <ActivityIndicator color={colors.onAccent} />
             : <Text style={styles.btnAsignarText}>{reasignar ? 'Reasignar' : 'Asignar'}</Text>
           }
         </TouchableOpacity>
@@ -185,7 +191,7 @@ export default function AsignarConductorScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {
@@ -228,7 +234,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.lg,
     paddingVertical: spacing.md, alignItems: 'center',
   },
-  btnAsignarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnAsignarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.onAccent },
   btnLiberar: {
     paddingVertical: spacing.sm, alignItems: 'center', marginTop: spacing.xs,
   },

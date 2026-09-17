@@ -22,7 +22,7 @@ export async function startLocationTracking() {
     timeInterval: 15000,
     distanceInterval: 0,
     foregroundService: {
-      notificationTitle: 'Movix — Viaje activo',
+      notificationTitle: 'Fleter — Viaje activo',
       notificationBody: 'GPS activo para el viaje en curso',
       notificationColor: '#F4711A',
     },

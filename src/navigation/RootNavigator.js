@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
-import { colors, fontSize, spacing, radius } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { fontSize, spacing, radius } from '../theme';
 import AuthStack from './AuthStack';
 import ClienteStack from './ClienteStack';
 import FleteroStack from './FleteroStack';
 import GerenteStack from './GerenteStack';
 
 function RolNoSoportado({ onLogout }) {
+  const { colors } = useTheme();
   return (
     <View style={{ flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', padding: spacing.lg }}>
       <Text style={{ fontSize: fontSize.h2, fontWeight: '800', color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.sm }}>
@@ -19,9 +21,9 @@ function RolNoSoportado({ onLogout }) {
       </Text>
       <TouchableOpacity
         onPress={onLogout}
-        style={{ backgroundColor: colors.primary, borderRadius: radius.lg, paddingVertical: spacing.md, paddingHorizontal: spacing.xl }}
+        style={{ backgroundColor: colors.primary, borderRadius: radius.md, paddingVertical: spacing.md, paddingHorizontal: spacing.xl }}
       >
-        <Text style={{ fontSize: fontSize.body, fontWeight: '800', color: colors.textPrimary }}>Cerrar sesión</Text>
+        <Text style={{ fontSize: fontSize.body, fontWeight: '800', color: colors.onAccent }}>Cerrar sesión</Text>
       </TouchableOpacity>
     </View>
   );
@@ -29,6 +31,21 @@ function RolNoSoportado({ onLogout }) {
 
 export default function RootNavigator() {
   const { user, loading, logout } = useAuth();
+  const { colors, isDark } = useTheme();
+
+  // Tema de React Navigation derivado de la paleta activa (evita flashes blancos)
+  const base = isDark ? DarkTheme : DefaultTheme;
+  const navTheme = {
+    ...base,
+    colors: {
+      ...base.colors,
+      primary:    colors.primary,
+      background: colors.background,
+      card:       colors.surface1,
+      text:       colors.textPrimary,
+      border:     colors.line,
+    },
+  };
 
   if (loading) {
     return (
@@ -44,7 +61,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navTheme}>
       {!user && <AuthStack />}
       {user?.rol === 'CLIENTE' && <ClienteStack />}
       {(user?.rol === 'CONDUCTOR' || user?.rol === 'FLETERO') && <FleteroStack />}

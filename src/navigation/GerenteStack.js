@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 import DisponiblesGerenteScreen from '../screens/gerente/DisponiblesGerenteScreen';
 import DetalleViajeGerenteScreen from '../screens/gerente/DetalleViajeGerenteScreen';
@@ -43,6 +43,7 @@ function EmpresaStack() {
 }
 
 export default function GerenteStack() {
+  const { colors } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={{

@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing } from '../theme';
+import { fontSize, spacing } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 let _MapView = null;
 let _Marker = null;
@@ -29,11 +30,14 @@ export function Polyline(props) {
 }
 
 export const MapView = React.forwardRef(function MapView({ style, children, ...props }, ref) {
+  const { colors } = useTheme();
   if (!_MapView) {
     return (
-      <View style={[style, styles.placeholder]}>
+      <View style={[style, { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface2 }]}>
         <Ionicons name="map-outline" size={28} color={colors.textHint} />
-        <Text style={styles.placeholderText}>Mapa disponible en build nativa</Text>
+        <Text style={{ fontSize: fontSize.caption, color: colors.textHint, marginTop: spacing.xs }}>
+          Mapa disponible en build nativa
+        </Text>
       </View>
     );
   }
@@ -41,16 +45,3 @@ export const MapView = React.forwardRef(function MapView({ style, children, ...p
 });
 
 export default MapView;
-
-const styles = StyleSheet.create({
-  placeholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface2,
-  },
-  placeholderText: {
-    fontSize: fontSize.caption,
-    color: colors.textHint,
-    marginTop: spacing.xs,
-  },
-});

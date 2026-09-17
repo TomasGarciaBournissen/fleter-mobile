@@ -6,7 +6,8 @@ import {
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useSocket } from '../../context/SocketContext';
 import api from '../../services/api';
 import { formatPrecio } from '../../utils/format';
@@ -15,6 +16,9 @@ import {
   startLocationTracking,
   stopLocationTracking,
 } from '../../tasks/locationTask';
+
+let colors;
+let styles;
 
 function routeToCoords(route) {
   if (!Array.isArray(route)) return [];
@@ -35,6 +39,8 @@ function estadoIndex(e) {
 }
 
 export default function ViajeActivoFleteroScreen({ navigation, route }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { viajeId } = route.params ?? {};
   const { socket } = useSocket();
 
@@ -352,7 +358,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Viaje en curso</Text>
@@ -498,7 +504,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
       {/* Modal mapa pantalla completa */}
       <Modal visible={mapaFullscreen} animationType="slide" onRequestClose={() => setMapaFullscreen(false)}>
         <SafeAreaView style={styles.mapaFullSafeArea}>
-          <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+          <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
           <View style={styles.mapaFullHeader}>
             <Text style={styles.headerTitle}>Mapa</Text>
             <TouchableOpacity onPress={() => setMapaFullscreen(false)} style={styles.cerrarBtn}>
@@ -538,7 +544,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
             activeOpacity={0.85}
           >
             {cargandoAccion
-              ? <ActivityIndicator color={colors.textPrimary} />
+              ? <ActivityIndicator color={colors.onAccent} />
               : <Text style={styles.btnAccionText}>{botonLabel}</Text>
             }
           </TouchableOpacity>
@@ -562,7 +568,7 @@ export default function ViajeActivoFleteroScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {
@@ -696,7 +702,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.lg,
     paddingVertical: spacing.md, alignItems: 'center',
   },
-  btnAccionText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnAccionText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.onAccent },
   btnDisabled:   { opacity: 0.6 },
 
   btnCancelar: {

@@ -1,16 +1,23 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import SelectorApariencia from '../../components/SelectorApariencia';
+
+let colors;
+let styles;
 
 export default function PerfilGerenteScreen() {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { user, logout } = useAuth();
   const nombre  = user ? `${user.nombre} ${user.apellido}` : 'Gerente';
   const inicial = (user?.nombre ?? 'G').charAt(0).toUpperCase();
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Mi perfil</Text>
       </View>
@@ -31,6 +38,11 @@ export default function PerfilGerenteScreen() {
           </View>
         </View>
 
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Apariencia</Text>
+          <SelectorApariencia />
+        </View>
+
         <TouchableOpacity style={styles.btnCerrar} onPress={logout} activeOpacity={0.8}>
           <Text style={styles.btnCerrarText}>Cerrar sesión</Text>
         </TouchableOpacity>
@@ -39,7 +51,7 @@ export default function PerfilGerenteScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },
   headerTitle: { fontSize: fontSize.h1, fontWeight: '800', color: colors.textPrimary, letterSpacing: -0.5 },

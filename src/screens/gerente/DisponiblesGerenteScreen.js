@@ -3,20 +3,24 @@ import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   SafeAreaView, StatusBar, ActivityIndicator,
 } from 'react-native';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import api from '../../services/api';
 import { useSocket } from '../../context/SocketContext';
 import { useMiEmpresa } from '../../hooks/useMiEmpresa';
 import { formatPrecio } from '../../utils/format';
 
+let colors;
+let styles;
+
 const TAG_LABELS = {
   FRAGIL: 'Frágil', REFRIGERADO: 'Refrigerado', CARGA_PESADA: 'Carga pesada',
   PELIGROSO: 'Peligroso', VOLUMINOSO: 'Voluminoso',
 };
-const TAG_COLORS = {
-  FRAGIL: colors.warning, REFRIGERADO: '#4FC3F7', CARGA_PESADA: colors.textSecondary,
+const TAG_COLORS = () => ({
+  FRAGIL: colors.warning, REFRIGERADO: colors.info, CARGA_PESADA: colors.textSecondary,
   PELIGROSO: colors.error, VOLUMINOSO: colors.textSecondary,
-};
+});
 
 function mapViaje(v) {
   const paradas = (v.paradas ?? []).slice().sort((a, b) => a.orden - b.orden);
@@ -32,7 +36,7 @@ function mapViaje(v) {
 }
 
 function TagRequisito({ label }) {
-  const color = TAG_COLORS[label] ?? colors.textSecondary;
+  const color = TAG_COLORS()[label] ?? colors.textSecondary;
   return (
     <View style={[styles.tag, { borderColor: `${color}66`, backgroundColor: `${color}18` }]}>
       <Text style={[styles.tagText, { color }]}>{TAG_LABELS[label] ?? label}</Text>
@@ -67,6 +71,8 @@ function ViajeCard({ viaje, onPress }) {
 }
 
 export default function DisponiblesGerenteScreen({ navigation }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { idEmpresa } = useMiEmpresa();
   const [viajes,   setViajes]   = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -108,7 +114,7 @@ export default function DisponiblesGerenteScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Disponibles</Text>
@@ -144,7 +150,7 @@ export default function DisponiblesGerenteScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },

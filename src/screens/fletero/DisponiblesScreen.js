@@ -14,13 +14,17 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import api from '../../services/api';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import NuevoViajeModal from './NuevoViajeModal';
 import { formatKm, formatPrecio } from '../../utils/format';
 import { getOrCreateVehiculo } from '../../utils/vehiculo';
+
+let colors;
+let styles;
 
 const vehiculoPopupKey = (userId) => `@fleter_vehiculo_popup_dismissed:${userId}`;
 
@@ -48,16 +52,16 @@ const TAG_LABELS = {
   VOLUMINOSO: 'Voluminoso',
 };
 
-const TAG_COLORS = {
+const TAG_COLORS = () => ({
   FRAGIL: colors.warning,
-  REFRIGERADO: '#4FC3F7',
+  REFRIGERADO: colors.info,
   CARGA_PESADA: colors.textSecondary,
   PELIGROSO: colors.error,
   VOLUMINOSO: colors.textSecondary,
-};
+});
 
 function TagRequisito({ label }) {
-  const color = TAG_COLORS[label] ?? colors.textSecondary;
+  const color = TAG_COLORS()[label] ?? colors.textSecondary;
   return (
     <View style={[styles.tag, { borderColor: `${color}66`, backgroundColor: `${color}18` }]}>
       <Text style={[styles.tagText, { color }]}>{TAG_LABELS[label] ?? label}</Text>
@@ -110,6 +114,8 @@ function ViajeCard({ viaje, onPress }) {
 const ESTADOS_ACTIVOS = ['CONDUCTOR_ASIGNADO', 'EN_CAMINO_A_ORIGEN', 'CARGANDO', 'EN_RUTA', 'DESCARGANDO'];
 
 export default function DisponiblesScreen({ navigation }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const [viajes,        setViajes]        = useState([]);
   const [cargando,      setCargando]      = useState(true);
   const [refrescando,   setRefrescando]   = useState(false);
@@ -275,7 +281,7 @@ export default function DisponiblesScreen({ navigation }) {
         onAceptar={handleAceptar}
         onRechazar={handleRechazar}
       />
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <View>
@@ -341,7 +347,7 @@ export default function DisponiblesScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {

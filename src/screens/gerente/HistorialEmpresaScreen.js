@@ -4,10 +4,14 @@ import {
   SafeAreaView, StatusBar, ActivityIndicator,
   RefreshControl, TouchableOpacity,
 } from 'react-native';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { formatPrecio } from '../../utils/format';
 import api from '../../services/api';
 import { useMiEmpresa } from '../../hooks/useMiEmpresa';
+
+let colors;
+let styles;
 
 const FILTROS = ['Todos', 'En curso', 'Finalizados', 'Cancelados'];
 const ESTADOS_EN_CURSO = ['RESERVADO_POR_EMPRESA', 'CONDUCTOR_ASIGNADO', 'EN_CAMINO_A_ORIGEN', 'CARGANDO', 'EN_RUTA', 'DESCARGANDO'];
@@ -75,6 +79,8 @@ function ViajeRow({ item }) {
 }
 
 export default function HistorialEmpresaScreen() {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { idEmpresa } = useMiEmpresa();
   const [viajes,   setViajes]   = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -106,7 +112,7 @@ export default function HistorialEmpresaScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Historial</Text>
@@ -150,7 +156,7 @@ export default function HistorialEmpresaScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },
   headerTitle: { fontSize: fontSize.h1, fontWeight: '800', color: colors.textPrimary, letterSpacing: -0.5 },

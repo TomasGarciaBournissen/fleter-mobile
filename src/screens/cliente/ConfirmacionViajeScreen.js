@@ -4,19 +4,23 @@ import {
   SafeAreaView, StatusBar, ActivityIndicator, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import api from '../../services/api';
 import { formatKm, formatHoras, formatPrecio } from '../../utils/format';
+
+let colors;
+let styles;
 
 const ZONA_LABELS = { CABA: 'CABA', PROVINCIA: 'Provincia', MIXTO: 'CABA + Provincia' };
 const COND_LABELS = {
   FRAGIL: 'Frágil', REFRIGERADO: 'Refrigerado', CARGA_PESADA: 'Carga pesada',
   PELIGROSO: 'Peligroso', VOLUMINOSO: 'Voluminoso',
 };
-const COND_COLORS = {
-  FRAGIL: colors.warning, REFRIGERADO: '#4FC3F7', CARGA_PESADA: colors.textSecondary,
+const COND_COLORS = () => ({
+  FRAGIL: colors.warning, REFRIGERADO: colors.info, CARGA_PESADA: colors.textSecondary,
   PELIGROSO: colors.error, VOLUMINOSO: colors.textSecondary,
-};
+});
 
 function FilaInfo({ label, value }) {
   return (
@@ -28,6 +32,8 @@ function FilaInfo({ label, value }) {
 }
 
 export default function ConfirmacionViajeScreen({ navigation, route }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { payload, estimado } = route.params;
   const [cargando, setCargando] = useState(false);
 
@@ -50,7 +56,7 @@ export default function ConfirmacionViajeScreen({ navigation, route }) {
   // ── Pantalla de confirmación ───────────────────────────────
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -129,7 +135,7 @@ export default function ConfirmacionViajeScreen({ navigation, route }) {
                 <Text style={styles.filaLabel}>Requisitos</Text>
                 <View style={styles.tagsRow}>
                   {payload.condiciones_requeridas.map(c => {
-                    const color = COND_COLORS[c] ?? colors.textSecondary;
+                    const color = COND_COLORS()[c] ?? colors.textSecondary;
                     return (
                       <View key={c} style={[styles.tag, { borderColor: `${color}66`, backgroundColor: `${color}18` }]}>
                         <Text style={[styles.tagText, { color }]}>{COND_LABELS[c] ?? c}</Text>
@@ -159,7 +165,7 @@ export default function ConfirmacionViajeScreen({ navigation, route }) {
           activeOpacity={0.85}
         >
           {cargando
-            ? <ActivityIndicator color={colors.textPrimary} />
+            ? <ActivityIndicator color={colors.onAccent} />
             : <Text style={styles.btnConfirmarText}>Confirmar y publicar</Text>
           }
         </TouchableOpacity>
@@ -168,7 +174,7 @@ export default function ConfirmacionViajeScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {
@@ -237,7 +243,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.lg,
     paddingVertical: spacing.md, alignItems: 'center',
   },
-  btnConfirmarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnConfirmarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.onAccent },
 
   // Éxito
   exitoWrap: {
@@ -272,5 +278,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.lg,
     paddingVertical: spacing.md, paddingHorizontal: spacing.xl * 2,
   },
-  btnHomeText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnHomeText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.onAccent },
 });

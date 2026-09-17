@@ -5,14 +5,18 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import api from '../../services/api';
 import LocationPickerModal from '../../components/LocationPickerModal';
 import { formatKm, formatHoras, formatPrecio } from '../../utils/format';
 
-const CONDICIONES = [
+let colors;
+let styles;
+
+const CONDICIONES = () => [
   { id: 'FRAGIL',       label: 'Frágil',       color: colors.warning },
-  { id: 'REFRIGERADO',  label: 'Refrigerado',  color: '#4FC3F7' },
+  { id: 'REFRIGERADO',  label: 'Refrigerado',  color: colors.info },
   { id: 'CARGA_PESADA', label: 'Carga pesada', color: colors.textSecondary },
   { id: 'PELIGROSO',    label: 'Peligroso',    color: colors.error },
   { id: 'VOLUMINOSO',   label: 'Voluminoso',   color: colors.textSecondary },
@@ -54,6 +58,8 @@ function CondChip({ item, activo, onPress }) {
 }
 
 export default function CrearViajeScreen({ navigation }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const [origen,      setOrigen]      = useState(null); // { lat, lng, direccion }
   const [destino,     setDestino]     = useState(null);
   const [paradas,     setParadas]     = useState([]);   // array de { lat, lng, direccion }
@@ -151,7 +157,7 @@ export default function CrearViajeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <LocationPickerModal
         visible={pickerTarget !== null}
@@ -297,7 +303,7 @@ export default function CrearViajeScreen({ navigation }) {
           />
           <Text style={styles.campoLabel}>Requisitos del vehículo</Text>
           <View style={styles.chipsRow}>
-            {CONDICIONES.map(c => (
+            {CONDICIONES().map(c => (
               <CondChip key={c.id} item={c} activo={condiciones.includes(c.id)} onPress={() => toggleCond(c.id)} />
             ))}
           </View>
@@ -347,7 +353,7 @@ export default function CrearViajeScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {
@@ -491,5 +497,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.lg,
     paddingVertical: spacing.md, alignItems: 'center',
   },
-  btnPublicarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnPublicarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.onAccent },
 });

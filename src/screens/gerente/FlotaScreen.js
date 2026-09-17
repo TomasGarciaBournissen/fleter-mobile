@@ -5,9 +5,13 @@ import {
   ActivityIndicator, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import api from '../../services/api';
 import { useMiEmpresa } from '../../hooks/useMiEmpresa';
+
+let colors;
+let styles;
 
 const TIPOS_VEHICULO = ['furgon', 'camioneta', 'camion', 'pick-up', 'utilitario'];
 
@@ -58,6 +62,8 @@ function VehiculoCard({ v, onEliminar }) {
 }
 
 export default function FlotaScreen() {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { idEmpresa } = useMiEmpresa();
   const [vehiculos, setVehiculos] = useState([]);
   const [cargando,  setCargando]  = useState(true);
@@ -135,7 +141,7 @@ export default function FlotaScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Flota</Text>
@@ -219,7 +225,7 @@ export default function FlotaScreen() {
                 activeOpacity={0.85}
               >
                 {guardando
-                  ? <ActivityIndicator color={colors.textPrimary} />
+                  ? <ActivityIndicator color={colors.onAccent} />
                   : <Text style={styles.btnGuardarText}>Guardar vehículo</Text>
                 }
               </TouchableOpacity>
@@ -249,7 +255,7 @@ function CampoTexto({ label, value, onChangeText, placeholder, keyboardType, max
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -328,5 +334,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.lg,
     paddingVertical: spacing.md, alignItems: 'center', marginTop: spacing.sm,
   },
-  btnGuardarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnGuardarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.onAccent },
 });

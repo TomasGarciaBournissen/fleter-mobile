@@ -5,10 +5,14 @@ import {
 } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useSocket } from '../../context/SocketContext';
 import api from '../../services/api';
 import { formatPrecio } from '../../utils/format';
+
+let colors;
+let styles;
 
 const TIMELINE_ESTADOS = [
   { id: 'CONDUCTOR_ASIGNADO', label: 'Conductor asignado' },
@@ -29,6 +33,8 @@ function routeToCoords(route) {
 }
 
 export default function ViajeActivoGerenteScreen({ navigation, route }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { viajeId } = route.params ?? {};
   const { socket } = useSocket();
 
@@ -124,7 +130,7 @@ export default function ViajeActivoGerenteScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -226,7 +232,7 @@ export default function ViajeActivoGerenteScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {

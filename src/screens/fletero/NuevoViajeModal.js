@@ -2,13 +2,19 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, Modal, TouchableOpacity, StyleSheet, Animated,
 } from 'react-native';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { formatPrecio } from '../../utils/format';
+
+let colors;
+let styles;
 
 const COUNTDOWN_SEG = 30;
 const ZONA_LABELS = { CABA: 'CABA', PROVINCIA: 'Provincia', MIXTO: 'CABA + Prov.' };
 
 export default function NuevoViajeModal({ viaje, visible, onAceptar, onRechazar }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const [segundos, setSegundos] = useState(COUNTDOWN_SEG);
   const animWidth = useRef(new Animated.Value(1)).current;
   const animRef   = useRef(null);
@@ -117,7 +123,7 @@ export default function NuevoViajeModal({ viaje, visible, onAceptar, onRechazar 
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   overlay: {
     flex: 1, justifyContent: 'flex-end',
     backgroundColor: 'rgba(0,0,0,0.6)',
@@ -194,5 +200,5 @@ const styles = StyleSheet.create({
     flex: 2, backgroundColor: colors.primary,
     borderRadius: radius.lg, paddingVertical: spacing.md, alignItems: 'center',
   },
-  btnAceptarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnAceptarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.onAccent },
 });

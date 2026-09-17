@@ -3,7 +3,7 @@ import { View, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 import DisponiblesScreen       from '../screens/fletero/DisponiblesScreen';
 import AsignadosScreen         from '../screens/fletero/AsignadosScreen';
@@ -43,6 +43,7 @@ function AsignadosStack() {
 }
 
 export default function FleteroStack() {
+  const { colors } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={{

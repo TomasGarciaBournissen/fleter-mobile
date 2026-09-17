@@ -4,10 +4,14 @@ import {
   SafeAreaView, StatusBar, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import api from '../../services/api';
 import { useSocket } from '../../context/SocketContext';
 import { formatPrecio } from '../../utils/format';
+
+let colors;
+let styles;
 
 function mapViaje(v) {
   const paradas = (v.paradas ?? []).slice().sort((a, b) => a.orden - b.orden);
@@ -52,6 +56,8 @@ function ViajeCard({ viaje, onPress }) {
 }
 
 export default function AsignadosScreen({ navigation }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const [viajes,   setViajes]   = useState([]);
   const [cargando, setCargando] = useState(true);
   const { socket } = useSocket();
@@ -79,7 +85,7 @@ export default function AsignadosScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Asignados</Text>
@@ -114,7 +120,7 @@ export default function AsignadosScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },

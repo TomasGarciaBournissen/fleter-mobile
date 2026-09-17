@@ -4,11 +4,17 @@ import {
   TouchableOpacity, Animated, Easing, Alert, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useSocket } from '../../context/SocketContext';
 import api from '../../services/api';
 
+let colors;
+let styles;
+
 export default function BuscandoFleteroScreen({ navigation, route }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { idViaje } = route.params ?? {};
   const { socket } = useSocket();
   const [cancelando, setCancelando] = useState(false);
@@ -76,7 +82,7 @@ export default function BuscandoFleteroScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <TouchableOpacity
@@ -133,7 +139,7 @@ export default function BuscandoFleteroScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },
   backBtn: {

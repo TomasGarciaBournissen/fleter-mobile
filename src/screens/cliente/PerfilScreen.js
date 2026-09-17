@@ -13,12 +13,17 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import SelectorApariencia from '../../components/SelectorApariencia';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+
+let colors;
+let styles;
 
 const USUARIO_MOCK = {
   nombre: 'Tomás García',
-  email: 'tomas@movix.com',
+  email: 'tomas@fleter.com.ar',
   telefono: '+54 11 5555-1234',
   metodoPago: 'Mercado Pago',
   direccionFrecuente: 'Palermo Hollywood, CABA',
@@ -54,6 +59,8 @@ function SeccionCard({ titulo, children }) {
 }
 
 export default function PerfilScreen({ navigation }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { logout, user } = useAuth();
   const [usuario, setUsuario] = useState({
     ...USUARIO_MOCK,
@@ -68,7 +75,7 @@ export default function PerfilScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -142,6 +149,11 @@ export default function PerfilScreen({ navigation }) {
           </TouchableOpacity>
         </SeccionCard>
 
+        {/* Apariencia */}
+        <SeccionCard titulo="Apariencia">
+          <SelectorApariencia />
+        </SeccionCard>
+
         {/* Notificaciones */}
         <SeccionCard titulo="Notificaciones">
           <View style={styles.notifFila}>
@@ -181,7 +193,7 @@ export default function PerfilScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {
@@ -220,7 +232,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     marginBottom: spacing.sm,
   },
-  avatarText: { fontSize: 36, fontWeight: '800', color: colors.textPrimary },
+  avatarText: { fontSize: 36, fontWeight: '800', color: colors.onAccent },
   avatarNombre: { fontSize: fontSize.h2, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.md },
   statsRow: {
     flexDirection: 'row',

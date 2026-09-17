@@ -13,10 +13,18 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useAuth, DEV_MODE } from '../../context/AuthContext';
 
+let colors;
+let styles;
+let fieldStyles;
+
 export default function RegisterGerenteScreen({ navigation }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
+  fieldStyles = useThemedStyles(createFieldStyles);
   const { mockLogin } = useAuth();
   const [form, setForm] = useState({
     nombre: '',
@@ -90,7 +98,7 @@ export default function RegisterGerenteScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -244,7 +252,7 @@ export default function RegisterGerenteScreen({ navigation }) {
               activeOpacity={0.8}
             >
               {loading
-                ? <ActivityIndicator color={colors.textPrimary} />
+                ? <ActivityIndicator color={colors.onAccent} />
                 : <Text style={styles.btnPrimaryText}>Crear empresa</Text>
               }
             </TouchableOpacity>
@@ -266,7 +274,7 @@ function Field({ label, children }) {
   );
 }
 
-const fieldStyles = StyleSheet.create({
+const createFieldStyles = (colors) => StyleSheet.create({
   label: {
     fontSize: fontSize.caption,
     color: colors.textSecondary,
@@ -287,7 +295,7 @@ function mapApiError(err) {
   return 'Ocurrió un error. Intentá de nuevo.';
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   scroll: { flexGrow: 1, paddingHorizontal: spacing.lg, paddingBottom: spacing.xl },
   header: { paddingTop: spacing.lg, paddingBottom: spacing.md },
@@ -316,5 +324,5 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md, alignItems: 'center', marginTop: spacing.sm,
   },
   btnDisabled: { opacity: 0.6 },
-  btnPrimaryText: { color: colors.textPrimary, fontSize: fontSize.h3, fontWeight: '700' },
+  btnPrimaryText: { color: colors.onAccent, fontSize: fontSize.h3, fontWeight: '700' },
 });

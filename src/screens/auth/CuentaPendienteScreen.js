@@ -8,15 +8,21 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 
+let colors;
+let styles;
+
 export default function CuentaPendienteScreen() {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { logout } = useAuth();
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.container}>
         {/* Ícono de estado */}
@@ -65,7 +71,7 @@ function InfoRow({ icon, text }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,

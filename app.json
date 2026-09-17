@@ -38,14 +38,14 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Movix necesita la cámara para escanear el código QR de entrega."
+          "cameraPermission": "Fleter necesita la cámara para escanear el código QR de entrega."
         }
       ],
       "@react-native-community/datetimepicker",
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Movix necesita tu ubicación para mostrar tu posición al cliente durante el viaje.",
+          "locationAlwaysAndWhenInUsePermission": "Fleter necesita tu ubicación para mostrar tu posición al cliente durante el viaje.",
           "isIosBackgroundLocationEnabled": true
         }
       ],

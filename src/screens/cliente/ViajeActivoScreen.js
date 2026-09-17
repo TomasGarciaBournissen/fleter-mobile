@@ -5,10 +5,14 @@ import {
 } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useSocket } from '../../context/SocketContext';
 import api from '../../services/api';
 import { formatPrecio } from '../../utils/format';
+
+let colors;
+let styles;
 
 const TIMELINE_ESTADOS = [
   { id: 'CONDUCTOR_ASIGNADO', label: 'Fletero asignado' },
@@ -39,6 +43,8 @@ const ESTADO_BADGE_LABELS = {
 };
 
 export default function ViajeActivoScreen({ navigation, route }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { viajeId, conductor: conductorParam, vehiculo: vehiculoParam } = route.params ?? {};
   const { socket } = useSocket();
 
@@ -244,7 +250,7 @@ export default function ViajeActivoScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -433,7 +439,7 @@ export default function ViajeActivoScreen({ navigation, route }) {
       {/* Modal mapa pantalla completa */}
       <Modal visible={mapaFullscreen} animationType="slide" onRequestClose={() => setMapaFullscreen(false)}>
         <SafeAreaView style={styles.mapaFullSafeArea}>
-          <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+          <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
           <View style={styles.mapaFullHeader}>
             <Text style={styles.headerTitle}>Mapa</Text>
             <TouchableOpacity onPress={() => setMapaFullscreen(false)} style={styles.backBtn}>
@@ -483,7 +489,7 @@ export default function ViajeActivoScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {
@@ -595,7 +601,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center', justifyContent: 'center',
   },
-  fleteroAvatarText: { fontSize: fontSize.h2, fontWeight: '800', color: colors.textPrimary },
+  fleteroAvatarText: { fontSize: fontSize.h2, fontWeight: '800', color: colors.onAccent },
   fleteroNombre:     { fontSize: fontSize.body, fontWeight: '700', color: colors.textPrimary },
   fleteroInfo:       { fontSize: fontSize.caption, color: colors.textSecondary, marginTop: 2 },
   puntajeChip: {

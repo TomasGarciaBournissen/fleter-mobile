@@ -4,11 +4,17 @@ import {
   TextInput, ActivityIndicator, Alert, Linking, ScrollView, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import api from '../../services/api';
 import { formatPrecio } from '../../utils/format';
 
+let colors;
+let styles;
+
 export default function CalificacionScreen({ navigation, route }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { viajeId, precioReal, remitoUrl } = route.params ?? {};
   const [puntuacion, setPuntuacion] = useState(0);
   const [comentario, setComentario] = useState('');
@@ -36,7 +42,7 @@ export default function CalificacionScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
@@ -104,7 +110,7 @@ export default function CalificacionScreen({ navigation, route }) {
           activeOpacity={0.85}
         >
           {enviando
-            ? <ActivityIndicator color={colors.textPrimary} />
+            ? <ActivityIndicator color={colors.onAccent} />
             : <Text style={styles.btnCalificarText}>Enviar calificación</Text>
           }
         </TouchableOpacity>
@@ -122,7 +128,7 @@ export default function CalificacionScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
   content: {
     paddingHorizontal: spacing.md,
@@ -182,7 +188,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.lg,
     paddingVertical: spacing.md, alignItems: 'center', marginBottom: spacing.sm,
   },
-  btnCalificarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnCalificarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.onAccent },
 
   btnOmitir: { paddingVertical: spacing.sm, paddingHorizontal: spacing.xl },
   btnOmitirText: { fontSize: fontSize.body, color: colors.textHint, fontWeight: '600' },

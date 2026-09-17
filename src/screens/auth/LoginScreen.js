@@ -12,12 +12,18 @@ import {
   StatusBar,
   SafeAreaView,
 } from 'react-native';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius, fonts } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import Isotipo from '../../components/Isotipo';
 import { useAuth } from '../../context/AuthContext';
 import { DEV_MODE } from '../../context/AuthContext';
 
+let colors;
+let styles;
+
 export default function LoginScreen({ navigation }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { mockLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,7 +58,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -113,7 +119,7 @@ export default function LoginScreen({ navigation }) {
               activeOpacity={0.8}
             >
               {loading
-                ? <ActivityIndicator color={colors.textPrimary} />
+                ? <ActivityIndicator color={colors.onAccent} />
                 : <Text style={styles.btnPrimaryText}>Entrar</Text>
               }
             </TouchableOpacity>
@@ -199,7 +205,7 @@ function mapFirebaseError(code) {
   }
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.background,
@@ -215,23 +221,22 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   logo: {
-    // TODO rediseño v2: pasar a Archivo Black cuando se carguen las fuentes con expo-font
+    fontFamily: fonts.display,
     fontSize: 40,
-    fontWeight: '900',
     color: colors.textPrimary,
-    letterSpacing: -1,
+    letterSpacing: -0.8,
     marginTop: spacing.md,
   },
   logoDot: {
     color: colors.primary,
   },
   tagline: {
+    fontFamily: fonts.accent,
     fontSize: fontSize.caption,
-    color: colors.textSecondary,
+    color: colors.textHint,
     marginTop: spacing.sm,
-    letterSpacing: 1.2,
+    letterSpacing: 1.4,
     textTransform: 'uppercase',
-    fontWeight: '600',
   },
   form: {
     backgroundColor: colors.surface1,
@@ -284,7 +289,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   btnPrimaryText: {
-    color: colors.textPrimary,
+    color: colors.onAccent,
     fontSize: fontSize.h3,
     fontWeight: '700',
   },

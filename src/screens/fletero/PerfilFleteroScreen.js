@@ -6,10 +6,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import SelectorApariencia from '../../components/SelectorApariencia';
 import api from '../../services/api';
 import { clearVehiculoCache } from '../../utils/vehiculo';
+
+let colors;
+let styles;
 
 const TIPOS_VEHICULO = ['furgon', 'camioneta', 'camion', 'pick-up', 'utilitario'];
 
@@ -60,6 +65,8 @@ function VehiculoCard({ v, onEliminar }) {
 }
 
 export default function PerfilFleteroScreen({ route, navigation }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { user, logout } = useAuth();
   const nombre  = user ? `${user.nombre} ${user.apellido}` : 'Conductor';
   const inicial = (user?.nombre ?? 'C').charAt(0).toUpperCase();
@@ -207,7 +214,7 @@ export default function PerfilFleteroScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Mi perfil</Text>
@@ -281,7 +288,7 @@ export default function PerfilFleteroScreen({ route, navigation }) {
               disabled={!codigoAfiliacion.trim() || afiliando}
             >
               {afiliando
-                ? <ActivityIndicator color={colors.textPrimary} size="small" />
+                ? <ActivityIndicator color={colors.onAccent} size="small" />
                 : <Text style={styles.afiliarBtnText}>Unirme</Text>
               }
             </TouchableOpacity>
@@ -309,6 +316,11 @@ export default function PerfilFleteroScreen({ route, navigation }) {
               </React.Fragment>
             ))
           )}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Apariencia</Text>
+          <SelectorApariencia />
         </View>
 
         <TouchableOpacity style={styles.btnCerrar} onPress={logout} activeOpacity={0.8}>
@@ -373,7 +385,7 @@ export default function PerfilFleteroScreen({ route, navigation }) {
                 activeOpacity={0.85}
               >
                 {guardando
-                  ? <ActivityIndicator color={colors.textPrimary} />
+                  ? <ActivityIndicator color={colors.onAccent} />
                   : <Text style={styles.btnGuardarText}>Guardar vehículo</Text>
                 }
               </TouchableOpacity>
@@ -404,7 +416,7 @@ function CampoTexto({ label, value, onChangeText, placeholder, keyboardType, max
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },
   headerTitle: { fontSize: fontSize.h1, fontWeight: '800', color: colors.textPrimary, letterSpacing: -0.5 },
@@ -473,7 +485,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.md,
     paddingHorizontal: spacing.md, alignItems: 'center', justifyContent: 'center',
   },
-  afiliarBtnText: { fontSize: fontSize.body, fontWeight: '700', color: colors.textPrimary },
+  afiliarBtnText: { fontSize: fontSize.body, fontWeight: '700', color: colors.onAccent },
   afilRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm },
 
   btnCerrar: {
@@ -526,5 +538,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary, borderRadius: radius.lg,
     paddingVertical: spacing.md, alignItems: 'center', marginTop: spacing.sm,
   },
-  btnGuardarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary },
+  btnGuardarText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.onAccent },
 });

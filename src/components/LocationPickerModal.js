@@ -6,7 +6,11 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../theme';
+import { fontSize, spacing, radius } from '../theme';
+import { useTheme, useThemedStyles } from '../context/ThemeContext';
+
+let colors;
+let styles;
 
 const PLACES_KEY       = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY ?? '';
 const HISTORIAL_KEY    = 'fleter_historial_direcciones';
@@ -68,6 +72,8 @@ async function guardarEnHistorial(ubicacion) {
 }
 
 export default function LocationPickerModal({ visible, titulo, onSelect, onClose }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const [query,       setQuery]       = useState('');
   const [resultados,  setResultados]  = useState([]);
   const [historial,   setHistorial]   = useState([]);
@@ -160,7 +166,7 @@ export default function LocationPickerModal({ visible, titulo, onSelect, onClose
   return (
     <Modal visible={visible} animationType="slide" statusBarTranslucent>
       <SafeAreaView style={styles.safe}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+        <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.cerrarBtn}>
@@ -231,7 +237,7 @@ export default function LocationPickerModal({ visible, titulo, onSelect, onClose
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safe:   { flex: 1, backgroundColor: colors.background },
 
   header: {

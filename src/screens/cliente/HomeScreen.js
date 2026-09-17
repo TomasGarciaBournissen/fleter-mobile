@@ -5,22 +5,26 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius, fonts } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import Isotipo from '../../components/Isotipo';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { formatPrecio } from '../../utils/format';
 
+let colors;
+let styles;
+
 const ESTADOS_ACTIVOS = ['BUSCANDO_CONDUCTOR', 'CONDUCTOR_ASIGNADO', 'EN_CAMINO_A_ORIGEN', 'CARGANDO', 'EN_RUTA', 'DESCARGANDO'];
 
-const ESTADO_ACTIVO_LABELS = {
-  BUSCANDO_CONDUCTOR:  { label: 'Buscando fletero',  color: colors.warning },
-  CONDUCTOR_ASIGNADO:  { label: 'Fletero asignado',  color: colors.primary },
+const ESTADO_ACTIVO_LABELS = () => ({
+  BUSCANDO_CONDUCTOR:  { label: 'Buscando conductor', color: colors.warning },
+  CONDUCTOR_ASIGNADO:  { label: 'Conductor asignado', color: colors.primary },
   EN_CAMINO_A_ORIGEN:  { label: 'En camino',         color: colors.primary },
   CARGANDO:            { label: 'Cargando',           color: colors.warning },
   EN_RUTA:             { label: 'En ruta',            color: colors.primary },
   DESCARGANDO:         { label: 'Descargando',        color: colors.warning },
-};
+});
 
 function estadoInfo(estado) {
   if (estado === 'FINALIZADO') return { label: 'Entregado', color: colors.success };
@@ -68,6 +72,8 @@ function ViajeItem({ viaje }) {
 }
 
 export default function HomeScreen({ navigation }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { user } = useAuth();
   const [viajesActivos, setViajesActivos] = useState([]);
   const [ultimos,     setUltimos]     = useState([]);
@@ -106,7 +112,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <View style={styles.headerBrand}>
@@ -147,7 +153,7 @@ export default function HomeScreen({ navigation }) {
               const paradas = viaje.paradas ?? [];
               const origen  = paradas[0]?.direccion ?? '—';
               const destino = paradas[paradas.length - 1]?.direccion ?? '—';
-              const { label, color } = ESTADO_ACTIVO_LABELS[viaje.estado] ?? { label: 'En curso', color: colors.primary };
+              const { label, color } = ESTADO_ACTIVO_LABELS()[viaje.estado] ?? { label: 'En curso', color: colors.primary };
               return (
                 <TouchableOpacity
                   key={viaje.id_viaje}
@@ -207,7 +213,7 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
 
   header: {
@@ -218,7 +224,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   headerBrand:    { flexDirection: 'row', alignItems: 'center', gap: spacing.sm + 4, flex: 1, marginRight: spacing.sm },
-  headerGreeting: { fontSize: fontSize.h1, fontWeight: '800', color: colors.textPrimary, letterSpacing: -0.5 },
+  headerGreeting: { fontFamily: fonts.display, fontSize: fontSize.h1 - 4, color: colors.textPrimary, letterSpacing: -0.5 },
   headerSub:      { fontSize: fontSize.body, color: colors.textSecondary, marginTop: 2 },
   headerActions:  { flexDirection: 'row', gap: spacing.xs },
   iconBtn: {
@@ -305,5 +311,5 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
-  fabText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.textPrimary, letterSpacing: 0.3 },
+  fabText: { fontSize: fontSize.h3, fontWeight: '800', color: colors.onAccent, letterSpacing: 0.3 },
 });

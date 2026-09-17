@@ -4,10 +4,14 @@ import {
   SafeAreaView, StatusBar, ActivityIndicator, Alert, Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontSize, spacing, radius } from '../../theme';
+import { fontSize, spacing, radius } from '../../theme';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import api from '../../services/api';
 import { useSocket } from '../../context/SocketContext';
 import { useMiEmpresa } from '../../hooks/useMiEmpresa';
+
+let colors;
+let styles;
 
 const MOTIVO_LABELS = {
   conductor_cancelo: 'El conductor canceló el viaje',
@@ -15,6 +19,8 @@ const MOTIVO_LABELS = {
 };
 
 export default function EmpresaHomeScreen({ navigation }) {
+  colors = useTheme().colors;
+  styles = useThemedStyles(createStyles);
   const { empresa, idEmpresa, cargando, recargar } = useMiEmpresa();
   const [detalle, setDetalle] = useState(null);
   const [regenerando, setRegenerando] = useState(false);
@@ -71,7 +77,7 @@ export default function EmpresaHomeScreen({ navigation }) {
   const handleCompartir = () => {
     if (!empresa?.codigo_afiliacion) return;
     Share.share({
-      message: `Sumate a ${empresa.nombre} en Movix con el código de afiliación: ${empresa.codigo_afiliacion}`,
+      message: `Sumate a ${empresa.nombre} en Fleter con el código de afiliación: ${empresa.codigo_afiliacion}`,
     }).catch(() => {});
   };
 
@@ -95,7 +101,7 @@ export default function EmpresaHomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>{empresa.nombre}</Text>
@@ -157,7 +163,7 @@ export default function EmpresaHomeScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background },
   header: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },
   headerTitle: { fontSize: fontSize.h1, fontWeight: '800', color: colors.textPrimary, letterSpacing: -0.5 },
