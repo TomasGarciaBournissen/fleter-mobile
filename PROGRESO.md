@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-08-20  
-> Branch: master | Commits totales: 34
+> Última actualización: 2026-09-16  
+> Branch: master | Commits totales: 35
 
 ---
 
@@ -47,7 +47,8 @@
 | (pendiente) | 14 Ago 2026 | Feat — build nativa iOS funcionando en dispositivo físico (Xcode + Google Maps SDK), mapa expandible + centrar en conductor/fletero |
 | (pendiente) | 14 Ago 2026 | Feat — implementación completa del contrato nuevo de api.md: flujo "Iniciar viaje" manual, cancelar-cliente, zona calculada por servidor, duración/puntualidad en historiales, conductor afiliado (tab Asignados), y rol GERENTE completo (empresas, flota, conductores, reservar/asignar/reasignar, tracking) |
 | (pendiente) | 19 Ago 2026 | Fix — api.md en disco había quedado desactualizado (se había revertido a la versión "Fase 5", sin zona/iniciar/admin/jerarquía) pese a que el código ya implementaba todo eso; resincronizado con el contrato completo. Agrega botón "Liberar viaje" (`POST /viajes/:id/cancelar-reserva`) en `AsignarConductorScreen` y link a remito PDF en `ViajeActivoGerenteScreen` al finalizar |
-| (pendiente) | 20 Ago 2026 | Feat — reemplaza confirmación de entrega por QR con confirmación por GPS en `QREntregaScreen` (contrato nuevo: `confirmar-parada` ya no acepta `qr_firmado`, sino `id_parada+lat+lng`), botón "Finalizar viaje" en la última parada. Popup de alta de vehículo en `DisponiblesScreen` tras el registro del fletero (agregar ahora o más tarde desde Perfil). Refresco de `DisponiblesScreen` al recuperar foco + fix de pull-to-refresh (estaba atado al mismo loading state que la carga inicial). Saca el selector manual de zona en `CrearViajeScreen` (la calcula el servidor). Fix: `ViajeActivoFleteroScreen` no reflejaba el estado real si el POST a `/iniciar` fallaba en el cliente aunque el backend ya hubiera aplicado el cambio; ahora reconsulta el viaje ante ese error. Fix: la parada de origen se confirma en el momento de salir de `CARGANDO` (mientras el conductor todavía está ahí) en vez de diferirse al final, donde la validación de proximidad GPS la rechazaba por estar lejos. `ViajeActivoFleteroScreen` ahora espera el fetch inicial antes de renderizar, para no mostrar por un instante la etapa por defecto. api.md sincronizado |
+| `957bf77` | 20 Ago 2026 | Feat — reemplaza confirmación de entrega por QR con confirmación por GPS en `QREntregaScreen` (contrato nuevo: `confirmar-parada` ya no acepta `qr_firmado`, sino `id_parada+lat+lng`), botón "Finalizar viaje" en la última parada. Popup de alta de vehículo en `DisponiblesScreen` tras el registro del fletero (agregar ahora o más tarde desde Perfil). Refresco de `DisponiblesScreen` al recuperar foco + fix de pull-to-refresh (estaba atado al mismo loading state que la carga inicial). Saca el selector manual de zona en `CrearViajeScreen` (la calcula el servidor). Fix: `ViajeActivoFleteroScreen` no reflejaba el estado real si el POST a `/iniciar` fallaba en el cliente aunque el backend ya hubiera aplicado el cambio; ahora reconsulta el viaje ante ese error. Fix: la parada de origen se confirma en el momento de salir de `CARGANDO` (mientras el conductor todavía está ahí) en vez de diferirse al final, donde la validación de proximidad GPS la rechazaba por estar lejos. `ViajeActivoFleteroScreen` ahora espera el fetch inicial antes de renderizar, para no mostrar por un instante la etapa por defecto. api.md sincronizado |
+| (pendiente) | 16 Sep 2026 | Design — sistema de diseño v2 "Fleter" adoptado: UXUI.md reescrito (tokens claro/oscuro, 5 familias de estado, 4 tipografías, reglas de vocabulario y 9 datos), CLAUDE.md actualizado, mockups de 9 pantallas en canvas (claro/oscuro conmutables desde Perfil → Apariencia). Primer paso en código: componente `src/components/Isotipo.js` (6 cajas, react-native-svg) en el header de HomeScreen cliente y en LoginScreen (isotipo + wordmark "Fleter." con punto naranja + eslogan oficial) |
 
 ---
 
@@ -184,6 +185,17 @@
 ---
 
 ## Próximos Pasos por Fase
+
+### Rediseño v2 "Fleter" (en curso — mockups aprobados, ver UXUI.md)
+- [x] UXUI.md + CLAUDE.md actualizados con el sistema v2
+- [x] Mockups de 9 pantallas en canvas (claro + oscuro, ambos roles)
+- [x] Componente `Isotipo` en header de HomeScreen cliente
+- [x] Logo completo en LoginScreen (isotipo + "Fleter." + eslogan; falta la tipografía Archivo Black)
+- [ ] Reescribir `src/theme.js`: dos paletas (claro/oscuro) + tokens v2
+- [ ] `ThemeContext` con persistencia y selector Claro/Oscuro/Sistema en Perfil
+- [ ] Cargar tipografías (Archivo Black, Manrope, JetBrains Mono, Josefin Sans) con expo-font
+- [ ] Migrar pantallas cliente y fletero a los tokens v2 (texto en tinta sobre naranja, cards sin sombra, 9 datos por viaje)
+- [ ] Renombrar "Movix" → "Fleter" en textos visibles y copiar SVGs del isotipo a assets/logo/
 
 ### Fase 1 (incompleto)
 - [ ] Agregar sección de vehículo + condiciones a `RegisterFleteroScreen`

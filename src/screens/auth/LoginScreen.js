@@ -13,6 +13,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { colors, fontSize, spacing, radius } from '../../theme';
+import Isotipo from '../../components/Isotipo';
 import { useAuth } from '../../context/AuthContext';
 import { DEV_MODE } from '../../context/AuthContext';
 
@@ -63,8 +64,11 @@ export default function LoginScreen({ navigation }) {
         >
           {/* Logo / Marca */}
           <View style={styles.header}>
-            <Text style={styles.logo}>FLETER</Text>
-            <Text style={styles.tagline}>Movemos tu negocio</Text>
+            <Isotipo size={52} />
+            <Text style={styles.logo}>
+              Fleter<Text style={styles.logoDot}>.</Text>
+            </Text>
+            <Text style={styles.tagline}>Tu logística, de punta a punta.</Text>
           </View>
 
           {/* Formulario */}
@@ -211,16 +215,23 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   logo: {
+    // TODO rediseño v2: pasar a Archivo Black cuando se carguen las fuentes con expo-font
     fontSize: 40,
     fontWeight: '900',
+    color: colors.textPrimary,
+    letterSpacing: -1,
+    marginTop: spacing.md,
+  },
+  logoDot: {
     color: colors.primary,
-    letterSpacing: 4,
   },
   tagline: {
-    fontSize: fontSize.body,
+    fontSize: fontSize.caption,
     color: colors.textSecondary,
-    marginTop: spacing.xs,
-    letterSpacing: 1,
+    marginTop: spacing.sm,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    fontWeight: '600',
   },
   form: {
     backgroundColor: colors.surface1,

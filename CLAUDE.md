@@ -30,19 +30,19 @@ src/
     useAuth.js         � manejo de sesi�n con Keychain
   theme.js             � sistema de dise�o completo
 
-## Sistema de dise�o (RESPETAR SIEMPRE)
-- Fondo:              #FFF8F2  (crema calido)
-- Superficie 1:       #FFFFFF  (cards, bottom bar)
-- Superficie 2:       #FFF3EA  (inputs, cards anidadas)
-- Superficie 3:       #FFE4CC  (bordes, separadores)
-- Naranja primario:   #F4711A  (botones, activos, precios)
-- Naranja oscuro:     #D4601A  (pressed state)
-- Texto 100%:         #1A1207  (t�tulos)
-- Texto 65%:          rgba(26,18,7,0.65)  (subt�tulos)
-- Texto 35%:          rgba(26,18,7,0.35)  (hints, placeholders)
-- Error/desv�o:       #D93025
-- Warning/fr�gil:     #E59700
-- �xito:              #22A45D
+## Sistema de diseño (RESPETAR SIEMPRE)
+Sistema v2 "Fleter" — la referencia completa vive en `UXUI.md` (leerla antes de tocar UI).
+Todo color sale de tokens en `src/theme.js`; ningún hexadecimal suelto en pantallas.
+Resumen mínimo:
+- Marca: **Fleter** (ya no "Movix"). Eslogan solo en auth/splash.
+- Naranja primario: #E85D2A (pressed #D2521F). **Texto chico sobre naranja va en tinta #1B1A17, nunca blanco.** Naranja como texto sobre claro: #A63B14.
+- Temas: claro y oscuro para AMBOS roles, conmutable desde Perfil → Apariencia (Claro/Oscuro/Sistema). Defaults: cliente claro, conductor oscuro.
+- Tema claro: fondo #FAF7F1, cards #FFFFFF con borde #E8E4DA sin sombra, tinta #1B1A17, metadata #665F50.
+- Tema oscuro: fondo #141310, superficie #1C1A16, borde #2E2A24, tinta #F4F0E7, metadata #9E978A.
+- Estados del viaje: 5 familias (ámbar/azul/naranja/verde/rojo) × 3 valores (base/ink/soft) — tabla en UXUI.md.
+- Tipografías: Archivo Black (precios/títulos), Manrope (UI), Josefin Sans (solo eyebrows/eslogan), JetBrains Mono (IDs, patentes, horas).
+- Vocabulario: no se dice "fletes"; voseo rioplatense; formatos es-AR ($12.500, 14:30, AE 421 KL, VJ-2419).
+- Regla de los 9 datos: toda card/fila de viaje muestra fecha y hora, origen, paradas, destino, condiciones, distancia, tiempo, precio y estado; nada se trunca, lo que falta dice "A confirmar".
 
 ## Navegaci�n cliente (Bottom Tabs)
 - Inicio, Nuevo, Historial, Perfil

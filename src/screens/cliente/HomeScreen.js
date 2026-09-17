@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fontSize, spacing, radius } from '../../theme';
+import Isotipo from '../../components/Isotipo';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { formatPrecio } from '../../utils/format';
@@ -108,9 +109,12 @@ export default function HomeScreen({ navigation }) {
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerGreeting}>Hola, {user ? `${user.nombre} ${user.apellido}`.trim() : 'bienvenido'}</Text>
-          <Text style={styles.headerSub}>¿Qué movés hoy?</Text>
+        <View style={styles.headerBrand}>
+          <Isotipo size={30} />
+          <View>
+            <Text style={styles.headerGreeting}>Hola, {user ? `${user.nombre} ${user.apellido}`.trim() : 'bienvenido'}</Text>
+            <Text style={styles.headerSub}>¿Qué movés hoy?</Text>
+          </View>
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity
@@ -213,6 +217,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
   },
+  headerBrand:    { flexDirection: 'row', alignItems: 'center', gap: spacing.sm + 4, flex: 1, marginRight: spacing.sm },
   headerGreeting: { fontSize: fontSize.h1, fontWeight: '800', color: colors.textPrimary, letterSpacing: -0.5 },
   headerSub:      { fontSize: fontSize.body, color: colors.textSecondary, marginTop: 2 },
   headerActions:  { flexDirection: 'row', gap: spacing.xs },
