@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-09-17  
-> Branch: master | Commits totales: 36 (+1 pendiente)
+> Branch: master | Commits totales: 37 (+1 pendiente)
 
 ---
 
@@ -51,7 +51,8 @@
 | (pendiente) | 16 Sep 2026 | Design — sistema de diseño v2 "Fleter" adoptado: UXUI.md reescrito (tokens claro/oscuro, 5 familias de estado, 4 tipografías, reglas de vocabulario y 9 datos), CLAUDE.md actualizado, mockups de 9 pantallas en canvas (claro/oscuro conmutables desde Perfil → Apariencia). Primer paso en código: componente `src/components/Isotipo.js` (6 cajas, react-native-svg) en el header de HomeScreen cliente y en LoginScreen (isotipo + wordmark "Fleter." con punto naranja + eslogan oficial) |
 | `43702b1` | 16 Sep 2026 | Feat — logo Fleter (isotipo + wordmark) en Home y Login + sistema de diseño v2 documentado |
 | `7eb2f65` | 16 Sep 2026 | Feat — implementación completa del sistema v2: theme.js con paletas claro/oscuro, ThemeContext con persistencia y selector Apariencia en los 3 perfiles, tipografías de marca con expo-font, migración de 32 pantallas a estilos dinámicos, contraste tinta-sobre-naranja, Movix→Fleter, SVGs del logo en assets/logo/ |
-| (pendiente) | 17 Sep 2026 | Fix — mapa en blanco en iOS: `MapViewWrapper` ya no fuerza `PROVIDER_GOOGLE` en iOS (usa Apple Maps, que no necesita API key); Android sigue con Google Maps. Revertir cuando llegue la key nueva con "Maps SDK for iOS" habilitado |
+| `c565311` | 17 Sep 2026 | Fix — mapa en blanco en iOS: `MapViewWrapper` ya no fuerza `PROVIDER_GOOGLE` en iOS (usa Apple Maps, que no necesita API key); Android sigue con Google Maps. Revertir cuando llegue la key nueva con "Maps SDK for iOS" habilitado |
+| (pendiente) | 17 Sep 2026 | Feat — mapa real en `DetalleViajeScreen` (pantalla de aceptar viaje del conductor): reemplaza el placeholder "Mapa disponible en Fase 4" por MapView con pins de origen/paradas/destino, `ruta_planeada` si viene (si no, línea recta entre paradas) y encuadre automático del recorrido. Build Release apuntando al backend de producción |
 
 ---
 
@@ -82,7 +83,7 @@
 |----------|--------|-------|
 | `DisponiblesScreen` | ✅ Funcional | GET /api/viajes/disponibles + socket `viaje:disponible`, bug fix stale closure en acceptance flow. Refetch con `useFocusEffect` al recuperar foco (antes solo cargaba una vez al montar). Pull-to-refresh separado del loading inicial (antes compartían el mismo state y el pull tapaba la lista entera con el spinner). Popup "Registrá tu vehículo" si el conductor no tiene ninguno — Agregar ahora (navega a Perfil y abre el modal de alta) o Más tarde (se descarta, persistido en AsyncStorage por usuario) |
 | `NuevoViajeModal` | ✅ Funcional | Bottom sheet con countdown 30s, barra animada, Aceptar/Rechazar |
-| `DetalleViajeScreen` | ✅ Funcional | Fetch /api/viajes/:id para nombre real del cliente, bug fix stale closure, timeout 10s en handleAceptar |
+| `DetalleViajeScreen` | ✅ Funcional | Mapa del recorrido (pins origen/paradas/destino + ruta), fetch /api/viajes/:id para nombre real del cliente, bug fix stale closure, timeout 10s en handleAceptar |
 | `ViajeActivoFleteroScreen` | ✅ Funcional | GPS real (expo-location + background task) gateado detrás de "Iniciar viaje" (POST /api/viajes/:id/iniciar) — ya no arranca solo con el primer ping, MapView con posición propia + paradas, mapa expandible + centrar, PATCH CARGANDO/EN_RUTA/DESCARGANDO, timeline reactivo a viaje:estado_cambiado, botón "Cancelar viaje" (POST /cancelar-conductor) visible solo en estado CONDUCTOR_ASIGNADO, botón "Confirmar entrega" en DESCARGANDO (ya no "Escanear QR"). Confirma la parada de origen automáticamente al salir de CARGANDO (mientras el conductor sigue ahí — confirmar-parada exige EN_RUTA/DESCARGANDO y proximidad GPS, así que dejarla para el final la hacía fallar por estar lejos). Si el POST a /iniciar falla del lado del cliente, reconsulta el viaje para no dejar el botón desincronizado del estado real. Espera el fetch inicial antes de renderizar (no muestra la etapa por defecto antes de tener el estado real) |
 | `AsignadosScreen` | ✅ Funcional (nueva) | GET /api/viajes/asignados + socket `viaje:asignado`, para conductores afiliados a una empresa que reciben viajes sin tener que aceptarlos — tab nueva en FleteroStack |
 | `HistorialFleteroScreen` | ✅ Funcional | API real GET /api/viajes/mis-viajes-conductor, filtros Todos/En curso/Finalizados/Cancelados, duración/puntualidad si vienen en la respuesta |

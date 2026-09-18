@@ -4,6 +4,7 @@ import {
   SafeAreaView, StatusBar, Alert, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from '../../components/MapViewWrapper';
 import { fontSize, spacing, radius } from '../../theme';
 import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useSocket } from '../../context/SocketContext';
@@ -34,10 +35,36 @@ function CondTag({ id }) {
   );
 }
 
+function routeToCoords(route) {
+  if (!Array.isArray(route)) return [];
+  return route.map(([lng, lat]) => ({ latitude: lat, longitude: lng }));
+}
+
+// Región que encuadra todos los puntos del recorrido, con margen.
+function regionParaPuntos(puntos) {
+  if (puntos.length === 0) {
+    return { latitude: -34.6037, longitude: -58.3816, latitudeDelta: 0.1, longitudeDelta: 0.1 };
+  }
+  const lats = puntos.map(p => p.latitude);
+  const lngs = puntos.map(p => p.longitude);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+  return {
+    latitude:  (minLat + maxLat) / 2,
+    longitude: (minLng + maxLng) / 2,
+    latitudeDelta:  Math.max((maxLat - minLat) * 1.5, 0.02),
+    longitudeDelta: Math.max((maxLng - minLng) * 1.5, 0.02),
+  };
+}
+
 function mapViaje(v) {
   const sorted = [...(v.paradas ?? [])].sort((a, b) => a.orden - b.orden);
   return {
     id: v.id_viaje,
+    puntos: sorted
+      .filter(p => p?.latitud != null && p?.longitud != null)
+      .map(p => ({ latitude: Number(p.latitud), longitude: Number(p.longitud) })),
+    ruta: routeToCoords(v.ruta_planeada),
     origen: sorted[0]?.direccion ?? '',
     destino: sorted[sorted.length - 1]?.direccion ?? '',
     paradasIntermedias: sorted.slice(1, -1),
@@ -175,15 +202,37 @@ export default function DetalleViajeScreen({ navigation, route }) {
           </View>
         </View>
 
-        {/* Mapa placeholder */}
+        {/* Mapa del recorrido */}
         <View style={styles.mapaCard}>
-          <Ionicons name="map-outline" size={24} color={colors.textHint} />
-          <View style={styles.mapaRuta}>
-            <Text style={styles.mapaOrigen}>{viaje.origen}</Text>
-            <View style={styles.mapaLinea} />
-            <Text style={styles.mapaDestino}>{viaje.destino}</Text>
-          </View>
-          <Text style={styles.mapaNota}>Mapa disponible en Fase 4</Text>
+          <MapView
+            style={styles.mapa}
+            provider={PROVIDER_GOOGLE}
+            region={regionParaPuntos(viaje.puntos)}
+            scrollEnabled={false}
+            zoomEnabled={false}
+            rotateEnabled={false}
+            pitchEnabled={false}
+          >
+            {viaje.puntos.length > 1 && (
+              <Polyline
+                coordinates={viaje.ruta.length > 1 ? viaje.ruta : viaje.puntos}
+                strokeColor={colors.primary}
+                strokeWidth={3}
+              />
+            )}
+            {viaje.puntos.map((p, i) => {
+              const esOrigen = i === 0;
+              const esDestino = i === viaje.puntos.length - 1 && i > 0;
+              return (
+                <Marker
+                  key={i}
+                  coordinate={p}
+                  title={esOrigen ? 'Origen' : esDestino ? 'Destino' : `Parada ${i}`}
+                  pinColor={esOrigen ? colors.primary : esDestino ? colors.error : colors.warning}
+                />
+              );
+            })}
+          </MapView>
         </View>
 
         {/* Ruta */}
@@ -298,19 +347,12 @@ const createStyles = (colors) => StyleSheet.create({
   precioDet:        { fontSize: fontSize.body, color: colors.textSecondary },
   precioSep:        { color: colors.textHint },
 
-  // Mapa placeholder
+  // Mapa del recorrido (fijo, sin gestos: es una vista previa)
   mapaCard: {
-    height: 150, backgroundColor: colors.surface2,
-    borderRadius: radius.lg, borderWidth: 1, borderColor: colors.surface3,
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: spacing.md, gap: spacing.xs,
+    height: 180, borderRadius: radius.lg, overflow: 'hidden',
+    borderWidth: 1, borderColor: colors.surface3, marginBottom: spacing.md,
   },
-  mapaIcono:   { fontSize: 24 },
-  mapaRuta:    { alignItems: 'center', gap: 4 },
-  mapaOrigen:  { fontSize: fontSize.body, fontWeight: '700', color: colors.primary },
-  mapaLinea:   { width: 2, height: 16, backgroundColor: colors.surface3 },
-  mapaDestino: { fontSize: fontSize.body, fontWeight: '700', color: colors.error },
-  mapaNota:    { fontSize: fontSize.caption, color: colors.textHint },
+  mapa: { flex: 1 },
 
   // Cards
   card: {
