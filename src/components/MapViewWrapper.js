@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fontSize, spacing } from '../theme';
 import { useTheme } from '../context/ThemeContext';
@@ -17,7 +17,11 @@ try {
   _PROVIDER_GOOGLE = RNMaps.PROVIDER_GOOGLE;
 } catch {}
 
-export const PROVIDER_GOOGLE = _PROVIDER_GOOGLE;
+// En iOS usamos Apple Maps (provider default) hasta tener la key correcta de
+// Google Maps: con la key actual el mapa de Google no renderiza (queda en
+// blanco). Cuando llegue la key nueva, volver a exportar _PROVIDER_GOOGLE
+// también en iOS y actualizar app.json + AppDelegate con esa key.
+export const PROVIDER_GOOGLE = Platform.OS === 'ios' ? undefined : _PROVIDER_GOOGLE;
 
 export function Marker(props) {
   if (!_Marker) return null;

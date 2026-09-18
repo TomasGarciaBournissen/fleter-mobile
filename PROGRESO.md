@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-09-16  
-> Branch: master | Commits totales: 36
+> Última actualización: 2026-09-17  
+> Branch: master | Commits totales: 36 (+1 pendiente)
 
 ---
 
@@ -50,7 +50,8 @@
 | `957bf77` | 20 Ago 2026 | Feat — reemplaza confirmación de entrega por QR con confirmación por GPS en `QREntregaScreen` (contrato nuevo: `confirmar-parada` ya no acepta `qr_firmado`, sino `id_parada+lat+lng`), botón "Finalizar viaje" en la última parada. Popup de alta de vehículo en `DisponiblesScreen` tras el registro del fletero (agregar ahora o más tarde desde Perfil). Refresco de `DisponiblesScreen` al recuperar foco + fix de pull-to-refresh (estaba atado al mismo loading state que la carga inicial). Saca el selector manual de zona en `CrearViajeScreen` (la calcula el servidor). Fix: `ViajeActivoFleteroScreen` no reflejaba el estado real si el POST a `/iniciar` fallaba en el cliente aunque el backend ya hubiera aplicado el cambio; ahora reconsulta el viaje ante ese error. Fix: la parada de origen se confirma en el momento de salir de `CARGANDO` (mientras el conductor todavía está ahí) en vez de diferirse al final, donde la validación de proximidad GPS la rechazaba por estar lejos. `ViajeActivoFleteroScreen` ahora espera el fetch inicial antes de renderizar, para no mostrar por un instante la etapa por defecto. api.md sincronizado |
 | (pendiente) | 16 Sep 2026 | Design — sistema de diseño v2 "Fleter" adoptado: UXUI.md reescrito (tokens claro/oscuro, 5 familias de estado, 4 tipografías, reglas de vocabulario y 9 datos), CLAUDE.md actualizado, mockups de 9 pantallas en canvas (claro/oscuro conmutables desde Perfil → Apariencia). Primer paso en código: componente `src/components/Isotipo.js` (6 cajas, react-native-svg) en el header de HomeScreen cliente y en LoginScreen (isotipo + wordmark "Fleter." con punto naranja + eslogan oficial) |
 | `43702b1` | 16 Sep 2026 | Feat — logo Fleter (isotipo + wordmark) en Home y Login + sistema de diseño v2 documentado |
-| (pendiente) | 16 Sep 2026 | Feat — implementación completa del sistema v2: theme.js con paletas claro/oscuro, ThemeContext con persistencia y selector Apariencia en los 3 perfiles, tipografías de marca con expo-font, migración de 32 pantallas a estilos dinámicos, contraste tinta-sobre-naranja, Movix→Fleter, SVGs del logo en assets/logo/ |
+| `7eb2f65` | 16 Sep 2026 | Feat — implementación completa del sistema v2: theme.js con paletas claro/oscuro, ThemeContext con persistencia y selector Apariencia en los 3 perfiles, tipografías de marca con expo-font, migración de 32 pantallas a estilos dinámicos, contraste tinta-sobre-naranja, Movix→Fleter, SVGs del logo en assets/logo/ |
+| (pendiente) | 17 Sep 2026 | Fix — mapa en blanco en iOS: `MapViewWrapper` ya no fuerza `PROVIDER_GOOGLE` en iOS (usa Apple Maps, que no necesita API key); Android sigue con Google Maps. Revertir cuando llegue la key nueva con "Maps SDK for iOS" habilitado |
 
 ---
 
@@ -72,7 +73,7 @@
 | `CrearViajeScreen` | ✅ Funcional | Google Places Legacy API para origen/destino/paradas, coords reales en payload, POST /api/viajes/estimar-costo. Selector manual de zona (CABA/PROVINCIA/MIXTO) eliminado — el `zona` del body ya no se manda, el servidor la calcula solo. `fecha_programada` mínima bajada a 1 minuto desde ahora en el mobile (antes 1 hora) — **ojo:** el backend sigue exigiendo su propio mínimo (`ANTICIPACION_MINIMA_MINUTOS`, default 60), así que con ese default el publish puede devolver 400 aunque el form lo deje avanzar, ver Problemas Conocidos |
 | `ConfirmacionViajeScreen` | ✅ Funcional | Resumen + POST /api/viajes, navega a BuscandoFletero. Campo "Zona" ahora usa únicamente `estimado.zona` (la calculada por el servidor) |
 | `BuscandoFleteroScreen` | ✅ Funcional | Animación de búsqueda, escucha `viaje:conductor_asignado` via socket, botón "Cancelar búsqueda" (POST /cancelar-cliente, funciona en BUSCANDO_CONDUCTOR ya que el timeout automático de 10min se eliminó del backend) |
-| `ViajeActivoScreen` | ✅ Funcional | MapView con marcador del conductor en tiempo real, mapa expandible a pantalla completa + botón centrar, Google Maps en iOS y Android, mapa:actualizar, alerta:desvio, timeline de estados, escucha `viaje:iniciado` (reemplaza el auto-inicio por GPS), botón cancelar (POST /cancelar-cliente) solo en CONDUCTOR_ASIGNADO, viaje:finalizado. Panel de QR por parada removido (GET /qr-paradas ya no existe en el contrato — la confirmación de entrega pasó a ser por GPS del lado del conductor) |
+| `ViajeActivoScreen` | ✅ Funcional | MapView con marcador del conductor en tiempo real, mapa expandible a pantalla completa + botón centrar, Apple Maps en iOS (ver Problemas Conocidos) y Google Maps en Android, mapa:actualizar, alerta:desvio, timeline de estados, escucha `viaje:iniciado` (reemplaza el auto-inicio por GPS), botón cancelar (POST /cancelar-cliente) solo en CONDUCTOR_ASIGNADO, viaje:finalizado. Panel de QR por parada removido (GET /qr-paradas ya no existe en el contrato — la confirmación de entrega pasó a ser por GPS del lado del conductor) |
 | `HistorialScreen` | ✅ Funcional | GET /api/viajes/mis-viajes, agrupado por mes, filtros (Todos/Finalizados/Cancelados/En curso), back button |
 | `PerfilScreen` | ✅ Funcional | Nombre y email reales del AuthContext, edición local, logout |
 
@@ -172,6 +173,8 @@
 | Acceptance flow no responde | Backend no procesa `viaje:aceptar` — frontend ya tiene timeout 10s como safety net | ❌ Requiere fix en backend |
 | GPS background en Expo Go | `startLocationUpdatesAsync` requiere build nativa — fallback a interval foreground activo | ⚠️ Funciona en foreground, background requiere build nativa |
 | MapView no disponible en Expo Go | `react-native-maps` requiere módulo nativo — MapViewWrapper muestra placeholder | ⚠️ Funciona en build nativa |
+| Mapa en blanco en iOS | La `googleMapsApiKey` de `app.json` / `AppDelegate.swift` es la misma que la de Firebase (`AIzaSyDpWE…`) y no tiene habilitado **Maps SDK for iOS** → Google Maps carga el tile vacío | ⚠️ Workaround: `MapViewWrapper` deja `PROVIDER_GOOGLE` en `undefined` en iOS, así usa Apple Maps (sin key). Al llegar la key nueva: ponerla en `app.json` + `AppDelegate.swift`, revertir esa línea y recompilar |
+| Perfil de aprovisionamiento vencido | El "iOS Team Provisioning Profile" del Apple ID gratuito caducó el 21 Ago 2026 y `expo run:ios` no lo renueva solo | ✅ Resuelto — compilar con `xcodebuild … -allowProvisioningUpdates` lo regenera (ver comando en Variables de Entorno) |
 | Transición CARGANDO → EN_RUTA | Confirmado en api.md nuevo: es manual, vía `PATCH /api/viajes/:id/estado` con `estado: 'EN_RUTA'` (agregado a la lista de estados válidos de ese endpoint) | ✅ Resuelto — ya lo hace `ViajeActivoFleteroScreen` |
 | `id_usuario_conductor` removido del payload | API nueva no incluye ese campo en `viaje:conductor_asignado` — lógica de navegación actualizada para no depender de él | ✅ Resuelto |
 | Cancelación del cliente rota | `ViajeActivoScreen` (cliente) llamaba `PATCH /api/viajes/:id/estado` con `estado: 'CANCELADO'`, que nunca fue válido para rol CLIENTE | ✅ Resuelto — el backend agregó `POST /api/viajes/:id/cancelar-cliente`, ya conectado en `ViajeActivoScreen` y `BuscandoFleteroScreen` |
