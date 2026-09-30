@@ -1,0 +1,1254 @@
+<!doctype html>
+<html lang="es-AR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fleter · Panel de empresa (prototipo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500&family=Josefin+Sans:wght@600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── Tokens: mismos valores que src/theme.js (sistema v2 "Fleter") ───────── */
+:root{
+  --bg:#FAF7F1; --surface:#FFFFFF; --surface2:#F2EDE2; --surface3:#ECE9E1;
+  --line:#E8E4DA; --line-strong:#D9D3C5;
+  --ink:#1B1A17; --ink2:#3F3B34; --ink3:#665F50; --ink4:#B8B2A2; --on-ink:#FFFFFF;
+  --accent:#E85D2A; --accent-press:#D2521F; --accent-ink:#A63B14; --accent-soft:#FBE4D6; --accent-softer:#FFF1E7;
+  --on-accent:#1B1A17; --on-accent-large:#FFFFFF;
+  --ok:#2F8F4E; --ok-ink:#1F6B39; --ok-soft:#DCEFD8;
+  --warn:#C98A12; --warn-ink:#8A5E0B; --warn-soft:#FBEFCE;
+  --err:#B83232; --err-ink:#9C2626; --err-soft:#F5D9D4;
+  --info:#2E6FB7; --info-ink:#22578F; --info-soft:#D8E4F2;
+  --r-sm:6px; --r-md:10px; --r-lg:14px;
+  --f-display:'Archivo Black','Arial Black',system-ui,sans-serif;
+  --f-ui:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  --f-accent:'Josefin Sans','Manrope',system-ui,sans-serif;
+  --shadow-pop:0 12px 32px rgba(27,26,23,.18);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#141310; --surface:#1C1A16; --surface2:#23201B; --surface3:#2B2822;
+  --line:#2E2A24; --line-strong:#3B362E;
+  --ink:#F4F0E7; --ink2:#CBC5B8; --ink3:#9E978A; --ink4:#6B655A; --on-ink:#141310;
+  --accent-ink:#F0865A; --accent-soft:#3B2116; --accent-softer:#2A1B13;
+  --ok:#4DB36E; --ok-ink:#7BD397; --ok-soft:#16301F;
+  --warn:#D9A23A; --warn-ink:#E9BC5C; --warn-soft:#33260A;
+  --err:#D95454; --err-ink:#F09090; --err-soft:#3A1717;
+  --info:#5C93D6; --info-ink:#8DB8EC; --info-soft:#14243A;
+  --shadow-pop:0 12px 32px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+h1,h2,h3{margin:0;font-weight:400}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono)}
+.patente{font-family:var(--f-mono);letter-spacing:.08em}
+.muted{color:var(--ink3)}
+.eyebrow{font-family:var(--f-accent);font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--accent-ink)}
+.display{font-family:var(--f-display);letter-spacing:-.02em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ── Botones ───────────────────────────────────────────────────────────── */
+.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:var(--r-md);border:1px solid transparent;font-weight:600;cursor:pointer;background:transparent;white-space:nowrap;transition:background .12s}
+.btn-lg{height:44px}
+.btn-sm{height:32px;padding:0 12px;font-size:13px;border-radius:var(--r-sm)}
+.btn-primary{background:var(--accent);color:var(--on-accent)}
+.btn-primary:hover{background:var(--accent-press)}
+.btn-ink{background:var(--ink);color:var(--on-ink)}
+.btn-ghost{border-color:var(--line-strong);background:var(--surface)}
+.btn-ghost:hover{background:var(--surface3)}
+.btn-danger{border-color:var(--err);color:var(--err-ink);background:transparent}
+.btn-danger:hover{background:var(--err-soft)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn svg{width:16px;height:16px;flex:none}
+.icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ── Formularios ───────────────────────────────────────────────────────── */
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.label{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
+.input,.select,.textarea{height:44px;padding:0 12px;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-sm);width:100%;min-width:0}
+.textarea{height:auto;min-height:84px;padding:10px 12px;resize:vertical}
+.input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.input.sm,.select.sm{height:36px}
+.hint{font-size:12px;color:var(--ink3)}
+.err-text{font-size:12px;color:var(--err-ink);font-weight:600}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+
+/* ── Cards, badges, tags ───────────────────────────────────────────────── */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:18px}
+.card.ink{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.card h3{font-family:var(--f-display);font-size:14px;letter-spacing:-.01em;margin-bottom:12px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:var(--r-sm);font-size:11px;font-weight:700;white-space:nowrap}
+.b-info{background:var(--info-soft);color:var(--info-ink)}
+.b-acc{background:var(--accent-soft);color:var(--accent-ink)}
+.b-ok{background:var(--ok-soft);color:var(--ok-ink)}
+.b-err{background:var(--err-soft);color:var(--err-ink)}
+.b-warn{background:var(--warn-soft);color:var(--warn-ink)}
+.b-neutral{background:var(--surface2);color:var(--ink2)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.pulse{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.5)}}
+.tag{display:inline-block;padding:2px 8px;border-radius:var(--r-sm);font-size:11px;font-weight:700;background:var(--surface2);color:var(--ink2);margin:0 4px 4px 0}
+.tag.FRAGIL{background:var(--warn-soft);color:var(--warn-ink)}
+.tag.REFRIGERADO{background:var(--info-soft);color:var(--info-ink)}
+.tag.PELIGROSO{background:var(--err-soft);color:var(--err-ink)}
+.chipbtn{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);font-weight:600;font-size:13px;cursor:pointer}
+.chipbtn[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.optcard{border:1px solid var(--line-strong);background:var(--surface);border-radius:var(--r-md);padding:12px 14px;cursor:pointer;text-align:left;flex:1;min-width:150px}
+.optcard b{display:block;font-size:14px}
+.optcard span{font-size:12px;color:var(--ink3)}
+.optcard[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.note{border-radius:var(--r-md);padding:10px 14px;font-size:13px;font-weight:500}
+.note.warn{background:var(--warn-soft);color:var(--warn-ink)}
+.note.err{background:var(--err-soft);color:var(--err-ink)}
+.note.info{background:var(--info-soft);color:var(--info-ink)}
+.note.ok{background:var(--ok-soft);color:var(--ok-ink)}
+
+/* ── Shell ─────────────────────────────────────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1320px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:24px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand .wm{font-family:var(--f-display);font-size:22px;letter-spacing:-.03em}
+.brand .wm i{font-style:normal;color:var(--accent)}
+.tabs{display:flex;gap:4px;flex:1}
+.tab{display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:var(--r-md);text-decoration:none;font-weight:500;color:var(--ink2);position:relative}
+.tab:hover{background:var(--surface3)}
+.tab[aria-current="page"]{color:var(--ink);font-weight:700}
+.tab[aria-current="page"]::after{content:"";position:absolute;left:14px;right:14px;bottom:-12px;height:3px;background:var(--accent);border-radius:3px}
+.tab.cta{background:var(--accent);color:var(--on-accent);font-weight:700}
+.tab.cta:hover{background:var(--accent-press)}
+.tab.cta[aria-current="page"]::after{display:none}
+.userbox{display:flex;align-items:center;gap:12px;position:relative}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-weight:800;cursor:pointer;border:0}
+.menu{position:absolute;right:0;top:46px;width:260px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-pop);padding:14px;z-index:30}
+.seg{display:flex;background:var(--surface2);border-radius:var(--r-sm);padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;height:30px;border-radius:5px;font-weight:600;font-size:12.5px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.main{max-width:1320px;margin:0 auto;padding:28px 24px 96px}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.pagehead h1{font-family:var(--f-display);font-size:28px;letter-spacing:-.02em;line-height:1.1}
+.foot{max-width:1320px;margin:0 auto;padding:0 24px 32px;color:var(--ink3);font-size:12px}
+
+/* ── Calendario ────────────────────────────────────────────────────────── */
+.calbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.calbar .title{font-family:var(--f-display);font-size:20px;min-width:200px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink3);margin-left:auto}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.month{border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;background:var(--surface)}
+.month-head,.month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.month-head div{padding:10px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);background:var(--surface2);border-bottom:1px solid var(--line)}
+.cell{min-height:118px;padding:8px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px;min-width:0}
+.cell:nth-child(7n){border-right:0}
+.cell.out{background:var(--bg)}
+.cell.out .dn{color:var(--ink4)}
+.dn{font-family:var(--f-mono);font-size:12px;color:var(--ink2);display:flex;justify-content:space-between}
+.cell.today .dn b{background:var(--accent);color:var(--on-accent);border-radius:999px;padding:0 7px}
+.vchip{display:block;width:100%;text-align:left;border:0;border-left:3px solid;border-radius:var(--r-sm);padding:4px 6px;font-size:11.5px;font-weight:600;cursor:pointer;line-height:1.3;overflow-wrap:anywhere}
+.vchip .t{font-family:var(--f-mono);font-weight:500}
+.vchip.b-info{border-color:var(--info)}
+.vchip.b-acc{border-color:var(--accent)}
+.vchip.b-ok{border-color:var(--ok)}
+.vchip.b-err{border-color:var(--err);text-decoration:line-through;opacity:.8}
+.vchip.flash{animation:flash 2.4s ease-out 1}
+@keyframes flash{0%,60%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
+.more{font-size:11.5px;font-weight:700;color:var(--accent-ink);background:none;border:0;text-align:left;padding:2px 4px;cursor:pointer}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.wcol{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:10px;min-height:260px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.wcol.today{border-color:var(--accent)}
+.wcol h4{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:flex;justify-content:space-between}
+.wcard{text-align:left;border:1px solid var(--line);border-left:3px solid;background:var(--surface);border-radius:var(--r-sm);padding:8px;cursor:pointer;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere}
+.wcard.b-info{border-left-color:var(--info)}.wcard.b-acc{border-left-color:var(--accent)}.wcard.b-ok{border-left-color:var(--ok)}.wcard.b-err{border-left-color:var(--err)}
+.wcard{background:var(--surface);color:var(--ink)}
+.wcard:hover{background:var(--surface2)}
+.wcard .t{font-family:var(--f-mono);font-size:12px;font-weight:500}
+.wcard .r{font-size:12.5px;font-weight:600}
+.wcard .s{font-size:11.5px;color:var(--ink3)}
+
+/* ── Tabla ─────────────────────────────────────────────────────────────── */
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filters .input,.filters .select{width:auto;min-width:160px}
+.kpis{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:10px 16px}
+.kpi b{display:block;font-family:var(--f-display);font-size:20px;letter-spacing:-.02em}
+.kpi span{font-size:11.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.twrap{border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);overflow:auto;max-height:calc(100vh - 330px);min-height:260px}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:1240px}
+th{position:sticky;top:0;background:var(--surface2);text-align:left;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:2}
+th button{all:unset;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+th button:hover{color:var(--ink)}
+th[aria-sort="ascending"] button,th[aria-sort="descending"] button{color:var(--ink)}
+td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:var(--accent-softer)}
+td.num,th.num{text-align:right}
+td.stick,th.stick{position:sticky;left:0;z-index:1;background:var(--surface);border-right:1px solid var(--line)}
+th.stick{background:var(--surface2);z-index:3}
+tbody tr:hover td.stick{background:var(--accent-softer)}
+.price{font-family:var(--f-display);font-size:14px;letter-spacing:-.01em}
+.sub{font-size:11.5px;color:var(--ink3)}
+tfoot td{position:sticky;bottom:0;background:var(--surface2);font-weight:700;border-top:1px solid var(--line-strong)}
+.empty{padding:48px 16px;text-align:center}
+.empty h3{font-family:var(--f-display);font-size:17px;margin-bottom:6px}
+
+/* ── Detalle ───────────────────────────────────────────────────────────── */
+.crumbs{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.detail{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.dl{display:grid;grid-template-columns:1fr 1fr;gap:16px 24px}
+.dl dt{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:2px}
+.dl dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.bigprice{font-family:var(--f-display);font-size:44px;letter-spacing:-.03em;line-height:1}
+.route{position:relative;padding-left:26px;display:flex;flex-direction:column;gap:14px}
+.route::before{content:"";position:absolute;left:8px;top:10px;bottom:10px;width:2px;background:var(--line-strong)}
+.route li{list-style:none;position:relative}
+.route li::before{content:"";position:absolute;left:-23px;top:5px;width:12px;height:12px;background:var(--ink3);border-radius:50%;border:2px solid var(--surface)}
+.route li.o::before{background:var(--accent)}
+.route li.d::before{background:var(--ink);border-radius:2px}
+.route{margin:0;padding-top:0}
+.tl{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:0}
+.tl li{display:flex;gap:12px;padding:0 0 14px;position:relative}
+.tl li::before{content:"";position:absolute;left:5px;top:14px;bottom:-2px;width:2px;background:var(--line)}
+.tl li:last-child::before{display:none}
+.tl .pt{width:12px;height:12px;border-radius:50%;border:2px solid var(--line-strong);background:var(--surface);margin-top:3px;flex:none;z-index:1}
+.tl li.done .pt{background:var(--ok);border-color:var(--ok)}
+.tl li.now .pt{background:var(--accent);border-color:var(--accent);animation:pulse 1.4s infinite}
+.tl li.bad .pt{background:var(--err);border-color:var(--err)}
+.tl .tt{font-weight:600}
+.tl li:not(.done):not(.now):not(.bad) .tt{color:var(--ink3);font-weight:500}
+.tl .tm{font-family:var(--f-mono);font-size:12px;color:var(--ink3)}
+.mapbox{border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;background:var(--surface2)}
+.mapbox svg{display:block;width:100%;height:auto}
+.mapcap{padding:8px 12px;font-size:11.5px;color:var(--ink3);border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;background:var(--surface)}
+.sim{border:2px dashed var(--line-strong);border-radius:var(--r-md);padding:16px;background:var(--surface)}
+.sim .eyebrow{color:var(--ink3)}
+.audit{display:flex;flex-direction:column;gap:10px;font-size:13px}
+.audit .t{font-family:var(--f-mono);font-size:11.5px;color:var(--ink3)}
+.cmp{width:100%;min-width:0}
+.cmp th{position:static;background:transparent;padding:6px 8px 6px 0}
+.cmp td{padding:8px 8px 8px 0}
+
+/* ── Fleteros ──────────────────────────────────────────────────────────── */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.fcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:10px;text-align:left}
+.fcard:hover{border-color:var(--line-strong);background:var(--accent-softer)}
+.fhead{display:flex;gap:12px;align-items:center}
+.fav{width:42px;height:42px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--ink2);flex:none}
+.fname{font-family:var(--f-display);font-size:15px;letter-spacing:-.01em}
+.codebox{font-family:var(--f-mono);font-size:28px;letter-spacing:.08em;text-align:center;padding:16px;background:var(--surface2);border-radius:var(--r-md);border:1px dashed var(--line-strong)}
+
+/* ── Modal / toast ─────────────────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(20,19,16,.55);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow:auto}
+.modal{background:var(--surface);border-radius:var(--r-lg);width:100%;max-width:520px;padding:22px;box-shadow:var(--shadow-pop);border:1px solid var(--line)}
+.modal h2{font-family:var(--f-display);font-size:20px;margin-bottom:14px;letter-spacing:-.02em}
+.modal .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:var(--ink);color:var(--on-ink);padding:12px 18px;border-radius:var(--r-md);font-weight:600;box-shadow:var(--shadow-pop);max-width:90vw}
+.toast.err{background:var(--err);color:#fff}
+
+/* ── Login ─────────────────────────────────────────────────────────────── */
+.login{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}
+.login-art{background:var(--ink);color:var(--on-ink);padding:56px;display:flex;flex-direction:column;justify-content:space-between}
+.login-art .big{font-family:var(--f-display);font-size:44px;line-height:1.05;letter-spacing:-.03em;max-width:520px}
+.login-art .big i{font-style:normal;color:var(--accent)}
+.login-art ul{margin:0;padding:0;list-style:none;display:grid;gap:10px;color:var(--ink4);font-size:14px}
+:root[data-theme="dark"] .login-art{background:var(--surface)}
+.login-form{padding:56px;display:flex;flex-direction:column;justify-content:center;max-width:460px;width:100%;margin:0 auto;gap:16px}
+.login-form h1{font-family:var(--f-display);font-size:26px;letter-spacing:-.02em}
+
+/* ── Formulario Nuevo viaje ────────────────────────────────────────────── */
+.formgrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.stops{display:flex;flex-direction:column;gap:10px}
+.stoprow{display:flex;gap:8px;align-items:center}
+.stoprow .mk{width:14px;height:14px;border-radius:50%;background:var(--ink3);flex:none}
+.stoprow .mk.o{background:var(--accent)}
+.stoprow .mk.d{background:var(--ink);border-radius:3px}
+.days{display:flex;gap:6px;flex-wrap:wrap}
+.days .chipbtn{width:38px;padding:0}
+.sticky{position:sticky;top:84px}
+.previewlist{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:4px;font-size:13px}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width:1000px){
+  .detail,.formgrid{grid-template-columns:1fr}
+  .sticky{position:static}
+  .week{grid-template-columns:1fr}
+  .wcol{min-height:0}
+}
+@media (max-width:760px){
+  .login{grid-template-columns:1fr}
+  .login-art{display:none}
+  .login-form{padding:32px 20px}
+  .topbar-in{padding:0 16px;height:56px}
+  .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);height:64px;padding:6px 8px;justify-content:space-around;z-index:25}
+  .tab{flex-direction:column;gap:2px;font-size:11px;height:52px;padding:0 8px;justify-content:center}
+  .tab[aria-current="page"]::after{display:none}
+  .tab[aria-current="page"]{color:var(--accent-ink)}
+  .tab.cta{background:transparent;color:var(--accent-ink)}
+  .tab.cta:hover{background:transparent}
+  .userbox .who{display:none}
+  .main{padding:20px 16px 96px}
+  .grid2,.grid3,.dl{grid-template-columns:1fr}
+  .cell{min-height:64px;padding:4px;cursor:pointer}
+  .vchip{font-size:0;padding:0;height:7px;border:0;border-radius:4px}
+  .vchip.b-info{background:var(--info)}.vchip.b-acc{background:var(--accent)}.vchip.b-ok{background:var(--ok)}.vchip.b-err{background:var(--err);text-decoration:none}
+  .more{font-size:10px;padding:0}
+  .pagehead h1{font-size:24px}
+  .legend{margin-left:0}
+  #toast{bottom:84px}
+  .bigprice{font-size:36px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════════════════
+   Prototipo Fleter · panel de empresa. Todo en memoria: al recargar vuelve al
+   estado inicial. Precios, distancias y tiempos son VALORES DE EJEMPLO: en el
+   producto real los calcula el backend.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DIAS = ['dom','lun','mar','mié','jue','vie','sáb'];
+const DIAS_LARGO = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MESES_LARGO = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const pad = n => String(n).padStart(2, '0');
+const hhmm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const fechaCorta = d => `${DIAS[d.getDay()]} ${d.getDate()} ${MESES[d.getMonth()]}`;
+const fechaLarga = d => `${DIAS[d.getDay()]} ${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
+const isoDay = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const money = n => n == null ? 'A confirmar' : '$' + Math.round(n).toLocaleString('es-AR');
+const fmtKm = k => k == null ? 'A confirmar' : `${(Math.round(k * 10) / 10).toString().replace('.', ',')} km`;
+const fmtMin = m => { if (m == null) return 'A confirmar'; const h = Math.floor(m / 60), r = m % 60; return h === 0 ? `${r} min` : r === 0 ? `${h} h` : `${h} h ${r} min`; };
+const startOfDay = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+const mondayOf = d => addDays(startOfDay(d), -((d.getDay() + 6) % 7));
+const daysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
+const plural = (n, s, p) => `${n} ${n === 1 ? s : p}`;
+const ico = {
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  cal: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  table: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/>',
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  back: '<path d="M19 12H5M12 19l-7-7 7-7"/>',
+  left: '<path d="M15 18l-6-6 6-6"/>', right: '<path d="M9 18l6-6-6-6"/>',
+  dl: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+  repeat: '<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+  x: '<path d="M18 6L6 18M6 6l12 12"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+};
+const I = (n, cls = 'icon') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ico[n]}</svg>`;
+const ISOTIPO = (s = 30, track = 'var(--ink)') => `<svg width="${s}" height="${s}" viewBox="0 0 34 34" aria-hidden="true"><rect width="10" height="10" rx="2" fill="var(--accent)"/><rect x="12" width="10" height="10" rx="2" fill="var(--accent)"/><rect x="24" width="10" height="10" rx="2" fill="${track}"/><rect y="12" width="10" height="10" rx="2" fill="var(--accent)"/><rect x="12" y="12" width="10" height="10" rx="2" fill="var(--accent)"/><rect y="24" width="10" height="10" rx="2" fill="var(--accent)"/></svg>`;
+
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const rand = rng(20260930);
+
+// ── Catálogos ──────────────────────────────────────────────────────────────
+const PLACES = [
+  { dir: 'Av. Corrientes 1234', loc: 'San Nicolás, CABA', lat: -34.6041, lng: -58.3877 },
+  { dir: 'Av. Cabildo 2040', loc: 'Belgrano, CABA', lat: -34.5613, lng: -58.4569 },
+  { dir: 'Av. Caseros 3100', loc: 'Parque Patricios, CABA', lat: -34.6350, lng: -58.4000 },
+  { dir: 'Av. Alicia Moreau de Justo 1150', loc: 'Puerto Madero, CABA', lat: -34.6118, lng: -58.3634 },
+  { dir: 'Mercado Central, Autopista Ricchieri km 8', loc: 'Tapiales, La Matanza', lat: -34.7040, lng: -58.5030 },
+  { dir: 'Parque Industrial Pilar, Ruta 8 km 60', loc: 'Pilar', lat: -34.4590, lng: -58.9140 },
+  { dir: 'Av. Mitre 2500', loc: 'Avellaneda', lat: -34.6608, lng: -58.3660 },
+  { dir: 'Av. Cazón 1200', loc: 'Tigre', lat: -34.4260, lng: -58.5790 },
+  { dir: 'Parque Industrial, Av. Espora 900', loc: 'Burzaco, Almirante Brown', lat: -34.8270, lng: -58.3930 },
+  { dir: 'Av. Hipólito Yrigoyen 4800', loc: 'Lanús Oeste, Lanús', lat: -34.7060, lng: -58.3900 },
+  { dir: 'Av. Presidente Perón 2100', loc: 'San Justo, La Matanza', lat: -34.6810, lng: -58.5600 },
+  { dir: 'Av. Rivadavia 15400', loc: 'Ramos Mejía, La Matanza', lat: -34.6440, lng: -58.5650 },
+  { dir: 'Ruta 205 km 3', loc: 'Ezeiza', lat: -34.8500, lng: -58.5170 },
+  { dir: 'Av. Maipú 2600', loc: 'Olivos, Vicente López', lat: -34.5010, lng: -58.4840 },
+  { dir: 'Ramal Pilar km 37', loc: 'Tortuguitas, Malvinas Argentinas', lat: -34.4730, lng: -58.7570 },
+  { dir: 'Av. Hipólito Yrigoyen 500', loc: 'Quilmes', lat: -34.7210, lng: -58.2540 },
+  { dir: 'Av. Central 1800', loc: 'Dock Sud, Avellaneda', lat: -34.6440, lng: -58.3450 },
+  { dir: 'Av. Directorio 500', loc: 'Caballito, CABA', lat: -34.6230, lng: -58.4360 },
+  { dir: 'Av. Warnes 600', loc: 'Villa Crespo, CABA', lat: -34.5990, lng: -58.4380 },
+  { dir: 'Av. Santa Fe 3200', loc: 'Palermo, CABA', lat: -34.5880, lng: -58.4100 },
+];
+const placeStr = p => `${p.dir}, ${p.loc}`;
+const PL = i => ({ ...PLACES[i] });
+const COND = { FRAGIL: 'Frágil', REFRIGERADO: 'Refrigerado', CARGA_PESADA: 'Carga pesada', PELIGROSO: 'Peligroso', VOLUMINOSO: 'Voluminoso' };
+const VEH_TIPOS = [
+  { id: 'Utilitario', sub: 'hasta 1.000 kg' },
+  { id: 'Camión chico', sub: 'hasta 3.500 kg' },
+  { id: 'Camión grande', sub: 'hasta 12.000 kg' },
+];
+const EST = {
+  PROGRAMADO: { l: 'Programado', c: 'info', o: 0 },
+  EN_CURSO: { l: 'En curso', c: 'acc', o: 1 },
+  FINALIZADO: { l: 'Finalizado', c: 'ok', o: 2 },
+  CANCELADO: { l: 'Cancelado', c: 'err', o: 3 },
+};
+const ETAPAS = { EN_CAMINO_A_ORIGEN: 'En camino al origen', CARGANDO: 'Cargando', EN_RUTA: 'En ruta', DESCARGANDO: 'Descargando' };
+const TL = [['PROGRAMADO', 'Programado'], ['EN_CAMINO_A_ORIGEN', 'En camino al origen'], ['CARGANDO', 'Cargando'], ['EN_RUTA', 'En ruta'], ['DESCARGANDO', 'Descargando'], ['FINALIZADO', 'Entregado']];
+
+// Cálculo de ejemplo (en el producto real lo hace el backend)
+function hav(a, b) { const R = 6371, t = x => x * Math.PI / 180, dl = t(b.lat - a.lat), dg = t(b.lng - a.lng); const s = Math.sin(dl / 2) ** 2 + Math.cos(t(a.lat)) * Math.cos(t(b.lat)) * Math.sin(dg / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(s)); }
+function mockCalc(P) {
+  let km = 0; for (let i = 0; i < P.length - 1; i++) km += hav(P[i], P[i + 1]);
+  km = Math.round(km * 1.32 * 10) / 10;
+  const min = Math.round(km * 2.4 + 15 + (P.length - 2) * 12);
+  const precio = Math.round((5200 + km * 340 + min * 38) / 50) * 50;
+  return { km, min, precio };
+}
+
+// ── Estado ─────────────────────────────────────────────────────────────────
+const NOW = new Date();
+const T = (off, h, m) => { const d = addDays(startOfDay(NOW), off); d.setHours(h, m, 0, 0); return d; };
+const round15 = d => { const x = new Date(d); x.setMinutes(Math.round(x.getMinutes() / 15) * 15, 0, 0); return x; };
+const minus = (d, min) => new Date(d.getTime() - min * 60000);
+const plus = (d, min) => new Date(d.getTime() + min * 60000);
+
+const S = {
+  user: null,
+  theme: 'light',
+  menu: false,
+  empresa: { nombre: 'Transportes del Plata S.R.L.', cuit: '30-71234567-8' },
+  fleteros: [
+    { id: 'f1', nombre: 'Carlos', apellido: 'Martínez', tel: '+54 11 5523-4410', email: 'carlos.martinez@correo.com', licencia: { nro: 'B1-30455781', vence: new Date(2028, 4, 12) }, vehiculo: { marca: 'Ford', modelo: 'Transit', anio: 2021, patente: 'AE 421 KL', tipo: 'Utilitario', cond: ['FRAGIL'] }, estado: 'ACTIVO', alta: new Date(2026, 1, 9), nota: 'Muy puntual. Prefiere viajes por la zona sur.' },
+    { id: 'f2', nombre: 'Marcelo', apellido: 'Benítez', tel: '+54 11 6178-2093', email: 'marcelo.benitez@correo.com', licencia: { nro: 'C1-27981145', vence: new Date(2027, 8, 3) }, vehiculo: { marca: 'Iveco', modelo: 'Daily 70C16', anio: 2020, patente: 'AD 118 PQ', tipo: 'Camión chico', cond: ['REFRIGERADO', 'CARGA_PESADA'] }, estado: 'ACTIVO', alta: new Date(2026, 0, 20), nota: 'Camión con equipo de frío.' },
+    { id: 'f3', nombre: 'Julián', apellido: 'Acosta', tel: '+54 11 4432-7781', email: 'julian.acosta@correo.com', licencia: { nro: 'B1-33017209', vence: new Date(2029, 1, 27) }, vehiculo: { marca: 'Mercedes-Benz', modelo: 'Sprinter 415', anio: 2022, patente: 'AF 902 MN', tipo: 'Utilitario', cond: ['FRAGIL', 'VOLUMINOSO'] }, estado: 'ACTIVO', alta: new Date(2026, 3, 2), nota: '' },
+    { id: 'f4', nombre: 'Sergio', apellido: 'Ledesma', tel: '+54 11 5090-3346', email: 'sergio.ledesma@correo.com', licencia: { nro: 'D1-24460918', vence: new Date(2027, 11, 15) }, vehiculo: { marca: 'Mercedes-Benz', modelo: 'Atego 1725', anio: 2019, patente: 'AC 335 RD', tipo: 'Camión grande', cond: ['CARGA_PESADA', 'VOLUMINOSO'] }, estado: 'ACTIVO', alta: new Date(2025, 10, 18), nota: 'Único con habilitación para camión grande.' },
+    { id: 'f5', nombre: 'Rubén', apellido: 'Sosa', tel: '+54 11 3301-5527', email: 'ruben.sosa@correo.com', licencia: { nro: 'B1-29874416', vence: new Date(2028, 6, 30) }, vehiculo: { marca: 'Renault', modelo: 'Master', anio: 2018, patente: 'AG 067 TT', tipo: 'Utilitario', cond: [] }, estado: 'ACTIVO', alta: new Date(2026, 5, 11), nota: '' },
+    { id: 'f6', nombre: 'Lucas', apellido: 'Ferreyra', tel: '+54 11 6740-1182', email: 'lucas.ferreyra@correo.com', licencia: { nro: 'C1-31552063', vence: new Date(2029, 9, 8) }, vehiculo: { marca: 'Volkswagen', modelo: 'Delivery 9.170', anio: 2023, patente: 'AA 754 ZX', tipo: 'Camión chico', cond: ['FRAGIL'] }, estado: 'PENDIENTE', alta: new Date(), nota: '' },
+  ],
+  invitaciones: [],
+  codigo: null,
+  viajes: [],
+  series: [],
+  cal: { modo: 'mes', ancla: startOfDay(NOW), fletero: '' },
+  tabla: { sort: 'fecha', dir: 1, estado: '', fletero: '', mes: '', q: '', sin: false },
+  flash: new Set(),
+  animando: false,
+  form: null,
+  volver: '#/viajes',
+};
+let seq = 2411;
+const F = id => S.fleteros.find(f => f.id === id);
+const fname = f => f ? `${f.nombre} ${f.apellido}` : null;
+const pts = v => [v.origen, ...v.paradas, v.destino];
+const V = id => S.viajes.find(v => v.id === Number(id));
+const vid = v => `VJ-${v.id}`;
+
+function mk(o) {
+  const v = Object.assign({ id: ++seq, ventanaFin: null, paradas: [], cond: [], vehTipo: 'Utilitario', cliente: '', contacto: '', carga: '', notas: '', fletero: null, estado: 'PROGRAMADO', etapa: null, real: null, cierre: null, motivo: null, serie: null, hist: {}, audit: [], conf: [], gps: null, gpsTs: 0 }, o);
+  Object.assign(v, mockCalc(pts(v)));
+  const creado = v.fecha.getTime() - 5 * 86400000 > NOW.getTime() - 40 * 86400000 ? new Date(v.fecha.getTime() - 5 * 86400000) : minus(v.fecha, 1500);
+  v.audit.push({ t: creado, who: 'Laura Gómez', txt: 'Creó el viaje' });
+  if (v.fletero) v.audit.push({ t: plus(creado, 4), who: 'Laura Gómez', txt: `Asignó a ${fname(F(v.fletero))}` });
+  return v;
+}
+function finalizar(v) {
+  const P = pts(v), f = F(v.fletero);
+  let t = plus(v.fecha, Math.round(rand() * 14) - 4);
+  v.estado = 'FINALIZADO'; v.etapa = null; v.cierre = 'GPS';
+  v.hist.EN_CAMINO_A_ORIGEN = new Date(t); t = plus(t, 14 + Math.round(rand() * 8));
+  v.hist.CARGANDO = new Date(t); t = plus(t, 20 + Math.round(rand() * 10));
+  v.hist.EN_RUTA = new Date(t);
+  v.conf[0] = { t: new Date(t), dist: 9 + Math.round(rand() * 25) };
+  const seg = Math.max(10, Math.round(v.min / (P.length - 1)));
+  for (let i = 1; i < P.length - 1; i++) { t = plus(t, seg); v.conf[i] = { t: new Date(t), dist: 6 + Math.round(rand() * 30) }; }
+  t = plus(t, seg); v.hist.DESCARGANDO = new Date(t);
+  t = plus(t, 9); v.hist.FINALIZADO = new Date(t);
+  v.conf[P.length - 1] = { t: new Date(t), dist: 5 + Math.round(rand() * 30) };
+  v.real = { km: Math.round(v.km * (0.96 + rand() * 0.1) * 10) / 10, min: Math.round(v.min * (0.92 + rand() * 0.18)), precio: Math.round(v.precio * (0.96 + rand() * 0.1) / 50) * 50 };
+  v.audit.push({ t: v.hist.EN_CAMINO_A_ORIGEN, who: fname(f), txt: 'Inició el viaje desde la app' });
+  v.audit.push({ t: v.hist.FINALIZADO, who: fname(f), txt: `Confirmó la entrega en destino por GPS (a ${v.conf[P.length - 1].dist} m)` });
+}
+function cancelar(v, motivo, who = 'Laura Gómez', t = null) {
+  v.estado = 'CANCELADO'; v.etapa = null; v.motivo = motivo;
+  v.audit.push({ t: t || plus(minus(v.fecha, 300), 0), who, txt: `Canceló el viaje: ${motivo}` });
+}
+
+(function seed() {
+  const T1 = (o, h, m, x) => mk({ fecha: T(o, h, m), ...x });
+  const Vs = S.viajes;
+  const push = v => { Vs.push(v); return v; };
+  // Series
+  S.series.push({ id: 's1', freq: 'SEMANAL', dias: [1], hora: '09:00', fin: { tipo: 'cantidad', n: 8 } });
+  S.series.push({ id: 's2', freq: 'MENSUAL', diaMes: 15, hora: '07:30', fin: { tipo: 'cantidad', n: 6 } });
+
+  // Pasados
+  let v;
+  v = push(T1(-13, 8, 30, { origen: PL(16), destino: PL(0), fletero: 'f1', cond: [], vehTipo: 'Utilitario', cliente: 'Bebidas del Sur S.A.', contacto: '+54 11 4301-2288', carga: '38 cajas de bebidas sin alcohol' })); finalizar(v);
+  v = push(T1(-12, 10, 0, { origen: PL(4), paradas: [PL(10)], destino: PL(17), fletero: 'f4', cond: ['CARGA_PESADA'], vehTipo: 'Camión grande', cliente: 'Supermercados La Esquina', contacto: '+54 11 5544-9012', carga: '6 pallets de mercadería seca', notas: 'Descargar por el portón de calle Díaz Vélez.' })); finalizar(v);
+  v = push(T1(-10, 9, 0, { origen: PL(6), destino: PL(13), fletero: 'f3', cond: ['FRAGIL'], cliente: 'Laboratorios Andina', contacto: '+54 11 4700-6120', carga: 'Insumos de laboratorio, 12 bultos' })); finalizar(v);
+  v = push(T1(-9, 14, 30, { origen: PL(2), paradas: [PL(18)], destino: PL(7), fletero: 'f2', cond: ['REFRIGERADO'], vehTipo: 'Camión chico', cliente: 'Farmacia Central Mayorista', contacto: '+54 11 4931-7745', carga: 'Medicamentos con cadena de frío', notas: 'Mantener entre 2 y 8 °C.' })); finalizar(v);
+  v = push(T1(-8, 7, 30, { origen: PL(5), paradas: [PL(14)], destino: PL(1), fletero: 'f5', cond: ['VOLUMINOSO'], cliente: 'Muebles Ramos', contacto: '+54 11 6620-3315', carga: 'Living completo, 9 bultos' })); cancelar(v, 'El cliente reprogramó la entrega para el mes próximo');
+  v = push(T1(-6, 11, 0, { origen: PL(0), paradas: [PL(19), PL(1)], destino: PL(13), fletero: 'f5', cond: ['FRAGIL'], cliente: 'Textil Once S.R.L.', contacto: '+54 11 4867-1029', carga: 'Rollos de tela, 22 bultos' })); finalizar(v);
+  v = push(T1(-4, 8, 0, { origen: PL(4), paradas: [PL(11)], destino: PL(9), fletero: 'f2', cond: ['CARGA_PESADA'], vehTipo: 'Camión chico', cliente: 'Ferretería El Tornillo', contacto: '+54 11 4204-8800', carga: 'Herramientas y cemento, 3 pallets' })); finalizar(v);
+  v = push(T1(-1, 9, 30, { origen: PL(15), paradas: [PL(6)], destino: PL(17), fletero: 'f1', cond: [], cliente: 'Papelera Quilmes', contacto: '+54 11 4253-9917', carga: 'Resmas de papel, 40 cajas' })); finalizar(v);
+
+  // Hoy
+  const base = round15(NOW);
+  v = push(mk({ fecha: minus(base, 300), origen: PL(3), destino: PL(18), fletero: 'f5', cliente: 'Estudio Contable Ferro', contacto: '+54 11 5252-4471', carga: 'Documentación y 4 archivadores' })); finalizar(v);
+  v = push(mk({ fecha: minus(base, 90), origen: PL(4), paradas: [PL(10), PL(11)], destino: PL(14), fletero: 'f4', cond: ['CARGA_PESADA', 'VOLUMINOSO'], vehTipo: 'Camión grande', cliente: 'Supermercados La Esquina', contacto: '+54 11 5544-9012', carga: '5 pallets de bebidas y limpieza', notas: 'Dos entregas intermedias antes del destino final.' }));
+  v.estado = 'EN_CURSO'; v.etapa = 'EN_RUTA';
+  v.hist.EN_CAMINO_A_ORIGEN = minus(base, 85); v.hist.CARGANDO = minus(base, 68); v.hist.EN_RUTA = minus(base, 40);
+  v.conf[0] = { t: minus(base, 40), dist: 14 }; v.conf[1] = { t: minus(base, 18), dist: 22 };
+  const Pa = pts(v); v.gps = { lat: Pa[1].lat + (Pa[2].lat - Pa[1].lat) * 0.4, lng: Pa[1].lng + (Pa[2].lng - Pa[1].lng) * 0.4 }; v.gpsTs = Date.now() - 6000;
+  v.audit.push({ t: minus(base, 85), who: 'Sergio Ledesma', txt: 'Inició el viaje desde la app' });
+  v = push(mk({ fecha: minus(base, 40), origen: PL(16), destino: PL(13), fletero: 'f1', cond: ['FRAGIL'], cliente: 'Bebidas del Sur S.A.', contacto: '+54 11 4301-2288', carga: '52 cajas de vidrio, manejo cuidadoso' }));
+  v.estado = 'EN_CURSO'; v.etapa = 'CARGANDO'; v.hist.EN_CAMINO_A_ORIGEN = minus(base, 36); v.hist.CARGANDO = minus(base, 12);
+  v.gps = { lat: PLACES[16].lat, lng: PLACES[16].lng }; v.gpsTs = Date.now() - 9000;
+  v.audit.push({ t: minus(base, 36), who: 'Carlos Martínez', txt: 'Inició el viaje desde la app' });
+  push(mk({ fecha: plus(base, 200), origen: PL(2), destino: PL(7), fletero: 'f2', cond: ['REFRIGERADO'], vehTipo: 'Camión chico', cliente: 'Farmacia Central Mayorista', contacto: '+54 11 4931-7745', carga: 'Vacunas y medicamentos refrigerados', notas: 'Llamar 15 min antes de llegar.' }));
+
+  // Próximos
+  push(T1(1, 8, 30, { origen: PL(4), paradas: [PL(9), PL(15)], destino: PL(6), fletero: 'f4', cond: ['CARGA_PESADA'], vehTipo: 'Camión grande', cliente: 'Ferretería El Tornillo', contacto: '+54 11 4204-8800', carga: '8 pallets de materiales de obra' }));
+  push(T1(2, 10, 0, { origen: PL(17), destino: PL(19), fletero: 'f3', cond: ['FRAGIL', 'VOLUMINOSO'], cliente: 'Muebles Ramos', contacto: '+54 11 6620-3315', carga: 'Vitrinas y espejos, 6 bultos', ventanaFin: '12:00' }));
+  push(T1(3, 13, 0, { origen: PL(5), destino: PL(0), fletero: null, cond: [], cliente: 'Ferretería El Tornillo', contacto: '+54 11 4204-8800', carga: '20 cajas de tornillería', notas: 'Falta asignar fletero.' }));
+  push(T1(4, 9, 0, { origen: PL(1), paradas: [PL(13)], destino: PL(8), fletero: 'f5', cond: [], cliente: 'Textil Once S.R.L.', contacto: '+54 11 4867-1029', carga: 'Ropa de temporada, 30 bultos' }));
+  v = push(T1(6, 11, 30, { origen: PL(8), destino: PL(12), fletero: null, cond: ['FRAGIL'], cliente: 'Laboratorios Andina', contacto: '+54 11 4700-6120', carga: 'Equipamiento de laboratorio' }));
+  v.audit.push({ t: T(-1, 18, 12), who: 'Julián Acosta', txt: 'Canceló su asignación desde la app: el viaje quedó sin fletero' });
+  push(T1(8, 8, 0, { origen: PL(3), paradas: [PL(16), PL(6)], destino: PL(15), fletero: 'f1', cond: [], cliente: 'Bebidas del Sur S.A.', contacto: '+54 11 4301-2288', carga: '60 cajas de bebidas' }));
+  push(T1(10, 14, 0, { origen: PL(7), destino: PL(14), fletero: 'f2', cond: ['REFRIGERADO'], vehTipo: 'Camión chico', cliente: 'Supermercados La Esquina', contacto: '+54 11 5544-9012', carga: 'Lácteos, 4 pallets' }));
+
+  // Series materializadas
+  const s1 = S.series[0];
+  for (let o = -14; o <= 21; o++) {
+    const d = addDays(startOfDay(NOW), o);
+    if (d.getDay() !== 1) continue;
+    d.setHours(9, 0, 0, 0);
+    const x = mk({ fecha: d, origen: PL(8), destino: PL(17), fletero: 'f1', cond: ['FRAGIL'], cliente: 'Distribuidora Norte S.A.', contacto: '+54 11 4488-5601', carga: 'Reparto semanal de 25 cajas', serie: 's1' });
+    if (d < minus(NOW, 120)) finalizar(x);
+    Vs.push(x);
+  }
+  const s2 = S.series[1];
+  for (let m = -1; m <= 1; m++) {
+    const d = new Date(NOW.getFullYear(), NOW.getMonth() + m, 15, 7, 30);
+    const x = mk({ fecha: d, origen: PL(4), destino: PL(9), fletero: 'f3', cond: ['VOLUMINOSO'], cliente: 'Papelera Quilmes', contacto: '+54 11 4253-9917', carga: 'Bobinas de papel, entrega mensual', serie: 's2' });
+    if (d < minus(NOW, 120)) finalizar(x);
+    Vs.push(x);
+  }
+})();
+
+// ── Toast / Modal ──────────────────────────────────────────────────────────
+function toast(msg, tipo = '') {
+  const el = document.createElement('div'); el.className = 'toast ' + tipo; el.textContent = msg;
+  $('#toast').appendChild(el); setTimeout(() => el.remove(), 3600);
+}
+function openModal(html) { $('#modal-root').innerHTML = `<div class="overlay" data-act="modal-bg"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`; const f = $('#modal-root [autofocus]'); if (f) f.focus(); }
+function closeModal() { $('#modal-root').innerHTML = ''; }
+
+// ── Vistas: piezas ─────────────────────────────────────────────────────────
+function badge(v, conEtapa = true) {
+  const e = EST[v.estado];
+  const pul = v.estado === 'EN_CURSO' ? '<i class="dot pulse"></i>' : '';
+  return `<span class="badge b-${e.c}">${pul}${e.l}</span>` + (conEtapa && v.etapa ? `<div class="sub" style="margin-top:3px">${ETAPAS[v.etapa]}</div>` : '');
+}
+function condTags(c) { return c.length ? c.map(k => `<span class="tag ${k}">${COND[k]}</span>`).join('') : '<span class="muted">Sin condiciones</span>'; }
+function paradasTxt(v) { return v.paradas.length === 0 ? 'Sin paradas' : plural(v.paradas.length, 'parada', 'paradas'); }
+function fleteroCell(v) { return v.fletero ? esc(fname(F(v.fletero))) : '<span class="badge b-warn">Sin fletero</span>'; }
+function serieTxt(s) {
+  if (!s) return '';
+  if (s.freq === 'SEMANAL') { const n = [...s.dias].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map(d => DIAS_LARGO[d]); return 'Cada ' + (n.length > 1 ? n.slice(0, -1).join(', ') + ' y ' + n.slice(-1) : n[0]); }
+  return `El día ${s.diaMes} de cada mes`;
+}
+
+// ── Login ──────────────────────────────────────────────────────────────────
+function loginView() {
+  return `<div class="login">
+    <div class="login-art">
+      <div class="brand">${ISOTIPO(40, 'var(--on-ink)')}<span class="wm display" style="color:inherit">Fleter<i style="color:var(--accent);font-style:normal">.</i></span></div>
+      <div>
+        <div class="eyebrow" style="color:var(--accent);margin-bottom:12px">Panel de empresa</div>
+        <div class="big">Tu logística, de punta a punta<i>.</i></div>
+      </div>
+      <ul><li>· Programá viajes y repetilos cada semana o cada mes.</li><li>· Asigná fleteros de tu equipo.</li><li>· Seguí cada viaje por GPS hasta la entrega.</li></ul>
+    </div>
+    <form class="login-form" data-form="login" autocomplete="off">
+      <div class="brand" style="display:none">${ISOTIPO(32)}</div>
+      <h1>Iniciar sesión</h1>
+      <div class="note info">Prototipo: podés entrar con cualquier dato.</div>
+      <div class="field"><label class="label" for="em">Email</label><input class="input" id="em" type="email" value="laura@transportesdelplata.com.ar" required></div>
+      <div class="field"><label class="label" for="pw">Contraseña</label><input class="input" id="pw" type="password" value="prototipo" required></div>
+      <button class="btn btn-primary btn-lg" type="submit">Entrar</button>
+      <span class="hint">¿Sos fletero? Descargá la app de Fleter para ver tus viajes.</span>
+    </form>
+  </div>`;
+}
+
+// ── Shell ──────────────────────────────────────────────────────────────────
+function shell(r, body) {
+  const tab = (h, name, icon, cls = '') => `<a class="tab ${cls}" href="#/${h}" ${r.tab === h ? 'aria-current="page"' : ''}>${I(icon)}<span>${name}</span></a>`;
+  const ini = S.user.nombre[0];
+  return `<header class="topbar"><div class="topbar-in">
+    <a class="brand" href="#/calendario">${ISOTIPO(28)}<span class="wm">Fleter<i>.</i></span></a>
+    <nav class="tabs" aria-label="Secciones">
+      ${tab('nuevo', 'Nuevo viaje', 'plus', 'cta')}${tab('calendario', 'Calendario', 'cal')}${tab('viajes', 'Viajes', 'table')}${tab('fleteros', 'Fleteros', 'users')}
+    </nav>
+    <div class="userbox">
+      <div class="who" style="text-align:right;line-height:1.25"><b>${esc(S.empresa.nombre)}</b><div class="sub">${esc(S.user.nombre)} ${esc(S.user.apellido)} · administradora</div></div>
+      <button class="avatar" data-act="menu" aria-label="Menú de usuario" aria-expanded="${S.menu}">${esc(ini)}</button>
+      ${S.menu ? `<div class="menu">
+        <div class="label" style="margin-bottom:6px">Apariencia</div>
+        <div class="seg">${[['light', 'Claro'], ['dark', 'Oscuro'], ['system', 'Sistema']].map(([k, l]) => `<button data-act="theme" data-v="${k}" aria-pressed="${S.theme === k}">${l}</button>`).join('')}</div>
+        <div class="sub" style="margin:10px 0">CUIT ${esc(S.empresa.cuit)}</div>
+        <button class="btn btn-ghost" style="width:100%" data-act="logout">Cerrar sesión</button>
+      </div>` : ''}
+    </div>
+  </div></header>
+  <main class="main">${body}</main>
+  <div class="foot">Prototipo con datos de ejemplo. Distancias, tiempos y precios los calcula el sistema (acá están simulados). Solo el fletero puede iniciar y finalizar un viaje, con GPS desde su app.</div>`;
+}
+
+// ── Nuevo viaje ────────────────────────────────────────────────────────────
+const HORAS = Array.from({ length: 96 }, (_, i) => `${pad(Math.floor(i / 4))}:${pad((i % 4) * 15)}`);
+function newForm() {
+  const d = addDays(startOfDay(NOW), 1);
+  return { origen: '', paradas: [], destino: '', fecha: isoDay(d), hora: '09:00', ventana: '', cliente: '', contacto: '', carga: '', vehTipo: 'Utilitario', cond: [], fletero: '', notas: '', rep: 'NO', dias: [d.getDay()], diaMes: d.getDate(), fin: 'cantidad', finN: 8, finFecha: isoDay(addDays(d, 60)), errores: {} };
+}
+function nuevoView() {
+  if (!S.form) S.form = newForm();
+  const f = S.form;
+  return `<div class="pagehead"><div><div class="eyebrow">Programar</div><h1>Nuevo viaje</h1></div></div>
+  <form data-form="nuevo" class="formgrid" novalidate>
+    <div class="stack">
+      <div class="card"><h3>Recorrido</h3><div class="stops" id="stops"></div>
+        <div class="row" style="margin-top:12px"><button type="button" class="btn btn-ghost btn-sm" data-act="add-stop">${I('plus')} Agregar parada</button><span class="hint">Escribí y elegí una dirección de la lista, o cargala a mano.</span></div>
+        <datalist id="places">${PLACES.map(p => `<option value="${esc(placeStr(p))}">`).join('')}</datalist>
+      </div>
+      <div class="card"><h3>Cuándo</h3>
+        <div class="grid3">
+          <div class="field"><label class="label" for="fecha">Fecha</label><input class="input" id="fecha" type="date" data-f="fecha" value="${f.fecha}"><span class="err-text" id="e-fecha"></span></div>
+          <div class="field"><label class="label" for="hora">Hora de salida</label><select class="select" id="hora" data-f="hora">${HORAS.map(h => `<option ${h === f.hora ? 'selected' : ''}>${h}</option>`).join('')}</select></div>
+          <div class="field"><label class="label" for="ventana">Ventana hasta (opcional)</label><select class="select" id="ventana" data-f="ventana"><option value="">Sin ventana</option>${HORAS.map(h => `<option ${h === f.ventana ? 'selected' : ''}>${h}</option>`).join('')}</select></div>
+        </div>
+      </div>
+      <div class="card"><h3>Carga y cliente</h3>
+        <div class="grid2">
+          <div class="field"><label class="label" for="cliente">Cliente</label><input class="input" id="cliente" data-f="cliente" value="${esc(f.cliente)}" placeholder="Nombre o razón social"><span class="err-text" id="e-cliente"></span></div>
+          <div class="field"><label class="label" for="contacto">Contacto (teléfono)</label><input class="input" id="contacto" data-f="contacto" value="${esc(f.contacto)}" placeholder="+54 11 …"></div>
+        </div>
+        <div class="field" style="margin-top:16px"><label class="label" for="carga">Qué se transporta</label><textarea class="textarea" id="carga" data-f="carga" placeholder="Ej.: 12 cajas de vidrio, manejo cuidadoso">${esc(f.carga)}</textarea></div>
+        <div class="label" style="margin:16px 0 8px">Tipo de vehículo</div>
+        <div class="row" id="vehtipos">${VEH_TIPOS.map(t => `<button type="button" class="optcard" data-act="veh" data-v="${t.id}" aria-pressed="${f.vehTipo === t.id}"><b>${t.id}</b><span>${t.sub}</span></button>`).join('')}</div>
+        <div class="label" style="margin:16px 0 8px">Condiciones de carga</div>
+        <div class="row" id="conds" style="gap:8px">${Object.entries(COND).map(([k, l]) => `<button type="button" class="chipbtn" data-act="cond" data-v="${k}" aria-pressed="${f.cond.includes(k)}">${l}</button>`).join('')}</div>
+        <div class="field" style="margin-top:16px"><label class="label" for="notas">Notas para el fletero</label><textarea class="textarea" id="notas" data-f="notas" placeholder="Portón, horarios de descarga, a quién preguntar…">${esc(f.notas)}</textarea></div>
+      </div>
+      <div class="card"><h3>Repetir</h3>
+        <div class="row" style="gap:8px" id="reptype">${[['NO', 'No se repite'], ['SEMANAL', 'Cada semana'], ['MENSUAL', 'Cada mes']].map(([k, l]) => `<button type="button" class="chipbtn" data-act="rep" data-v="${k}" aria-pressed="${f.rep === k}">${l}</button>`).join('')}</div>
+        <div id="repopts"></div>
+      </div>
+    </div>
+    <aside class="stack sticky">
+      <div class="card"><h3>Fletero</h3>
+        <div class="field"><label class="label" for="fletero">Quién hace el viaje</label>
+          <select class="select" id="fletero" data-f="fletero"><option value="">Elegí un fletero</option>${S.fleteros.filter(x => x.estado === 'ACTIVO').map(x => `<option value="${x.id}" ${x.id === f.fletero ? 'selected' : ''}>${esc(fname(x))} · ${esc(x.vehiculo.tipo)}</option>`).join('')}</select>
+          <span class="err-text" id="e-fletero"></span></div>
+        <div id="fletinfo" style="margin-top:12px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div class="card ink"><div class="eyebrow" style="color:var(--accent)">Resumen</div><div id="preview" style="margin-top:8px"></div></div>
+      <button class="btn btn-primary btn-lg" type="submit" style="width:100%">Programar viaje</button>
+      <span class="hint">Solo el fletero puede iniciar y finalizar el viaje desde su app.</span>
+    </aside>
+  </form>`;
+}
+function stopsHtml() {
+  const f = S.form;
+  const row = (k, val, i, mk, ph, can) => `<div class="stoprow"><span class="mk ${mk}"></span><input class="input" list="places" data-loc="${k}" ${i != null ? `data-i="${i}"` : ''} value="${esc(val)}" placeholder="${ph}" aria-label="${ph}">${can ? `<button type="button" class="btn btn-ghost btn-sm" data-act="del-stop" data-i="${i}" aria-label="Quitar parada">${I('x')}</button>` : ''}</div>`;
+  return row('origen', f.origen, null, 'o', 'Origen', false) + f.paradas.map((p, i) => row('parada', p, i, '', `Parada ${i + 1}`, true)).join('') + row('destino', f.destino, null, 'd', 'Destino', false) + `<span class="err-text" id="e-ruta"></span>`;
+}
+function resolvePlace(txt) {
+  const t = txt.trim(); if (!t) return null;
+  const p = PLACES.find(x => placeStr(x) === t || x.dir === t);
+  if (p) return { ...p };
+  let h = 0; for (const c of t) h = (h * 31 + c.charCodeAt(0)) | 0;
+  const r = rng(h);
+  return { dir: t, loc: 'A confirmar', lat: -34.60 + (r() - 0.5) * 0.12, lng: -58.44 + (r() - 0.5) * 0.14 };
+}
+function repDates() {
+  const f = S.form; const [Y, M, D] = f.fecha.split('-').map(Number); if (!Y) return { dates: [], nota: '' };
+  const [hh, mm] = f.hora.split(':').map(Number);
+  const first = new Date(Y, M - 1, D, hh, mm);
+  if (f.rep === 'NO') return { dates: [first], nota: '' };
+  const horizon = addDays(startOfDay(NOW), 90);
+  const max = f.fin === 'cantidad' ? Math.max(1, Math.min(60, Number(f.finN) || 1)) : 60;
+  const hasta = f.fin === 'fecha' ? new Date(...f.finFecha.split('-').map((x, i) => i === 1 ? x - 1 : +x), 23, 59) : null;
+  const all = [];
+  if (f.rep === 'SEMANAL') {
+    const dias = f.dias.length ? f.dias : [first.getDay()];
+    for (let d = startOfDay(first), guard = 0; all.length < max && guard < 900; d = addDays(d, 1), guard++) {
+      if (hasta && d > hasta) break;
+      if (dias.includes(d.getDay())) { const x = new Date(d); x.setHours(hh, mm, 0, 0); if (x >= first) all.push(x); }
+    }
+  } else {
+    const dm = Math.max(1, Math.min(31, Number(f.diaMes) || first.getDate()));
+    for (let k = 0, guard = 0; all.length < max && guard < 200; k++, guard++) {
+      const y = first.getFullYear(), m = first.getMonth() + k;
+      const dd = Math.min(dm, daysInMonth(new Date(y, m, 1).getFullYear(), new Date(y, m, 1).getMonth()));
+      const x = new Date(y, m, dd, hh, mm);
+      if (x < first) continue;
+      if (hasta && x > hasta) break;
+      all.push(x);
+    }
+  }
+  const dentro = all.filter(d => d <= horizon);
+  let nota = '';
+  if (all.length > dentro.length) nota = `Se crean ahora los primeros ${dentro.length} (90 días); el resto se genera solo a medida que se acerca.`;
+  if (f.rep === 'MENSUAL' && Number(f.diaMes) > 28) nota += ' En los meses más cortos se usa el último día del mes.';
+  return { dates: dentro.length ? dentro : all.slice(0, 1), total: all.length, nota: nota.trim() };
+}
+function conflictos(fid, dates, dur, ignoreId) {
+  const out = [];
+  for (const d of dates) {
+    const a0 = d.getTime(), a1 = a0 + (dur + 15) * 60000;
+    for (const v of S.viajes) {
+      if (v.fletero !== fid || v.estado === 'CANCELADO' || v.estado === 'FINALIZADO' || v.id === ignoreId) continue;
+      const b0 = v.fecha.getTime(), b1 = b0 + (v.min + 15) * 60000;
+      if (a0 < b1 && b0 < a1) out.push({ d, v });
+    }
+  }
+  return out;
+}
+function refreshForm() {
+  const f = S.form; if (!f) return;
+  const rep = $('#repopts');
+  if (rep) {
+    if (f.rep === 'NO') rep.innerHTML = '';
+    else {
+      const L = ['L', 'M', 'X', 'J', 'V', 'S', 'D'], G = [1, 2, 3, 4, 5, 6, 0];
+      rep.innerHTML = `<div style="margin-top:14px;display:flex;flex-direction:column;gap:14px">
+        ${f.rep === 'SEMANAL' ? `<div><div class="label" style="margin-bottom:8px">Días</div><div class="days">${L.map((l, i) => `<button type="button" class="chipbtn" data-act="dia" data-v="${G[i]}" aria-pressed="${f.dias.includes(G[i])}" aria-label="${DIAS_LARGO[G[i]]}">${l}</button>`).join('')}</div></div>`
+        : `<div class="field" style="max-width:220px"><label class="label" for="diaMes">Día del mes</label><input class="input" id="diaMes" type="number" min="1" max="31" data-f="diaMes" value="${f.diaMes}"></div>`}
+        <div class="row"><div class="field" style="min-width:200px"><label class="label" for="fin">Termina</label><select class="select" id="fin" data-f="fin"><option value="cantidad" ${f.fin === 'cantidad' ? 'selected' : ''}>Después de una cantidad de viajes</option><option value="fecha" ${f.fin === 'fecha' ? 'selected' : ''}>En una fecha</option></select></div>
+        ${f.fin === 'cantidad' ? `<div class="field" style="width:120px"><label class="label" for="finN">Viajes</label><input class="input" id="finN" type="number" min="1" max="60" data-f="finN" value="${f.finN}"></div>` : `<div class="field"><label class="label" for="finFecha">Hasta</label><input class="input" id="finFecha" type="date" data-f="finFecha" value="${f.finFecha}"></div>`}</div>
+      </div>`;
+    }
+  }
+  const dr = repDates();
+  const P = [resolvePlace(f.origen), ...f.paradas.map(resolvePlace).filter(Boolean), resolvePlace(f.destino)];
+  const okRuta = P.every(Boolean) && P.length >= 2;
+  const calc = okRuta ? mockCalc(P) : null;
+  const fl = F(f.fletero);
+  const fi = $('#fletinfo');
+  if (fi) {
+    let h = '';
+    if (fl) {
+      const faltan = f.cond.filter(c => !fl.vehiculo.cond.includes(c));
+      h += `<div class="sub">${esc(fl.vehiculo.marca)} ${esc(fl.vehiculo.modelo)} · <span class="patente">${esc(fl.vehiculo.patente)}</span> · ${esc(fl.vehiculo.tipo)}</div><div>${condTags(fl.vehiculo.cond)}</div>`;
+      if (faltan.length) h += `<div class="note warn">El vehículo de ${esc(fl.nombre)} no tiene: ${faltan.map(c => COND[c]).join(', ')}.</div>`;
+      if (f.vehTipo !== fl.vehiculo.tipo) h += `<div class="note warn">Pediste ${esc(f.vehTipo)} y el vehículo es ${esc(fl.vehiculo.tipo)}.</div>`;
+      const cf = conflictos(fl.id, dr.dates, calc ? calc.min : 120);
+      if (cf.length) h += `<div class="note warn">${esc(fl.nombre)} ya tiene ${cf.length === 1 ? 'un viaje' : cf.length + ' viajes'} en ese horario: ${cf.slice(0, 3).map(c => `${vid(c.v)} (${fechaCorta(c.d)} ${hhmm(c.v.fecha)})`).join(', ')}.</div>`;
+    } else h = '<span class="hint">Solo aparecen fleteros activos de tu equipo.</span>';
+    fi.innerHTML = h;
+  }
+  const pv = $('#preview');
+  if (pv) {
+    const primero = dr.dates[0];
+    pv.innerHTML = `<div class="sub" style="color:var(--ink4)">${primero ? `${fechaLarga(primero)} · ${hhmm(primero)}` : 'Elegí fecha y hora'}</div>
+      <div style="margin:6px 0">${esc(f.origen || 'Origen a definir')} → ${esc(f.destino || 'Destino a definir')}</div>
+      <div class="sub" style="color:var(--ink4)">${f.paradas.length ? plural(f.paradas.length, 'parada', 'paradas') : 'Sin paradas'} · ${f.cond.length ? f.cond.map(c => COND[c]).join(', ') : 'Sin condiciones'}</div>
+      <div class="display" style="font-size:32px;margin:12px 0 2px">${calc ? money(calc.precio) : 'A confirmar'}</div>
+      <div class="sub" style="color:var(--ink4)">${calc ? `${fmtKm(calc.km)} · ${fmtMin(calc.min)} · calculado por el sistema (simulado)` : 'El sistema calcula distancia, tiempo y precio al guardar.'}</div>
+      ${f.rep !== 'NO' ? `<div style="margin-top:12px;border-top:1px solid var(--line-strong);padding-top:10px"><b>${plural(dr.total || dr.dates.length, 'viaje', 'viajes')}</b> <span class="sub" style="color:var(--ink4)">· ${esc(serieTxt(f.rep === 'SEMANAL' ? { freq: 'SEMANAL', dias: f.dias.length ? f.dias : [0] } : { freq: 'MENSUAL', diaMes: f.diaMes }))}</span>
+        <ul class="previewlist">${dr.dates.slice(0, 5).map(d => `<li class="mono">${fechaCorta(d)} · ${hhmm(d)}</li>`).join('')}${dr.dates.length > 5 ? `<li class="sub" style="color:var(--ink4)">… y ${dr.dates.length - 5} más</li>` : ''}</ul>
+        ${dr.nota ? `<div class="sub" style="color:var(--ink4);margin-top:6px">${esc(dr.nota)}</div>` : ''}</div>` : ''}`;
+  }
+}
+function submitNuevo() {
+  const f = S.form, e = {};
+  const O = resolvePlace(f.origen), D = resolvePlace(f.destino);
+  if (!O || !D) e.ruta = 'Completá el origen y el destino.';
+  if (f.paradas.some(p => !p.trim())) e.ruta = 'Completá o quitá las paradas vacías.';
+  if (!f.fecha) e.fecha = 'Elegí una fecha.';
+  const dr = repDates();
+  if (dr.dates[0] && dr.dates[0] < minus(NOW, 1)) e.fecha = 'La fecha y hora ya pasaron: elegí una futura.';
+  if (!f.cliente.trim()) e.cliente = 'Escribí el nombre del cliente.';
+  if (!f.fletero) e.fletero = 'Elegí un fletero.';
+  for (const k of ['ruta', 'fecha', 'cliente', 'fletero']) { const el = $('#e-' + k); if (el) el.textContent = e[k] || ''; }
+  if (Object.keys(e).length) { toast('Revisá los datos marcados.', 'err'); const first = $('.err-text:not(:empty)'); if (first) first.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+  let serie = null;
+  if (f.rep !== 'NO') {
+    serie = { id: 's' + (S.series.length + 1) + '_' + Date.now(), freq: f.rep, dias: f.dias.length ? [...f.dias] : [dr.dates[0].getDay()], diaMes: Number(f.diaMes), hora: f.hora, fin: f.fin === 'cantidad' ? { tipo: 'cantidad', n: Number(f.finN) } : { tipo: 'fecha', f: f.finFecha } };
+    S.series.push(serie);
+  }
+  const creados = dr.dates.map(d => {
+    const v = mk({ fecha: d, ventanaFin: f.ventana || null, origen: O, paradas: f.paradas.map(resolvePlace), destino: D, cond: [...f.cond], vehTipo: f.vehTipo, cliente: f.cliente.trim(), contacto: f.contacto.trim(), carga: f.carga.trim(), notas: f.notas.trim(), fletero: f.fletero, serie: serie ? serie.id : null });
+    v.audit[0].t = new Date(); v.audit[0].txt = serie ? 'Creó el viaje (serie)' : 'Creó el viaje'; if (v.audit[1]) v.audit[1].t = new Date();
+    S.viajes.push(v); return v;
+  });
+  S.flash = new Set(creados.map(v => v.id)); setTimeout(() => S.flash.clear(), 3000);
+  S.cal.ancla = startOfDay(creados[0].fecha);
+  S.form = null;
+  toast(creados.length === 1 ? `Viaje ${vid(creados[0])} programado para ${fechaCorta(creados[0].fecha)} a las ${hhmm(creados[0].fecha)}.` : `Serie creada: ${creados.length} viajes programados.`);
+  location.hash = '#/calendario';
+}
+
+// ── Calendario ─────────────────────────────────────────────────────────────
+function calVis() { return S.viajes.filter(v => !S.cal.fletero || v.fletero === S.cal.fletero || (S.cal.fletero === '_sin' && !v.fletero)); }
+function chip(v) {
+  const e = EST[v.estado], fl = v.fletero ? F(v.fletero).nombre : 'Sin fletero';
+  const cor = p => p.loc.split(',')[0];
+  return `<button class="vchip b-${e.c} ${S.flash.has(v.id) ? 'flash' : ''}" data-act="open" data-id="${v.id}" title="${vid(v)}"><span class="t">${hhmm(v.fecha)}</span> ${esc(cor(v.origen))} → ${esc(cor(v.destino))}<span class="r"> · ${esc(fl)}</span></button>`;
+}
+function calView() {
+  const c = S.cal, hoy = startOfDay(NOW), vis = calVis();
+  const byDay = d => vis.filter(v => sameDay(v.fecha, d)).sort((a, b) => a.fecha - b.fecha);
+  let title, body;
+  if (c.modo === 'mes') {
+    const y = c.ancla.getFullYear(), m = c.ancla.getMonth();
+    title = `${MESES_LARGO[m]} ${y}`;
+    const start = mondayOf(new Date(y, m, 1)), cells = [];
+    const rows = Math.ceil(((new Date(y, m, 1).getDay() + 6) % 7 + daysInMonth(y, m)) / 7);
+    for (let i = 0; i < rows * 7; i++) {
+      const d = addDays(start, i), vs = byDay(d), out = d.getMonth() !== m;
+      cells.push(`<div data-act="day" data-d="${isoDay(d)}" class="cell ${out ? 'out' : ''} ${sameDay(d, hoy) ? 'today' : ''}"><div class="dn"><b>${d.getDate()}</b>${vs.length ? `<span class="sub">${vs.length}</span>` : ''}</div>${vs.slice(0, 3).map(chip).join('')}${vs.length > 3 ? `<button class="more" data-act="day" data-d="${isoDay(d)}">+${vs.length - 3} más</button>` : ''}</div>`);
+    }
+    body = `<div class="month"><div class="month-head">${['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'].map(x => `<div>${x}</div>`).join('')}</div><div class="month-grid">${cells.join('')}</div></div>`;
+  } else {
+    const lun = mondayOf(c.ancla), dom = addDays(lun, 6);
+    title = `${lun.getDate()} ${MESES[lun.getMonth()]} – ${dom.getDate()} ${MESES[dom.getMonth()]} ${dom.getFullYear()}`;
+    body = `<div class="week">${Array.from({ length: 7 }, (_, i) => {
+      const d = addDays(lun, i), vs = byDay(d);
+      return `<div class="wcol ${sameDay(d, hoy) ? 'today' : ''}"><h4><span>${DIAS[d.getDay()]} ${d.getDate()}</span><span class="mono">${vs.length || ''}</span></h4>${vs.length ? vs.map(v => `<button class="wcard b-${EST[v.estado].c} ${S.flash.has(v.id) ? 'flash' : ''}" data-act="open" data-id="${v.id}"><span class="t">${hhmm(v.fecha)} · ${vid(v)}</span><span class="r">${esc(v.origen.dir)} → ${esc(v.destino.dir)}</span><span class="s">${esc(v.origen.loc)} → ${esc(v.destino.loc)}</span><span>${badge(v, false)} ${v.serie ? `<span class="sub">↻ ${esc(serieTxt(S.series.find(s => s.id === v.serie)))}</span>` : ''}</span><span class="s">${v.fletero ? esc(fname(F(v.fletero))) : '<b style="color:var(--warn-ink)">Sin fletero</b>'} · ${money(v.real ? v.real.precio : v.precio)}</span></button>`).join('') : '<span class="hint">Sin viajes</span>'}</div>`;
+    }).join('')}</div>`;
+  }
+  const total = vis.filter(v => v.estado !== 'CANCELADO').length;
+  return `<div class="pagehead"><div><div class="eyebrow">Agenda</div><h1>Calendario</h1></div><a class="btn btn-primary" href="#/nuevo">${I('plus')} Nuevo viaje</a></div>
+  <div class="calbar">
+    <div class="seg" style="width:170px"><button data-act="cal-modo" data-v="mes" aria-pressed="${c.modo === 'mes'}">Mes</button><button data-act="cal-modo" data-v="semana" aria-pressed="${c.modo === 'semana'}">Semana</button></div>
+    <button class="btn btn-ghost btn-sm" data-act="cal-prev" aria-label="Anterior">${I('left')}</button>
+    <button class="btn btn-ghost btn-sm" data-act="cal-hoy">Hoy</button>
+    <button class="btn btn-ghost btn-sm" data-act="cal-next" aria-label="Siguiente">${I('right')}</button>
+    <div class="title">${title}</div>
+    <select class="select sm" style="width:auto" data-bind="cal-fletero" aria-label="Filtrar por fletero"><option value="">Todos los fleteros</option><option value="_sin" ${c.fletero === '_sin' ? 'selected' : ''}>Sin fletero</option>${S.fleteros.filter(f => f.estado === 'ACTIVO').map(f => `<option value="${f.id}" ${c.fletero === f.id ? 'selected' : ''}>${esc(fname(f))}</option>`).join('')}</select>
+    <div class="legend">${Object.entries(EST).map(([k, e]) => `<span><i style="background:var(--${e.c === 'acc' ? 'accent' : e.c})"></i>${e.l}</span>`).join('')}</div>
+  </div>${body}<div class="hint" style="margin-top:10px">${plural(total, 'viaje', 'viajes')} en total con este filtro.</div>`;
+}
+
+// ── Tabla ──────────────────────────────────────────────────────────────────
+const SORTS = {
+  fecha: v => v.fecha.getTime(), id: v => v.id, origen: v => v.origen.dir, destino: v => v.destino.dir,
+  km: v => v.real ? v.real.km : v.km, min: v => v.real ? v.real.min : v.min, precio: v => v.real ? v.real.precio : v.precio,
+  fletero: v => v.fletero ? fname(F(v.fletero)) : '~', estado: v => EST[v.estado].o,
+};
+function tablaRows() {
+  const t = S.tabla, q = t.q.trim().toLowerCase();
+  let rows = S.viajes.filter(v =>
+    (!t.estado || v.estado === t.estado) && (!t.fletero || v.fletero === t.fletero) && (!t.sin || !v.fletero) &&
+    (!t.mes || `${v.fecha.getFullYear()}-${pad(v.fecha.getMonth() + 1)}` === t.mes) &&
+    (!q || `${vid(v)} ${v.origen.dir} ${v.origen.loc} ${v.destino.dir} ${v.destino.loc} ${v.cliente}`.toLowerCase().includes(q)));
+  const g = SORTS[t.sort];
+  rows.sort((a, b) => { const x = g(a), y = g(b); return (x < y ? -1 : x > y ? 1 : a.id - b.id) * t.dir; });
+  return rows;
+}
+function tablaInner() {
+  const rows = tablaRows();
+  const fin = rows.filter(v => v.estado === 'FINALIZADO'), prog = rows.filter(v => v.estado === 'PROGRAMADO' || v.estado === 'EN_CURSO');
+  const sum = a => a.reduce((s, v) => s + (v.real ? v.real.precio : v.precio), 0);
+  const th = (k, l, cls = '') => `<th class="${cls}" aria-sort="${S.tabla.sort === k ? (S.tabla.dir === 1 ? 'ascending' : 'descending') : 'none'}"><button data-act="sort" data-k="${k}">${l}${S.tabla.sort === k ? (S.tabla.dir === 1 ? ' ↑' : ' ↓') : ''}</button></th>`;
+  const kpis = `<div class="kpis"><div class="kpi"><b>${rows.length}</b><span>Viajes</span></div><div class="kpi"><b>${money(sum(fin))}</b><span>Finalizados (${fin.length})</span></div><div class="kpi"><b>${money(sum(prog))}</b><span>Por hacer (${prog.length})</span></div></div>`;
+  if (!rows.length) return kpis + `<div class="twrap"><div class="empty"><h3>No hay viajes con estos filtros</h3><p class="muted">Sacá algún filtro o programá un viaje nuevo.</p><button class="btn btn-ghost" data-act="limpiar">Limpiar filtros</button></div></div>`;
+  return kpis + `<div class="twrap"><table>
+    <thead><tr>${th('fecha', 'Viaje · fecha y hora', 'stick')}${th('origen', 'Origen')}<th>Paradas</th>${th('destino', 'Destino')}<th>Condiciones</th>${th('km', 'Distancia', 'num')}${th('min', 'Tiempo', 'num')}${th('precio', 'Precio', 'num')}${th('fletero', 'Fletero')}${th('estado', 'Estado')}</tr></thead>
+    <tbody>${rows.map(v => `<tr data-act="open" data-id="${v.id}" tabindex="0">
+      <td class="stick"><span class="mono sub">${vid(v)}</span>${v.serie ? ' <span class="sub" title="Se repite">↻</span>' : ''}<div><b>${fechaCorta(v.fecha)}</b> <span class="mono">${hhmm(v.fecha)}</span></div></td>
+      <td>${esc(v.origen.dir)}<div class="sub">${esc(v.origen.loc)}</div></td>
+      <td>${paradasTxt(v)}${v.paradas.map(p => `<div class="sub">${esc(p.loc)}</div>`).join('')}</td>
+      <td>${esc(v.destino.dir)}<div class="sub">${esc(v.destino.loc)}</div></td>
+      <td>${condTags(v.cond)}</td>
+      <td class="num mono">${fmtKm(v.real ? v.real.km : v.km)}</td>
+      <td class="num">${fmtMin(v.real ? v.real.min : v.min)}</td>
+      <td class="num price">${v.estado === 'CANCELADO' ? '<span class="muted" style="font-family:var(--f-ui)">No aplica</span>' : money(v.real ? v.real.precio : v.precio)}</td>
+      <td>${fleteroCell(v)}</td>
+      <td>${badge(v)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td class="stick" colspan="7">${rows.length} viajes</td><td class="num price">${money(sum(rows.filter(v => v.estado !== 'CANCELADO')))}</td><td colspan="2" class="sub">Total sin cancelados</td></tr></tfoot>
+  </table></div>`;
+}
+function tablaView() {
+  const t = S.tabla;
+  const meses = [...new Set(S.viajes.map(v => `${v.fecha.getFullYear()}-${pad(v.fecha.getMonth() + 1)}`))].sort();
+  const cnt = k => S.viajes.filter(v => v.estado === k).length;
+  return `<div class="pagehead"><div><div class="eyebrow">Planilla</div><h1>Viajes</h1></div><div class="row"><button class="btn btn-ghost" data-act="csv">${I('dl')} Exportar CSV</button><a class="btn btn-primary" href="#/nuevo">${I('plus')} Nuevo viaje</a></div></div>
+  <div class="filters">
+    <input class="input sm" data-bind="t-q" placeholder="Buscar por dirección, cliente o VJ-…" value="${esc(t.q)}" aria-label="Buscar" style="min-width:260px">
+    <select class="select sm" data-bind="t-estado" aria-label="Estado"><option value="">Todos los estados (${S.viajes.length})</option>${Object.entries(EST).map(([k, e]) => `<option value="${k}" ${t.estado === k ? 'selected' : ''}>${e.l} (${cnt(k)})</option>`).join('')}</select>
+    <select class="select sm" data-bind="t-fletero" aria-label="Fletero"><option value="">Todos los fleteros</option>${S.fleteros.filter(f => f.estado === 'ACTIVO').map(f => `<option value="${f.id}" ${t.fletero === f.id ? 'selected' : ''}>${esc(fname(f))}</option>`).join('')}</select>
+    <select class="select sm" data-bind="t-mes" aria-label="Mes"><option value="">Todos los meses</option>${meses.map(m => { const [y, mo] = m.split('-'); return `<option value="${m}" ${t.mes === m ? 'selected' : ''}>${MESES_LARGO[mo - 1]} ${y}</option>`; }).join('')}</select>
+    <label class="row" style="gap:6px;font-weight:600;cursor:pointer"><input type="checkbox" data-bind="t-sin" ${t.sin ? 'checked' : ''}> Solo sin fletero</label>
+    <button class="btn btn-ghost btn-sm" data-act="limpiar">Limpiar</button>
+  </div>
+  <div id="tablaMount">${tablaInner()}</div>
+  <div class="hint" style="margin-top:8px">El estado lo actualiza el fletero desde su app. Tocá una fila para ver el detalle.</div>`;
+}
+function csv() {
+  const rows = tablaRows();
+  const head = ['Viaje', 'Fecha', 'Hora', 'Origen', 'Paradas', 'Destino', 'Condiciones', 'Distancia (km)', 'Tiempo (min)', 'Precio', 'Fletero', 'Estado'];
+  const q = s => `"${String(s).replace(/"/g, '""')}"`;
+  const lines = [head.join(';'), ...rows.map(v => [vid(v), fechaCorta(v.fecha), hhmm(v.fecha), placeStr(v.origen), v.paradas.length, placeStr(v.destino), v.cond.map(c => COND[c]).join(' / '), (v.real ? v.real.km : v.km), (v.real ? v.real.min : v.min), v.estado === 'CANCELADO' ? '' : (v.real ? v.real.precio : v.precio), v.fletero ? fname(F(v.fletero)) : 'Sin fletero', EST[v.estado].l].map(q).join(';'))];
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'viajes-fleter.csv'; a.click();
+  toast(`Se exportaron ${rows.length} viajes.`);
+}
+
+// ── Mapa esquemático ───────────────────────────────────────────────────────
+let MAPCTX = null;
+function mapSVG(v) {
+  const P = pts(v), all = v.gps ? [...P, v.gps] : P;
+  const lats = all.map(p => p.lat), lngs = all.map(p => p.lng);
+  const minLa = Math.min(...lats), maxLa = Math.max(...lats), minLn = Math.min(...lngs), maxLn = Math.max(...lngs);
+  const k = Math.cos(34.6 * Math.PI / 180), W = 640, H = 380, pd = 56;
+  const sx = Math.max((maxLn - minLn) * k, 0.01), sy = Math.max(maxLa - minLa, 0.01);
+  const sc = Math.min((W - 2 * pd) / sx, (H - 2 * pd) / sy), ox = (W - sx * sc) / 2, oy = (H - sy * sc) / 2;
+  const proj = p => ({ x: ox + (p.lng - minLn) * k * sc, y: oy + (maxLa - p.lat) * sc });
+  MAPCTX = { proj, id: v.id };
+  const xy = P.map(proj);
+  const line = xy.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const g = v.gps ? proj(v.gps) : null;
+  const lab = (p, t, dx = 12, dy = 4) => `<text x="${p.x + dx}" y="${p.y + dy}" font-size="11" font-family="Manrope,sans-serif" font-weight="700" fill="var(--ink2)" stroke="var(--surface2)" stroke-width="4" paint-order="stroke">${esc(t)}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Mapa esquemático del recorrido">
+    <defs><pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="var(--line)" stroke-width="1"/></pattern></defs>
+    <rect width="${W}" height="${H}" fill="var(--surface2)"/><rect width="${W}" height="${H}" fill="url(#grid)"/>
+    <polyline points="${line}" fill="none" stroke="var(--line-strong)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="${line}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="${v.estado === 'FINALIZADO' ? '0' : '2 7'}"/>
+    ${xy.map((p, i) => i === 0 ? `<circle cx="${p.x}" cy="${p.y}" r="8" fill="var(--accent)" stroke="var(--surface)" stroke-width="3"/>${lab(p, 'Origen · ' + P[i].loc.split(',')[0])}` : i === xy.length - 1 ? `<rect x="${p.x - 8}" y="${p.y - 8}" width="16" height="16" rx="3" fill="var(--ink)" stroke="var(--surface)" stroke-width="3"/>${lab(p, 'Destino · ' + P[i].loc.split(',')[0])}` : `<circle cx="${p.x}" cy="${p.y}" r="6" fill="var(--ink3)" stroke="var(--surface)" stroke-width="3"/>${lab(p, 'Parada ' + i)}`).join('')}
+    ${v.estado === 'EN_CURSO' && g ? `<g id="pin" transform="translate(${g.x.toFixed(1)} ${g.y.toFixed(1)})"><circle r="16" fill="var(--accent)" opacity=".22" class="pulse"/><circle r="9" fill="var(--accent)" stroke="var(--ink)" stroke-width="3"/><text y="-16" text-anchor="middle" font-size="11" font-weight="800" font-family="Manrope,sans-serif" fill="var(--ink)" stroke="var(--surface2)" stroke-width="4" paint-order="stroke">${esc(F(v.fletero).nombre)}</text></g>` : ''}
+  </svg>`;
+}
+function movePin(v) { const pin = $('#pin'); if (pin && MAPCTX && MAPCTX.id === v.id && v.gps) { const p = MAPCTX.proj(v.gps); pin.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`); } }
+
+// ── Detalle de viaje ───────────────────────────────────────────────────────
+function detalleView(v) {
+  if (!v) return `<div class="empty"><h3>No encontramos ese viaje</h3><a class="btn btn-ghost" href="#/viajes">Volver a Viajes</a></div>`;
+  const P = pts(v), fl = F(v.fletero), serie = S.series.find(s => s.id === v.serie);
+  const editable = v.estado === 'PROGRAMADO';
+  const gpsInfo = v.estado === 'EN_CURSO';
+  const tlHtml = TL.map(([k, l]) => {
+    const t = v.hist[k] || (k === 'PROGRAMADO' ? v.audit[0].t : null);
+    let cls = t ? 'done' : '';
+    if (v.etapa === k) cls = 'now';
+    if (k === 'FINALIZADO' && v.estado === 'FINALIZADO') cls = 'done';
+    return `<li class="${cls}"><span class="pt"></span><div><div class="tt">${l}</div><div class="tm">${t ? `${fechaCorta(t)} · ${hhmm(t)}` : (k === 'PROGRAMADO' ? '' : (v.estado === 'CANCELADO' ? 'No aplica' : 'Pendiente'))}</div></div></li>`;
+  }).join('') + (v.estado === 'CANCELADO' ? `<li class="bad"><span class="pt"></span><div><div class="tt">Cancelado</div><div class="tm">${esc(v.motivo)}</div></div></li>` : '');
+  const cmp = (l, est, real, f) => `<tr><td>${l}</td><td class="mono">${f(est)}</td><td class="mono">${v.estado === 'CANCELADO' ? 'No aplica' : v.real ? f(real) : 'A confirmar'}</td></tr>`;
+  return `<div class="crumbs"><a class="btn btn-ghost btn-sm" href="${S.volver}">${I('back')} Volver</a><span class="mono sub">${vid(v)}</span></div>
+  <div class="pagehead"><div><div class="eyebrow">${fechaLarga(v.fecha)} · ${hhmm(v.fecha)}${v.ventanaFin ? ` a ${v.ventanaFin}` : ''}</div><h1>${esc(v.origen.loc.split(',')[0])} → ${esc(v.destino.loc.split(',')[0])}</h1></div>
+    <div class="row">${badge(v)}${v.cierre ? `<span class="badge b-neutral">Cierre por GPS</span>` : ''}${serie ? `<span class="badge b-neutral">↻ ${esc(serieTxt(serie))}</span>` : ''}</div></div>
+  ${!v.fletero && (v.estado === 'PROGRAMADO') ? `<div class="note warn" style="margin-bottom:16px">Este viaje no tiene fletero. Asignale uno para que pueda iniciarlo desde su app.</div>` : ''}
+  ${v.estado === 'CANCELADO' ? `<div class="note err" style="margin-bottom:16px"><b>Cancelado.</b> ${esc(v.motivo)}</div>` : ''}
+  <div class="detail">
+    <div class="stack">
+      <div class="card"><div class="dl">
+        <div><dt>Fecha y hora</dt><dd>${fechaLarga(v.fecha)}, <span class="mono">${hhmm(v.fecha)}</span></dd></div>
+        <div><dt>Estado</dt><dd>${badge(v)}</dd></div>
+        <div><dt>Origen</dt><dd>${esc(v.origen.dir)}<div class="sub">${esc(v.origen.loc)}</div></dd></div>
+        <div><dt>Paradas</dt><dd>${paradasTxt(v)}${v.paradas.map(p => `<div class="sub">${esc(p.dir)} · ${esc(p.loc)}</div>`).join('')}</dd></div>
+        <div><dt>Destino</dt><dd>${esc(v.destino.dir)}<div class="sub">${esc(v.destino.loc)}</div></dd></div>
+        <div><dt>Condiciones</dt><dd>${condTags(v.cond)}</dd></div>
+        <div><dt>Distancia</dt><dd class="mono">${fmtKm(v.real ? v.real.km : v.km)}</dd></div>
+        <div><dt>Tiempo estimado</dt><dd>${fmtMin(v.min)}</dd></div>
+        <div><dt>Cliente</dt><dd>${esc(v.cliente)}<div class="sub">${esc(v.contacto || 'A confirmar')}</div></dd></div>
+        <div><dt>Vehículo pedido</dt><dd>${esc(v.vehTipo)}</dd></div>
+        <div style="grid-column:1/-1"><dt>Carga</dt><dd>${esc(v.carga || 'A confirmar')}</dd></div>
+        ${v.notas ? `<div style="grid-column:1/-1"><dt>Notas para el fletero</dt><dd>${esc(v.notas)}</dd></div>` : ''}
+      </div></div>
+      <div class="card"><h3>Recorrido</h3>
+        <ol class="route">${P.map((p, i) => { const c = v.conf[i]; return `<li class="${i === 0 ? 'o' : i === P.length - 1 ? 'd' : ''}"><b>${i === 0 ? 'Origen' : i === P.length - 1 ? 'Destino' : 'Parada ' + i}</b> · ${esc(p.dir)}<div class="sub">${esc(p.loc)}${c ? ` · <span style="color:var(--ok-ink);font-weight:700">confirmada por GPS ${hhmm(c.t)}, a ${c.dist} m</span>` : v.estado === 'CANCELADO' ? '' : ' · pendiente'}</div></li>`; }).join('')}</ol>
+      </div>
+      <div class="mapbox">${mapSVG(v)}<div class="mapcap"><span>Mapa esquemático (sin cartografía en el prototipo)</span>${gpsInfo ? `<span id="gpsline"></span>` : '<span></span>'}</div></div>
+      <div class="card"><h3>Estimado y real</h3><table class="cmp"><thead><tr><th></th><th>Estimado</th><th>Real</th></tr></thead><tbody>
+        ${cmp('Distancia', v.km, v.real && v.real.km, fmtKm)}${cmp('Tiempo', v.min, v.real && v.real.min, fmtMin)}${cmp('Precio', v.precio, v.real && v.real.precio, money)}</tbody></table>
+        <div class="hint" style="margin-top:8px">El precio lo calcula el sistema y es solo para tu registro: no se cobra desde la app.</div></div>
+    </div>
+    <div class="stack">
+      <div class="card ink"><div class="eyebrow" style="color:var(--accent)">${v.real ? 'Precio final' : 'Precio'}</div><div class="bigprice" style="margin-top:8px">${v.estado === 'CANCELADO' ? 'No aplica' : money(v.real ? v.real.precio : v.precio)}</div><div class="sub" style="color:var(--ink4);margin-top:6px">${v.real ? `Estimado ${money(v.precio)}` : 'Estimado por el sistema'}</div></div>
+      <div class="card"><h3>Fletero</h3>
+        ${fl ? `<div class="fhead" style="margin-bottom:10px"><div class="fav">${esc(fl.nombre[0])}${esc(fl.apellido[0])}</div><div><a href="#/fletero/${fl.id}" class="fname" style="text-decoration:none">${esc(fname(fl))}</a><div class="sub">${esc(fl.tel)}</div></div></div><div class="sub">${esc(fl.vehiculo.marca)} ${esc(fl.vehiculo.modelo)} · <span class="patente">${esc(fl.vehiculo.patente)}</span></div>` : '<div class="note warn">Sin fletero asignado.</div>'}
+        <div class="field" style="margin-top:14px"><label class="label" for="reasig">${fl ? 'Cambiar fletero' : 'Asignar fletero'}</label>
+        <div class="row" style="flex-wrap:nowrap"><select class="select" id="reasig" ${editable ? '' : 'disabled'}><option value="">Elegí un fletero</option>${S.fleteros.filter(f => f.estado === 'ACTIVO').map(f => `<option value="${f.id}" ${f.id === v.fletero ? 'selected' : ''}>${esc(fname(f))}</option>`).join('')}</select>
+        <button class="btn btn-ink" data-act="reasignar" data-id="${v.id}" ${editable ? '' : 'disabled'}>Guardar</button></div>
+        <span class="hint">${editable ? 'Podés cambiarlo hasta que el fletero inicie el viaje.' : 'Ya no se puede cambiar: el viaje está ' + EST[v.estado].l.toLowerCase() + '.'}</span></div>
+      </div>
+      <div class="card"><h3>Línea de tiempo</h3><ul class="tl">${tlHtml}</ul></div>
+      ${gpsInfo ? `<div class="card"><h3>Seguimiento</h3><div class="dl"><div><dt>Última señal</dt><dd id="lastsig" class="mono">—</dd></div><div><dt>Velocidad</dt><dd id="vel" class="mono">—</dd></div></div></div>` : ''}
+      <div class="row">
+        ${v.estado === 'FINALIZADO' ? `<button class="btn btn-ghost" data-act="remito">Ver remito</button>` : ''}
+        ${(v.estado === 'PROGRAMADO' || v.estado === 'EN_CURSO') ? `<button class="btn btn-danger" data-act="cancelar-viaje" data-id="${v.id}">Cancelar viaje</button>` : ''}
+      </div>
+      ${simPanel(v)}
+      <div class="card"><h3>Historial de cambios</h3><div class="audit">${[...v.audit].sort((a, b) => b.t - a.t).map(a => `<div><div class="t">${fechaCorta(a.t)} · ${hhmm(a.t)}</div><b>${esc(a.who)}</b> ${esc(a.txt)}</div>`).join('')}</div></div>
+    </div>
+  </div>`;
+}
+
+// ── Simulación del fletero (solo demo) ─────────────────────────────────────
+function nextSim(v) {
+  const P = pts(v), last = P.length - 1;
+  if (v.estado === 'PROGRAMADO') return { label: 'Fletero inicia el viaje', hint: v.fletero ? 'En el producto real, el fletero toca “Iniciar viaje” en su app y arranca el GPS.' : 'Asigná un fletero primero.', off: !v.fletero };
+  if (v.estado !== 'EN_CURSO') return null;
+  if (v.etapa === 'EN_CAMINO_A_ORIGEN') return { label: 'Llega al origen y empieza a cargar', hint: 'El GPS lo ubica en el origen.' };
+  if (v.etapa === 'CARGANDO') return { label: 'Termina de cargar y sale (confirma el origen)', hint: 'Confirma el origen por GPS y pasa a “En ruta”.' };
+  if (v.etapa === 'EN_RUTA') { const i = v.conf.findIndex((c, ix) => ix > 0 && ix < last && !c); const pend = pendStop(v); return pend ? { label: `Confirma la parada ${pend} por GPS`, hint: 'Solo se acepta a menos de 50 m de la parada.' } : { label: 'Llega al destino y empieza a descargar', hint: 'Pasa a “Descargando”.' }; }
+  if (v.etapa === 'DESCARGANDO') return { label: 'Confirma la entrega en destino por GPS', hint: 'Cierra el viaje como Finalizado.' };
+  return null;
+}
+function pendStop(v) { const P = pts(v); for (let i = 1; i < P.length - 1; i++) if (!v.conf[i]) return i; return 0; }
+function simPanel(v) {
+  const n = nextSim(v);
+  if (!n) return '';
+  return `<div class="sim"><div class="eyebrow">Simulación · solo para la demo</div>
+    <p class="hint" style="margin:6px 0 12px">En el producto real esto lo hace únicamente la app del fletero, con GPS. Acá podés recorrer el viaje paso a paso.</p>
+    <button class="btn btn-primary" data-act="sim" data-id="${v.id}" ${n.off ? 'disabled' : ''}>${n.label}</button>
+    <div class="hint" style="margin-top:8px">${n.hint}</div></div>`;
+}
+function animateTo(v, target, ms, done) {
+  const from = { ...v.gps }, t0 = performance.now(); S.animando = true;
+  const step = t => {
+    const k = Math.min(1, (t - t0) / ms), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    v.gps = { lat: from.lat + (target.lat - from.lat) * e, lng: from.lng + (target.lng - from.lng) * e }; v.gpsTs = Date.now();
+    movePin(v);
+    if (k < 1) requestAnimationFrame(step); else { S.animando = false; done && done(); }
+  };
+  requestAnimationFrame(step);
+}
+function simRun(v) {
+  if (S.animando) return;
+  const P = pts(v), last = P.length - 1, fl = F(v.fletero), now = new Date();
+  const log = txt => v.audit.push({ t: now, who: fname(fl), txt });
+  if (v.estado === 'PROGRAMADO') {
+    if (!fl) return toast('Asigná un fletero antes: nadie puede iniciar este viaje.', 'err');
+    v.estado = 'EN_CURSO'; v.etapa = 'EN_CAMINO_A_ORIGEN'; v.hist.EN_CAMINO_A_ORIGEN = now;
+    v.gps = { lat: P[0].lat + 0.03, lng: P[0].lng - 0.035 }; v.gpsTs = Date.now(); log('Inició el viaje desde la app'); toast(`${fl.nombre} inició el viaje. Empieza el seguimiento por GPS.`); return render();
+  }
+  if (v.etapa === 'EN_CAMINO_A_ORIGEN') { animateTo(v, P[0], 1400, () => { v.etapa = 'CARGANDO'; v.hist.CARGANDO = new Date(); log('Llegó al origen y empezó a cargar'); render(); }); return rerenderSim(); }
+  if (v.etapa === 'CARGANDO') { v.conf[0] = { t: now, dist: 8 + Math.round(Math.random() * 30) }; v.etapa = 'EN_RUTA'; v.hist.EN_RUTA = now; log(`Confirmó el origen por GPS (a ${v.conf[0].dist} m) y salió a ruta`); return render(); }
+  if (v.etapa === 'EN_RUTA') {
+    const i = pendStop(v);
+    if (i) { animateTo(v, P[i], 1600, () => { v.conf[i] = { t: new Date(), dist: 6 + Math.round(Math.random() * 35) }; log(`Confirmó la parada ${i} por GPS (a ${v.conf[i].dist} m)`); render(); }); return rerenderSim(); }
+    animateTo(v, P[last], 1600, () => { v.etapa = 'DESCARGANDO'; v.hist.DESCARGANDO = new Date(); log('Llegó al destino y empezó a descargar'); render(); }); return rerenderSim();
+  }
+  if (v.etapa === 'DESCARGANDO') {
+    v.conf[last] = { t: now, dist: 5 + Math.round(Math.random() * 35) };
+    v.estado = 'FINALIZADO'; v.etapa = null; v.cierre = 'GPS'; v.hist.FINALIZADO = now;
+    v.real = { km: Math.round(v.km * (0.97 + Math.random() * 0.08) * 10) / 10, min: Math.round(v.min * (0.94 + Math.random() * 0.14)), precio: Math.round(v.precio * (0.97 + Math.random() * 0.07) / 50) * 50 };
+    log(`Confirmó la entrega en destino por GPS (a ${v.conf[last].dist} m)`); toast(`Viaje ${vid(v)} finalizado con confirmación por GPS.`); return render();
+  }
+}
+function rerenderSim() { const b = $('[data-act="sim"]'); if (b) { b.disabled = true; b.textContent = 'El fletero se está moviendo…'; } }
+let ticker = null;
+function startTicker(v) {
+  clearInterval(ticker); if (!v || v.estado !== 'EN_CURSO') return;
+  ticker = setInterval(() => {
+    if (v.estado !== 'EN_CURSO') return clearInterval(ticker);
+    if (!S.animando && Date.now() - v.gpsTs > 15000) { v.gpsTs = Date.now(); if (v.etapa === 'EN_RUTA') { v.gps = { lat: v.gps.lat + (Math.random() - .5) * 0.0006, lng: v.gps.lng + (Math.random() - .5) * 0.0006 }; movePin(v); } }
+    const s = Math.max(0, Math.round((Date.now() - v.gpsTs) / 1000));
+    const a = $('#lastsig'); if (a) a.textContent = `hace ${s} s`;
+    const b = $('#vel'); if (b) b.textContent = v.etapa === 'EN_RUTA' ? `${38 + (Math.round(Date.now() / 3000) % 9)} km/h` : '0 km/h';
+    const c = $('#gpsline'); if (c) c.textContent = `GPS del fletero · hace ${s} s`;
+  }, 1000);
+}
+
+// ── Fleteros ───────────────────────────────────────────────────────────────
+function proxViaje(f) { return S.viajes.filter(v => v.fletero === f.id && (v.estado === 'PROGRAMADO' || v.estado === 'EN_CURSO')).sort((a, b) => a.fecha - b.fecha)[0]; }
+function fleterosView() {
+  const act = S.fleteros.filter(f => f.estado === 'ACTIVO'), pen = S.fleteros.filter(f => f.estado === 'PENDIENTE');
+  const mesKey = `${NOW.getFullYear()}-${NOW.getMonth()}`;
+  const card = f => {
+    const n = S.viajes.filter(v => v.fletero === f.id && v.estado === 'FINALIZADO' && `${v.fecha.getFullYear()}-${v.fecha.getMonth()}` === mesKey).length;
+    const nx = proxViaje(f), en = S.viajes.some(v => v.fletero === f.id && v.estado === 'EN_CURSO');
+    return `<a class="fcard" href="#/fletero/${f.id}" style="text-decoration:none">
+      <div class="fhead"><div class="fav">${esc(f.nombre[0])}${esc(f.apellido[0])}</div><div style="flex:1"><div class="fname">${esc(fname(f))}</div><div class="sub">${esc(f.tel)}</div></div>${en ? '<span class="badge b-acc"><i class="dot pulse"></i>En viaje</span>' : f.estado === 'PENDIENTE' ? '<span class="badge b-warn">Por aprobar</span>' : '<span class="badge b-ok">Activo</span>'}</div>
+      <div>${esc(f.vehiculo.marca)} ${esc(f.vehiculo.modelo)} · <span class="patente">${esc(f.vehiculo.patente)}</span><div class="sub">${esc(f.vehiculo.tipo)}</div></div>
+      <div>${condTags(f.vehiculo.cond)}</div>
+      <div class="sub">${plural(n, 'viaje finalizado', 'viajes finalizados')} este mes · Próximo: ${nx ? `${fechaCorta(nx.fecha)} ${hhmm(nx.fecha)}` : 'A confirmar'}</div></a>`;
+  };
+  return `<div class="pagehead"><div><div class="eyebrow">Tu equipo</div><h1>Fleteros</h1></div><button class="btn btn-primary" data-act="add-fletero">${I('plus')} Agregar fletero</button></div>
+  ${pen.length ? `<div class="card" style="margin-bottom:16px;border-color:var(--warn)"><h3>Esperando tu aprobación (${pen.length})</h3>${pen.map(f => `<div class="row" style="justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)"><div><a href="#/fletero/${f.id}"><b>${esc(fname(f))}</b></a> <span class="sub">· se unió con un código de un solo uso · ${esc(f.vehiculo.marca)} ${esc(f.vehiculo.modelo)} <span class="patente">${esc(f.vehiculo.patente)}</span></span></div><div class="row"><button class="btn btn-ink btn-sm" data-act="aprobar" data-id="${f.id}">Aprobar</button><button class="btn btn-ghost btn-sm" data-act="rechazar" data-id="${f.id}">Rechazar</button></div></div>`).join('')}</div>` : ''}
+  ${S.invitaciones.length ? `<div class="card" style="margin-bottom:16px"><h3>Invitaciones enviadas (${S.invitaciones.length})</h3>${S.invitaciones.map((iv, i) => `<div class="row" style="justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)"><div>${I('mail')} <b>${esc(iv.email)}</b> <span class="sub">· código <span class="mono">${iv.code}</span> · vence ${fechaCorta(iv.vence)} ${hhmm(iv.vence)}</span></div><button class="btn btn-ghost btn-sm" data-act="del-inv" data-i="${i}">Cancelar invitación</button></div>`).join('')}</div>` : ''}
+  <div class="fgrid">${act.map(card).join('')}</div>
+  <div class="hint" style="margin-top:14px">Cada fletero está activo en una sola empresa a la vez.</div>`;
+}
+function fleteroDetalle(f) {
+  if (!f) return `<div class="empty"><h3>No encontramos a ese fletero</h3><a class="btn btn-ghost" href="#/fleteros">Volver a Fleteros</a></div>`;
+  const mios = S.viajes.filter(v => v.fletero === f.id).sort((a, b) => b.fecha - a.fecha);
+  const prox = mios.filter(v => v.estado === 'PROGRAMADO' || v.estado === 'EN_CURSO').sort((a, b) => a.fecha - b.fecha);
+  const fin = mios.filter(v => v.estado === 'FINALIZADO');
+  const km = fin.reduce((s, v) => s + (v.real ? v.real.km : v.km), 0);
+  const row = v => `<tr data-act="open" data-id="${v.id}" tabindex="0"><td><span class="mono sub">${vid(v)}</span><div><b>${fechaCorta(v.fecha)}</b> <span class="mono">${hhmm(v.fecha)}</span></div></td><td>${esc(v.origen.loc)} → ${esc(v.destino.loc)}</td><td class="num price">${v.estado === 'CANCELADO' ? '—' : money(v.real ? v.real.precio : v.precio)}</td><td>${badge(v, false)}</td></tr>`;
+  const tabla = a => a.length ? `<div class="twrap" style="max-height:none;min-height:0"><table style="min-width:0"><tbody>${a.map(row).join('')}</tbody></table></div>` : '<span class="hint">Todavía no hay viajes.</span>';
+  return `<div class="crumbs"><a class="btn btn-ghost btn-sm" href="#/fleteros">${I('back')} Fleteros</a></div>
+  <div class="pagehead"><div class="fhead"><div class="fav" style="width:56px;height:56px;font-size:18px">${esc(f.nombre[0])}${esc(f.apellido[0])}</div><div><h1>${esc(fname(f))}</h1><div class="sub">En tu equipo desde ${fechaCorta(f.alta)} ${f.alta.getFullYear()}</div></div></div>${f.estado === 'PENDIENTE' ? '<span class="badge b-warn">Por aprobar</span>' : '<span class="badge b-ok">Activo</span>'}</div>
+  ${f.estado === 'PENDIENTE' ? `<div class="note warn" style="margin-bottom:16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><span>Se unió con un código de un solo uso y espera tu aprobación.</span><span class="row"><button class="btn btn-ink btn-sm" data-act="aprobar" data-id="${f.id}">Aprobar</button><button class="btn btn-ghost btn-sm" data-act="rechazar" data-id="${f.id}">Rechazar</button></span></div>` : ''}
+  <div class="detail">
+    <div class="stack">
+      <div class="card"><h3>Próximos viajes</h3>${tabla(prox)}</div>
+      <div class="card"><h3>Historial</h3>${tabla(mios.filter(v => v.estado === 'FINALIZADO' || v.estado === 'CANCELADO'))}</div>
+    </div>
+    <div class="stack">
+      <div class="card"><h3>Datos</h3><dl class="dl" style="grid-template-columns:1fr">
+        <div><dt>Teléfono</dt><dd>${esc(f.tel)}</dd></div><div><dt>Email</dt><dd>${esc(f.email)}</dd></div>
+        <div><dt>Licencia</dt><dd class="mono">${esc(f.licencia.nro)}<div class="sub" style="font-family:var(--f-ui)">Vence ${fechaCorta(f.licencia.vence)} ${f.licencia.vence.getFullYear()}</div></dd></div></dl></div>
+      <div class="card"><h3>Vehículo</h3><b>${esc(f.vehiculo.marca)} ${esc(f.vehiculo.modelo)} ${f.vehiculo.anio}</b><div class="patente" style="margin:4px 0">${esc(f.vehiculo.patente)}</div><div class="sub" style="margin-bottom:8px">${esc(f.vehiculo.tipo)}</div>${condTags(f.vehiculo.cond)}</div>
+      <div class="card"><h3>Actividad</h3><div class="kpis" style="margin:0"><div class="kpi"><b>${fin.length}</b><span>Finalizados</span></div><div class="kpi"><b>${fmtKm(km).replace(' km', '')}</b><span>km recorridos</span></div></div></div>
+      <div class="card"><h3>Nota interna</h3><textarea class="textarea" id="nota" placeholder="Solo la ven las personas de tu empresa">${esc(f.nota)}</textarea><div style="margin-top:10px"><button class="btn btn-ghost btn-sm" data-act="nota" data-id="${f.id}">Guardar nota</button></div></div>
+      ${f.estado === 'ACTIVO' ? `<button class="btn btn-danger" data-act="desvincular" data-id="${f.id}">Desvincular del equipo</button>` : ''}
+    </div>
+  </div>`;
+}
+function genCode() { const A = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789', r = n => Array.from({ length: n }, () => A[Math.floor(Math.random() * A.length)]).join(''); return `FLT-${r(4)}-${r(4)}`; }
+function modalAgregar(tab = 'code') {
+  if (!S.codigo || S.codigo.vence < new Date()) S.codigo = { code: genCode(), vence: plus(new Date(), 72 * 60) };
+  const rest = Math.max(0, Math.round((S.codigo.vence - new Date()) / 60000));
+  openModal(`<h2>Agregar fletero</h2>
+    <div class="seg" style="margin-bottom:16px"><button data-act="tab-add" data-v="code" aria-pressed="${tab === 'code'}">Código de un solo uso</button><button data-act="tab-add" data-v="mail" aria-pressed="${tab === 'mail'}">Invitar por email</button></div>
+    ${tab === 'code' ? `<p class="muted" style="margin-top:0">Pasale este código al fletero. Lo ingresa en la app de Fleter, sirve una sola vez y vence solo.</p>
+      <div class="codebox" id="codigo">${S.codigo.code}</div>
+      <div class="sub" style="text-align:center;margin:8px 0 14px">Vence en ${Math.floor(rest / 60)} h ${rest % 60} min · ${fechaCorta(S.codigo.vence)} ${hhmm(S.codigo.vence)}</div>
+      <div class="row" style="justify-content:center"><button class="btn btn-ink" data-act="copiar">Copiar código</button><button class="btn btn-ghost" data-act="nuevo-codigo">Generar otro</button></div>
+      <div class="sim" style="margin-top:18px"><div class="eyebrow">Simulación · solo para la demo</div><p class="hint" style="margin:6px 0 10px">En el producto real el fletero ingresa el código en su app y queda esperando tu aprobación.</p><button class="btn btn-ghost btn-sm" data-act="sim-join">Un fletero ingresa el código</button></div>`
+    : `<p class="muted" style="margin-top:0">Le mandamos un email con un código de un solo uso. Vence a las 72 horas.</p>
+      <div class="field"><label class="label" for="inv">Email del fletero</label><input class="input" id="inv" type="email" placeholder="nombre@correo.com" autofocus></div><span class="err-text" id="e-inv"></span>
+      <div class="actions"><button class="btn btn-primary" data-act="enviar-inv">Enviar invitación</button></div>`}
+    <div class="actions" style="margin-top:8px"><button class="btn btn-ghost" data-act="modal-x">Cerrar</button></div>`);
+}
+function modalCancelar(v) {
+  const s = S.series.find(x => x.id === v.serie);
+  openModal(`<h2>Cancelar ${vid(v)}</h2>
+    <p class="muted" style="margin-top:0">${fechaLarga(v.fecha)} · ${hhmm(v.fecha)} · ${esc(v.origen.loc)} → ${esc(v.destino.loc)}</p>
+    ${v.estado === 'EN_CURSO' ? '<div class="note warn" style="margin-bottom:12px">El viaje ya está en curso: se avisa al fletero y se corta el seguimiento.</div>' : ''}
+    <div class="field"><label class="label" for="motivo">Motivo</label><textarea class="textarea" id="motivo" autofocus placeholder="Ej.: el cliente reprogramó la entrega"></textarea><span class="err-text" id="e-motivo"></span></div>
+    ${s ? `<div class="label" style="margin:14px 0 8px">Este viaje es parte de una serie (${esc(serieTxt(s))})</div>
+      <label class="row" style="gap:8px;margin-bottom:6px"><input type="radio" name="alc" value="uno" checked> Solo este viaje</label>
+      <label class="row" style="gap:8px;margin-bottom:6px"><input type="radio" name="alc" value="sig"> Este y los siguientes</label>
+      <label class="row" style="gap:8px"><input type="radio" name="alc" value="todos"> Toda la serie (los viajes pendientes)</label>` : ''}
+    <div class="actions"><button class="btn btn-ghost" data-act="modal-x">Volver</button><button class="btn btn-danger" data-act="confirmar-cancel" data-id="${v.id}">Cancelar viaje</button></div>`);
+}
+
+// ── Router / render ────────────────────────────────────────────────────────
+function parseHash() {
+  const h = (location.hash || '#/calendario').replace(/^#\/?/, '').split('/');
+  const n = h[0] || 'calendario';
+  if (n === 'viaje') return { name: 'viaje', id: h[1], tab: null };
+  if (n === 'fletero') return { name: 'fletero', id: h[1], tab: 'fleteros' };
+  return { name: ['nuevo', 'calendario', 'viajes', 'fleteros'].includes(n) ? n : 'calendario', tab: n };
+}
+let lastRoute = '';
+function render() {
+  const app = $('#app');
+  document.documentElement.dataset.theme = S.theme === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : S.theme;
+  if (!S.user) { app.innerHTML = loginView(); return; }
+  const r = parseHash(), key = location.hash, y = window.scrollY;
+  let body = '';
+  clearInterval(ticker);
+  if (r.name === 'nuevo') body = nuevoView();
+  else if (r.name === 'calendario') { body = calView(); S.volver = '#/calendario'; }
+  else if (r.name === 'viajes') { body = tablaView(); S.volver = '#/viajes'; }
+  else if (r.name === 'fleteros') body = fleterosView();
+  else if (r.name === 'viaje') body = detalleView(V(r.id));
+  else if (r.name === 'fletero') body = fleteroDetalle(F(r.id));
+  app.innerHTML = shell(r, body);
+  if (r.name === 'nuevo') { $('#stops').innerHTML = stopsHtml(); refreshForm(); }
+  if (r.name === 'viaje') startTicker(V(r.id));
+  window.scrollTo(0, key === lastRoute ? y : 0); lastRoute = key;
+}
+window.addEventListener('hashchange', () => { if (!location.hash.startsWith('#/nuevo')) { /* conserva el borrador solo mientras estás en el formulario */ } S.menu = false; render(); });
+window.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); if (S.menu) { S.menu = false; render(); } } if ((e.key === 'Enter') && e.target.matches('tr[data-act="open"]')) location.hash = '#/viaje/' + e.target.dataset.id; });
+
+// ── Eventos ────────────────────────────────────────────────────────────────
+document.addEventListener('submit', e => {
+  const f = e.target.dataset.form; if (!f) return; e.preventDefault();
+  if (f === 'login') { S.user = { nombre: 'Laura', apellido: 'Gómez' }; if (!location.hash || location.hash === '#/') location.hash = '#/calendario'; render(); }
+  if (f === 'nuevo') submitNuevo();
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.loc) { const f = S.form; if (t.dataset.loc === 'origen') f.origen = t.value; else if (t.dataset.loc === 'destino') f.destino = t.value; else f.paradas[+t.dataset.i] = t.value; refreshForm(); return; }
+  if (t.dataset.f && S.form) { S.form[t.dataset.f] = t.type === 'number' ? t.value : t.value; if (['fecha', 'hora', 'fletero', 'diaMes', 'finN', 'finFecha'].includes(t.dataset.f)) refreshForm(); if (t.dataset.f === 'fin') { refreshForm(); } return; }
+  if (t.dataset.bind === 't-q') { S.tabla.q = t.value; $('#tablaMount').innerHTML = tablaInner(); }
+});
+document.addEventListener('change', e => {
+  const t = e.target, b = t.dataset.bind;
+  if (t.dataset.f === 'fin' && S.form) { S.form.fin = t.value; refreshForm(); return; }
+  if (!b) return;
+  if (b === 'cal-fletero') { S.cal.fletero = t.value; render(); return; }
+  if (b.startsWith('t-') && b !== 't-q') { const k = b.slice(2); S.tabla[k] = k === 'sin' ? t.checked : t.value; $('#tablaMount').innerHTML = tablaInner(); }
+});
+document.addEventListener('click', e => {
+  if (S.menu && !e.target.closest('.userbox')) { S.menu = false; render(); }
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act, id = el.dataset.id, v = el.dataset.v;
+  const H = {
+    'modal-bg': () => { if (e.target === el) closeModal(); },
+    'modal-x': closeModal,
+    menu: () => { S.menu = !S.menu; render(); },
+    theme: () => { S.theme = v; render(); },
+    logout: () => { S.user = null; S.menu = false; location.hash = ''; render(); },
+    open: () => { location.hash = '#/viaje/' + id; },
+    // formulario
+    'add-stop': () => { S.form.paradas.push(''); $('#stops').innerHTML = stopsHtml(); refreshForm(); const i = $$('#stops [data-loc="parada"]'); i[i.length - 1].focus(); },
+    'del-stop': () => { S.form.paradas.splice(+el.dataset.i, 1); $('#stops').innerHTML = stopsHtml(); refreshForm(); },
+    veh: () => { S.form.vehTipo = v; $$('#vehtipos .optcard').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v)); refreshForm(); },
+    cond: () => { const c = S.form.cond; c.includes(v) ? c.splice(c.indexOf(v), 1) : c.push(v); el.setAttribute('aria-pressed', c.includes(v)); refreshForm(); },
+    rep: () => { S.form.rep = v; $$('#reptype .chipbtn').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v)); if (v === 'SEMANAL' && !S.form.dias.length) S.form.dias = [new Date(S.form.fecha + 'T12:00').getDay()]; refreshForm(); },
+    dia: () => { const d = S.form.dias, n = +v; d.includes(n) ? (d.length > 1 && d.splice(d.indexOf(n), 1)) : d.push(n); el.setAttribute('aria-pressed', d.includes(n)); refreshForm(); },
+    // calendario
+    'cal-modo': () => { S.cal.modo = v; render(); },
+    'cal-prev': () => { const c = S.cal; c.ancla = c.modo === 'mes' ? new Date(c.ancla.getFullYear(), c.ancla.getMonth() - 1, 1) : addDays(c.ancla, -7); render(); },
+    'cal-next': () => { const c = S.cal; c.ancla = c.modo === 'mes' ? new Date(c.ancla.getFullYear(), c.ancla.getMonth() + 1, 1) : addDays(c.ancla, 7); render(); },
+    'cal-hoy': () => { S.cal.ancla = startOfDay(NOW); render(); },
+    day: () => { if (el.classList.contains('cell') && innerWidth > 760) return; S.cal.modo = 'semana'; S.cal.ancla = new Date(el.dataset.d + 'T12:00'); render(); },
+    // tabla
+    sort: () => { const t = S.tabla, k = el.dataset.k; t.dir = t.sort === k ? -t.dir : 1; t.sort = k; $('#tablaMount').innerHTML = tablaInner(); },
+    limpiar: () => { S.tabla = { ...S.tabla, estado: '', fletero: '', mes: '', q: '', sin: false }; render(); },
+    csv,
+    // detalle
+    reasignar: () => { const x = V(id), sel = $('#reasig').value; if (!sel) return toast('Elegí un fletero.', 'err'); if (sel === x.fletero) return toast('Ese fletero ya está asignado.'); const cf = conflictos(sel, [x.fecha], x.min, x.id); const prev = x.fletero; x.fletero = sel; x.audit.push({ t: new Date(), who: 'Laura Gómez', txt: prev ? `Cambió el fletero: de ${fname(F(prev))} a ${fname(F(sel))}` : `Asignó a ${fname(F(sel))}` }); toast(cf.length ? `Asignado a ${fname(F(sel))}. Ojo: ya tiene ${cf[0].v.id ? vid(cf[0].v) : 'otro viaje'} en ese horario.` : `Ahora lo hace ${fname(F(sel))}.`); render(); },
+    'cancelar-viaje': () => modalCancelar(V(id)),
+    'confirmar-cancel': () => {
+      const x = V(id), m = $('#motivo').value.trim(); if (m.length < 5) { $('#e-motivo').textContent = 'Contanos el motivo (mínimo 5 letras).'; return; }
+      const alc = (document.querySelector('input[name="alc"]:checked') || {}).value || 'uno';
+      let afect = [x];
+      if (x.serie && alc !== 'uno') afect = S.viajes.filter(y => y.serie === x.serie && y.estado === 'PROGRAMADO' && (alc === 'todos' || y.fecha >= x.fecha)).concat(x.estado === 'EN_CURSO' ? [x] : []);
+      afect = [...new Set(afect)];
+      afect.forEach(y => { cancelar(y, m, 'Laura Gómez', new Date()); });
+      closeModal(); toast(afect.length === 1 ? `${vid(x)} cancelado.` : `Se cancelaron ${afect.length} viajes de la serie.`); render();
+    },
+    remito: () => toast('En el producto real acá se abre el remito en PDF.'),
+    sim: () => simRun(V(id)),
+    // fleteros
+    'add-fletero': () => modalAgregar('code'),
+    'tab-add': () => modalAgregar(v),
+    copiar: () => { navigator.clipboard ? navigator.clipboard.writeText(S.codigo.code).then(() => toast('Código copiado.'), () => toast('No pudimos copiarlo: seleccionalo a mano.', 'err')) : toast('No pudimos copiarlo: seleccionalo a mano.', 'err'); },
+    'nuevo-codigo': () => { S.codigo = { code: genCode(), vence: plus(new Date(), 72 * 60) }; modalAgregar('code'); toast('Generamos un código nuevo. El anterior dejó de funcionar.'); },
+    'sim-join': () => { const extra = [['Nicolás', 'Paredes'], ['Diego', 'Molina'], ['Facundo', 'Ríos']][S.fleteros.length % 3]; S.fleteros.push({ id: 'f' + (S.fleteros.length + 1), nombre: extra[0], apellido: extra[1], tel: '+54 11 6' + Math.floor(100 + Math.random() * 899) + '-' + Math.floor(1000 + Math.random() * 8999), email: extra[0].toLowerCase() + '@correo.com', licencia: { nro: 'B1-3' + Math.floor(1000000 + Math.random() * 8999999), vence: new Date(2029, 2, 1) }, vehiculo: { marca: 'Peugeot', modelo: 'Boxer', anio: 2022, patente: 'AH 5' + Math.floor(10 + Math.random() * 89) + ' ' + 'QR', tipo: 'Utilitario', cond: [] }, estado: 'PENDIENTE', alta: new Date(), nota: '' }); S.codigo = null; closeModal(); toast(`${extra[0]} ${extra[1]} ingresó el código y espera tu aprobación.`); render(); },
+    'enviar-inv': () => { const m = $('#inv').value.trim(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m)) { $('#e-inv').textContent = 'Escribí un email válido.'; return; } S.invitaciones.push({ email: m, code: genCode(), vence: plus(new Date(), 72 * 60) }); closeModal(); toast(`Invitación enviada a ${m}. Vence en 72 horas.`); render(); },
+    'del-inv': () => { S.invitaciones.splice(+el.dataset.i, 1); toast('Invitación cancelada: su código dejó de funcionar.'); render(); },
+    aprobar: () => { const f = F(id); f.estado = 'ACTIVO'; toast(`${fname(f)} ya es parte de tu equipo.`); render(); },
+    rechazar: () => { S.fleteros = S.fleteros.filter(x => x.id !== id); toast('Solicitud rechazada.'); location.hash = '#/fleteros'; render(); },
+    nota: () => { F(id).nota = $('#nota').value; toast('Nota guardada.'); },
+    desvincular: () => {
+      const f = F(id);
+      if (S.viajes.some(x => x.fletero === id && x.estado === 'EN_CURSO')) return toast(`${fname(f)} tiene un viaje en curso: no se puede desvincular ahora.`, 'err');
+      const pend = S.viajes.filter(x => x.fletero === id && x.estado === 'PROGRAMADO');
+      openModal(`<h2>Desvincular a ${esc(fname(f))}</h2><p class="muted" style="margin-top:0">${pend.length ? `Tiene ${plural(pend.length, 'viaje programado', 'viajes programados')}: van a quedar <b>sin fletero</b> hasta que les asignes a otra persona.` : 'No tiene viajes programados.'} Puede unirse a otra empresa.</p><div class="actions"><button class="btn btn-ghost" data-act="modal-x">Volver</button><button class="btn btn-danger" data-act="confirmar-desv" data-id="${id}">Desvincular</button></div>`);
+    },
+    'confirmar-desv': () => { S.viajes.filter(x => x.fletero === id && x.estado === 'PROGRAMADO').forEach(x => { x.fletero = null; x.audit.push({ t: new Date(), who: 'Laura Gómez', txt: `Desvinculó a ${fname(F(id))}: el viaje quedó sin fletero` }); }); F(id).estado = 'INACTIVO'; closeModal(); toast('Fletero desvinculado.'); location.hash = '#/fleteros'; render(); },
+  };
+  if (H[a]) H[a]();
+});
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+render();
+</script>
+</body>
+</html>
