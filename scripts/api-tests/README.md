@@ -23,6 +23,10 @@ node scripts/api-tests/organizaciones.mjs principal
 node scripts/api-tests/organizaciones.mjs extra
 ```
 
+Detrás de un proxy (por ejemplo, en el entorno de Claude Code), sumar `NODE_USE_ENV_PROXY=1` para que
+`fetch` de Node use `HTTPS_PROXY`. Si el primer registro da `500` con "Can't reach database server", es
+la base de Neon despertando: el script reintenta una vez.
+
 Imprime cada prueba con ✔ o ✘, y al final la lista de las que fallaron con lo que se esperaba y lo
 que llegó. Sale con código 1 si alguna falló.
 

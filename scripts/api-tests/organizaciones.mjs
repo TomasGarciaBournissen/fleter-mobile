@@ -65,9 +65,12 @@ async function crearUsuario(tipo, etiqueta) {
   const pass = 'Prueba1234';
   const dni = String(10000000 + Math.floor(Math.random() * 89999999));
   const base = { nombre: etiqueta, apellido: 'Prueba', dni, email, contrasena: pass, telefono: '+5491100000000' };
-  const r = tipo === 'CLIENTE'
-    ? await api(null, 'POST', '/api/auth/registro-cliente', base)
-    : await api(null, 'POST', '/api/auth/registro-conductor', { ...base, nro_licencia: `LIC${dni}`, licencia_vencimiento: '2028-12-31T00:00:00.000Z' });
+  const registrar = () => tipo === 'CLIENTE'
+    ? api(null, 'POST', '/api/auth/registro-cliente', base)
+    : api(null, 'POST', '/api/auth/registro-conductor', { ...base, nro_licencia: `LIC${dni}`, licencia_vencimiento: '2028-12-31T00:00:00.000Z' });
+  let r = await registrar();
+  // Neon suspende la base sin uso: el primer request puede dar 500 mientras despierta.
+  if (r.status >= 500) { await new Promise((ok) => setTimeout(ok, 5000)); r = await registrar(); }
   if (r.status !== 201) throw new Error(`No se pudo registrar ${etiqueta} (${tipo}): ${r.status} ${JSON.stringify(r.body)}`);
   const u = { etiqueta, tipo, email };
   u.token = await login(email, pass);
