@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-07  
-> Branch: claude/freight-marketplace-pivot-l08445 | Commits totales: 37 (+4 pendientes)
+> Branch: claude/freight-marketplace-pivot-l08445 | Commits totales: 40 (+4 pendientes)
 
 ---
 
@@ -57,7 +57,7 @@
 | (pendiente) | 30 Sep 2026 | Docs — `docs/PIVOT_EMPRESA_BACKEND.md`: fase 5 del pivot a panel de empresa, orientada al backend (modelo de datos aditivo, contrato de API, máquina de estados reutilizando la existente, series recurrentes, sockets, suscripción, migración sobre la base compartida, hitos por dependencia y preguntas abiertas). Sin cambios de código |
 | 8cef846 | 07 Oct 2026 | Test — `scripts/api-tests/organizaciones.mjs`: pruebas de contrato de la capa de identidad nueva del backend (PyMEs, miembros, invitaciones, canje, choferes, `GET /api/auth/me`), 109 verificaciones en dos modos por el límite de canjes. Validadas contra un mock local |
 | 3d71ed8 | 07 Oct 2026 | Test — reintento ante 500 de Neon despertando; nota de `NODE_USE_ENV_PROXY=1` |
-| (pendiente) | 07 Oct 2026 | Test — corrida contra staging: `principal` 94/94. El límite de canjes es por IP (no por usuario) y anda; la prueba del `429` ahora insiste hasta 60 intentos porque la IP de salida del entorno de Claude rota |
+| 48b209c | 07 Oct 2026 | Test — corrida contra staging: `principal` 94/94, `extra` 15/15. El límite de canjes es por IP (no por usuario) y anda; la prueba del `429` ahora insiste hasta 60 intentos porque la IP de salida del entorno de Claude rota |
 
 ---
 
