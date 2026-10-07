@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-09-30  
-> Branch: claude/freight-marketplace-pivot-l08445 | Commits totales: 37 (+3 pendientes)
+> Última actualización: 2026-10-07  
+> Branch: claude/freight-marketplace-pivot-l08445 | Commits totales: 37 (+4 pendientes)
 
 ---
 
@@ -55,6 +55,7 @@
 | (pendiente) | 17 Sep 2026 | Feat — mapa real en `DetalleViajeScreen` (pantalla de aceptar viaje del conductor): reemplaza el placeholder "Mapa disponible en Fase 4" por MapView con pins de origen/paradas/destino, `ruta_planeada` si viene (si no, línea recta entre paradas) y encuadre automático del recorrido. Build Release apuntando al backend de producción |
 | (pendiente) | 30 Sep 2026 | Docs/Prototipo — pivot a herramienta B2B de gestión de flota: auditoría (fases 1–3) y prototipo HTML interactivo del panel de empresa en `prototype/fleter-empresa-prototype.html` (Nuevo viaje con repetición, Calendario mes/semana, tabla de Viajes, Fleteros, detalle de viaje con simulación de GPS). Sin cambios en el código de la app; el código del marketplace no se elimina |
 | (pendiente) | 30 Sep 2026 | Docs — `docs/PIVOT_EMPRESA_BACKEND.md`: fase 5 del pivot a panel de empresa, orientada al backend (modelo de datos aditivo, contrato de API, máquina de estados reutilizando la existente, series recurrentes, sockets, suscripción, migración sobre la base compartida, hitos por dependencia y preguntas abiertas). Sin cambios de código |
+| (pendiente) | 07 Oct 2026 | Test — `scripts/api-tests/organizaciones.mjs`: pruebas de contrato de la capa de identidad nueva del backend (PyMEs, miembros, invitaciones, canje, choferes, `GET /api/auth/me`), 109 verificaciones en dos modos por el límite de canjes. Validadas contra un mock local; falta correrlas contra el backend real (Railway no es accesible desde el entorno de Claude) |
 
 ---
 
