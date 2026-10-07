@@ -8,8 +8,9 @@ choferes y los campos nuevos de `GET /api/auth/me`). No necesita dependencias: a
 - Crea cuentas y PyMEs de prueba que **no se borran**. Correrlo contra el backend local o staging,
   nunca contra la base de producción.
 - `FIREBASE_API_KEY` es la Web API key del proyecto Firebase (la misma de `EXPO_PUBLIC_FIREBASE_API_KEY`).
-- El canje tiene un límite de 5 intentos cada 15 minutos por IP. Por eso hay dos modos: `principal`
-  usa exactamente 5 canjes y `extra` usa 6 (el sexto tiene que dar `429`). Entre uno y otro hay que
+- El canje tiene un límite de 5 intentos cada 15 minutos por IP (no por usuario). Por eso hay dos modos: `principal`
+  usa exactamente 5 canjes y `extra` insiste hasta recibir `429` (máximo 60 intentos, porque detrás de
+  un proxy con IP de salida rotativa cada intento puede salir por otra IP). Entre uno y otro hay que
   esperar 15 minutos.
 - Para el `extra`, el servidor tiene que tener configurado el secreto de invitaciones (si no, todo da `503`).
 
@@ -35,7 +36,7 @@ que llegó. Sale con código 1 si alguna falló.
 | Modo | Pruebas |
 | --- | --- |
 | `principal` | `GET /me` (huérfano, responsable, miembro, chofer) · crear PyME con todas sus validaciones de CUIT · alta concurrente · ver y editar · permisos de responsable y miembro · invitaciones (formato del código, vencimiento a 72 h, el listado no muestra el código) · canje con minúsculas y espacios, código de un solo uso, código del tipo equivocado (y que no se consuma), chofer ya vinculado · listado y desvinculación de choferes · cambio de roles, regla del último responsable, degradación concurrente · eliminar miembro |
-| `extra` | Dos cuentas canjeando el mismo código a la vez · salir de la PyME · chofer que se desvincula solo · código revocado · límite de intentos (`429`) |
+| `extra` | Dos cuentas canjeando el mismo código a la vez · salir de la PyME · chofer que se desvincula solo · código revocado · límite de intentos (`429`, tolera IP rotativa) |
 
 No cubre el `503` por falta del secreto de invitaciones ni el vencimiento real a las 72 h (solo
 verifica las fechas que devuelve la API).

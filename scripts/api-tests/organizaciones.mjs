@@ -328,7 +328,15 @@ async function extra() {
   espera('revocar → 200', await api(X, 'DELETE', `/api/organizaciones/${id}/invitaciones/${m2.body?.id_invitacion}`), 200);
   espera('[canje 4] código revocado → 400', await api(perdedor, 'POST', '/api/invitaciones/canjear', { codigo: m2.body?.codigo }), 400, 'Codigo invalido');
   espera('[canje 5] código inventado → 400', await api(perdedor, 'POST', '/api/invitaciones/canjear', { codigo: 'ABCDE-FGHJK' }), 400, 'Codigo invalido');
-  espera('[canje 6] sexto intento en 15 min → 429', await api(perdedor, 'POST', '/api/invitaciones/canjear', { codigo: 'ABCDE-FGHJK' }), 429, 'Demasiados intentos');
+  // El límite es por IP. Detrás de un proxy con IP de salida rotativa (como el de Claude Code) el sexto
+  // intento puede salir por otra IP, así que se insiste hasta el primer 429 o 60 intentos.
+  let bloqueo, intentos = 0;
+  while (intentos < 60) {
+    intentos++;
+    bloqueo = await api(perdedor, 'POST', '/api/invitaciones/canjear', { codigo: 'ABCDE-FGHJK' });
+    if (bloqueo.status !== 400) break;
+  }
+  espera(`[canje 6+] límite de intentos → 429 (al intento ${intentos})`, bloqueo, 429, 'Demasiados intentos');
 }
 
 // ── Ejecución ──────────────────────────────────────────────────────────────
