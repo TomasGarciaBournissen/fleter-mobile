@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-08  
-> Branch: claude/freight-marketplace-pivot-l08445 | Commits totales: 41 (+4 pendientes)
+> Branch: claude/freight-marketplace-pivot-l08445 | Commits totales: 42 (+4 pendientes)
 
 ---
 
@@ -59,7 +59,8 @@
 | 3d71ed8 | 07 Oct 2026 | Test — reintento ante 500 de Neon despertando; nota de `NODE_USE_ENV_PROXY=1` |
 | 48b209c | 07 Oct 2026 | Test — corrida contra staging: `principal` 94/94, `extra` 15/15. El límite de canjes es por IP (no por usuario) y anda; la prueba del `429` ahora insiste hasta 60 intentos porque la IP de salida del entorno de Claude rota |
 | 7a0447d | 07 Oct 2026 | PROGRESO: staging pasa las 109 pruebas de identidad |
-| (pendiente) | 08 Oct 2026 | Test — `scripts/api-tests/viajes.mjs`: viaje interno de PyME (Paso 2): crear con chofer asignado, confirmar con vehículo, rechazar, editar/reasignar, iniciar en el origen (50 m y ventana) directo a `CARGANDO`, cierre con remito, cancelaciones, desvinculación y `VENCIDO`, más eventos WebSocket. Staging: 115/115; `VENCIDO` se verifica aparte cuando cierra la ventana |
+| eeb72fc | 08 Oct 2026 | Test — `scripts/api-tests/viajes.mjs`: viaje interno de PyME (Paso 2): crear con chofer asignado, confirmar con vehículo, rechazar, editar/reasignar, iniciar en el origen (50 m y ventana) directo a `CARGANDO`, cierre con remito, cancelaciones, desvinculación y `VENCIDO`, más eventos WebSocket. Staging: 115/115 |
+| (pendiente) | 08 Oct 2026 | Test — modo `vencido` contra staging: 9/9 (`ASIGNADO` y `CONFIRMADO` pasan solos a `VENCIDO` al cerrar la ventana, con fila de historial `SISTEMA`) |
 
 ---
 
