@@ -40,3 +40,21 @@ que llegó. Sale con código 1 si alguna falló.
 
 No cubre el `503` por falta del secreto de invitaciones ni el vencimiento real a las 72 h (solo
 verifica las fechas que devuelve la API).
+
+## Viaje interno de PyME — `viajes.mjs`
+
+Prueba el ciclo nuevo del viaje (Paso 2 de `api.md`): la PyME crea el viaje con un chofer asignado,
+el chofer confirma eligiendo vehículo o rechaza, inicia estando en el origen (50 m, dentro de la
+ventana) y pasa directo a `CARGANDO`, cierra con remito; además editar, reasignar, cancelar,
+desvincular (cancela sus viajes, incluso en curso) y quién ve qué. Usa 5 canjes.
+
+```bash
+ESTADO=/tmp/viajes.json node scripts/api-tests/viajes.mjs principal
+# cuando cierra la ventana de inicio (fecha programada + 90 min por default):
+ESTADO=/tmp/viajes.json node scripts/api-tests/viajes.mjs vencido
+```
+
+`principal` deja dos viajes (uno `ASIGNADO` y uno `CONFIRMADO`) y guarda en `ESTADO` lo necesario
+para que `vencido` verifique que pasaron solos a `VENCIDO`. Con `SOCKET_IO_CLIENT=<carpeta con
+socket.io-client>` suma las pruebas de eventos WebSocket (detrás de un proxy, con `https-proxy-agent`
+en la misma carpeta). La anticipación mínima se detecta sola del mensaje de error del servidor.
