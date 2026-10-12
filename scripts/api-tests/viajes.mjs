@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Pruebas de contrato del viaje interno (api.md, sección "Viaje interno — la PyME asigna,
 // el chofer confirma (Paso 2)"): crear, ver, editar, reasignar, confirmar, rechazar,
-// iniciar en el origen, avanzar, cerrar con remito, cancelar, desvincular y VENCIDO.
+// iniciar en el origen, recorrer parada por parada con "Salir" (Paso 3), cerrar con remito, cancelar, desvincular y VENCIDO.
 //
 // Uso:
 //   BASE_URL=... FIREBASE_API_KEY=... ESTADO=/tmp/x.json node scripts/api-tests/viajes.mjs principal
@@ -43,7 +43,14 @@ function registrar(nombre, ok, detalle = '') {
 async function api(usuario, method, ruta, body) {
   const headers = { 'Content-Type': 'application/json' };
   if (usuario) headers.Authorization = `Bearer ${usuario.token}`;
-  const res = await fetch(BASE + ruta, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  const pedir = () => fetch(BASE + ruta, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  let res;
+  try { res = await pedir(); } catch (e) {
+    // Un corte de red no es una respuesta del backend: se avisa y se reintenta una vez.
+    console.log(`  (error de red en ${method} ${ruta}: ${e.cause?.code || e.cause?.message || e.message}; reintento)`);
+    await dormir(3000);
+    res = await pedir();
+  }
   const text = await res.text();
   let json; try { json = text ? JSON.parse(text) : null; } catch { json = text; }
   return { status: res.status, body: json };
@@ -130,6 +137,29 @@ const ORIGEN = { lat: -34.6037, lng: -58.3816, direccion: 'Plaza de Mayo, CABA' 
 const DESTINO = { lat: -34.5895, lng: -58.3974, direccion: 'Recoleta, CABA' };
 const LEJOS = { lat: -34.6137, lng: -58.3816 }; // ~1,1 km al sur del origen
 
+const casi = (a, b, tol = 1e-6) => typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= tol;
+const MIN = 60000;
+const ms = (iso) => new Date(iso).getTime();
+
+// Bloque estimado del Paso 3: manejo + peón (30 min por parada) = total, y duracion_estimada en minutos.
+function estimadoOk(v, nParadas) {
+  const e = v?.estimado;
+  return !!e && ['manejo_horas', 'peon_horas', 'total_horas', 'distancia_km'].every((k) => typeof e[k] === 'number')
+    && casi(e.peon_horas, 0.5 * nParadas) && casi(e.total_horas, e.manejo_horas + e.peon_horas)
+    && e.distancia_km > 0 && Math.abs(v.duracion_estimada - Math.round(e.total_horas * 60)) <= 1;
+}
+
+// Tiempos estimados por parada: la 1 llega a la hora programada, 30 min de peón en cada una y
+// la siguiente llega a la salida anterior + el manejo del tramo.
+function paradasEstimadasOk(v) {
+  const ps = v?.paradas || [];
+  if (!ps.length || ms(ps[0].llegada_estimada) !== ms(v.fecha_programada)) return false;
+  return ps.every((p, i) => p.peon_estimado_min === 30
+    && ms(p.salida_estimada) - ms(p.llegada_estimada) === 30 * MIN
+    && (i === 0 ? p.manejo_estimado_min === null : typeof p.manejo_estimado_min === 'number'
+      && Math.abs(ms(p.llegada_estimada) - ms(ps[i - 1].salida_estimada) - p.manejo_estimado_min * MIN) <= MIN));
+}
+
 const historial = (v) => (v?.historial_estados || []).map((h) => h.estado).join(',');
 
 // ── WebSocket (opcional) ───────────────────────────────────────────────────
@@ -149,6 +179,7 @@ function conectar(usuario) {
     s.eventos = [];
     s.onAny((nombre, data) => s.eventos.push({ nombre, data }));
     s.on('connect', () => ok(s));
+    s.on('disconnect', (motivo) => console.log(`  (socket de ${usuario.etiqueta} desconectado: ${motivo})`));
     s.on('connect_error', (e) => mal(new Error(`Socket de ${usuario.etiqueta}: ${e.message}`)));
   });
 }
@@ -231,6 +262,24 @@ async function principal() {
   registrar('historial: ASIGNADO con origen CLIENTE', historial(v1) === 'ASIGNADO' && v1.historial_estados?.[0]?.origen === 'CLIENTE', JSON.stringify(v1.historial_estados));
   registrar('paradas con id_parada, en orden', v1.paradas?.length === 2 && v1.paradas[0].orden === 1 && v1.paradas.every((p) => p.id_parada));
   registrar('precio, metodo_cobro y vencido=false', typeof v1.precio_estimado === 'number' && v1.metodo_cobro === 'CALCULO_PLATAFORMA' && v1.vencido === false);
+  registrar('Paso 3: estimado = manejo + 1 h de peón (2 paradas) y duracion_estimada es el total', estimadoOk(v1, 2), JSON.stringify({ estimado: v1.estimado, duracion_estimada: v1.duracion_estimada }));
+  registrar('Paso 3: real es null mientras no terminó', v1.real === null, JSON.stringify(v1.real));
+  registrar('Paso 3: llegada/salida estimadas por parada (peón 30 min, manejo del tramo)', paradasEstimadasOk(v1), JSON.stringify(v1.paradas?.map((p) => [p.llegada_estimada, p.salida_estimada, p.peon_estimado_min, p.manejo_estimado_min])));
+  registrar('Paso 3: el precio se calcula con el manejo, no con el total', casi(v1.desglose_estimado?.tiempo_horas, v1.estimado?.manejo_horas), JSON.stringify({ desglose: v1.desglose_estimado?.tiempo_horas, manejo: v1.estimado?.manejo_horas }));
+
+  seccion('Paso 3: POST /api/viajes/estimar-costo y errores de ruta');
+  const TRIBUNALES = { lat: -34.5975, lng: -58.3923, direccion: 'Tribunales, CABA' };
+  const est = await api(R, 'POST', '/api/viajes/estimar-costo', { paradas: [ORIGEN, TRIBUNALES, DESTINO], fecha_programada: fecha() });
+  espera('3 paradas → 200', est, 200);
+  const e = est.body?.estimado || {};
+  registrar('estimado: 1,5 h de peón y total = manejo + peón', casi(e.peon_horas, 1.5) && casi(e.total_horas, e.manejo_horas + e.peon_horas), JSON.stringify(e));
+  registrar('estimado: fin − inicio = total', Math.abs(ms(e.fin_estimado) - ms(e.inicio_estimado) - e.total_horas * 3600000) <= 1000, JSON.stringify(e));
+  const tr = est.body?.tramos || [];
+  registrar('tramos: uno por parada, el primero sin manejo', tr.length === 3 && tr[0].manejo_estimado_min === null && tr.slice(1).every((t) => typeof t.manejo_estimado_min === 'number' && t.distancia_estimada_km > 0), JSON.stringify(tr));
+  registrar('desglose.tiempo_horas es el manejo', casi(est.body?.desglose?.tiempo_horas, e.manejo_horas));
+  const HONOLULU = { lat: 21.3069, lng: -157.8583, direccion: 'Honolulu' };
+  espera('sin ruta en auto entre paradas → 400', await api(R, 'POST', '/api/viajes/estimar-costo', { paradas: [ORIGEN, HONOLULU] }), 400, 'No hay una ruta en auto entre la parada 1 y la parada 2');
+  espera('crear un viaje sin ruta posible → 400', await crear(R, IDC2, { paradas: [ORIGEN, HONOLULU] }), 400, 'No hay una ruta en auto');
   if (sC1) registrar('WS: el chofer recibe viaje:asignado con id_organizacion', !!(await evento(sC1, 'viaje:asignado', (d) => d.id_viaje === T1 && d.id_organizacion === A)));
   if (sR) registrar('WS: la PyME recibe viaje:asignado', !!(await evento(sR, 'viaje:asignado', (d) => d.id_viaje === T1)));
 
@@ -281,7 +330,9 @@ async function principal() {
   registrar('historial ASIGNADO,CONFIRMADO,ASIGNADO', historial(ed.body) === 'ASIGNADO,CONFIRMADO,ASIGNADO', historial(ed.body));
   if (sC1) registrar('WS: el chofer recibe viaje:editado con confirmacion_anulada', !!(await evento(sC1, 'viaje:editado', (d) => d.id_viaje === T1 && d.confirmacion_anulada === true)));
   const ed2 = await api(R, 'PUT', `/api/organizaciones/${A}/viajes/${T1}`, { paradas: [ORIGEN, { lat: -34.5975, lng: -58.3923, direccion: 'Tribunales' }, DESTINO] });
-  registrar('cambiar paradas → 3 paradas y precio recalculado', ed2.status === 200 && ed2.body?.paradas?.length === 3, `${ed2.status} ${JSON.stringify(ed2.body).slice(0, 200)}`);
+  registrar('cambiar paradas → 3 paradas', ed2.status === 200 && ed2.body?.paradas?.length === 3, `${ed2.status} ${JSON.stringify(ed2.body).slice(0, 200)}`);
+  registrar('Paso 3: el estimado se recalcula (1,5 h de peón)', estimadoOk(ed2.body, 3) && paradasEstimadasOk(ed2.body), JSON.stringify({ estimado: ed2.body?.estimado, duracion_estimada: ed2.body?.duracion_estimada }));
+  espera('editar a una parada sin ruta posible → 400', await api(R, 'PUT', `/api/organizaciones/${A}/viajes/${T1}`, { paradas: [ORIGEN, { lat: 21.3069, lng: -157.8583 }] }), 400, 'No hay una ruta en auto');
 
   seccion('Reasignar');
   espera('al mismo chofer → 400', await api(R, 'POST', `/api/organizaciones/${A}/viajes/${T1}/reasignar`, { id_conductor: IDC1 }), 400, 'ya esta asignado');
@@ -313,6 +364,8 @@ async function principal() {
   registrar('causa_cancelacion CHOFER', cc.body?.estado === 'CANCELADO' && cc.body?.causa_cancelacion === 'CHOFER', JSON.stringify(cc.body));
   espera('cancelar de nuevo → 400', await api(C1, 'POST', `/api/choferes/viajes/${T3}/cancelar`), 400);
   if (sR) registrar('WS: la PyME recibe viaje:cancelado causa CHOFER', !!(await evento(sR, 'viaje:cancelado', (d) => d.id_viaje === T3 && d.causa === 'CHOFER')));
+  const d3 = (await api(R, 'GET', `/api/organizaciones/${A}/viajes/${T3}`)).body || {};
+  registrar('Paso 3: cancelado sin arrancar → real null, estimado presente', d3.real === null && !!d3.estimado, JSON.stringify({ real: d3.real, estimado: d3.estimado }));
 
   seccion('Ciclo completo: iniciar en el origen → FINALIZADO con remito');
   espera('reconfirmar después de la edición → 200', await api(C1, 'POST', `/api/choferes/viajes/${T1}/confirmar`, { id_vehiculo: V1f }), 200);
@@ -346,21 +399,44 @@ async function principal() {
     sC1.emit('conductor:ubicacion', { id_viaje: T1, ...ORIGEN, timestamp: Date.now() });
     registrar('WS: la sala de la PyME recibe mapa:actualizar del viaje', !!(await evento(sR, 'mapa:actualizar', (d) => d.id_viaje === T1)));
   }
-  espera('CARGANDO → EN_RUTA → 200', await api(C1, 'PATCH', `/api/viajes/${T1}/estado`, { estado: 'EN_RUTA' }), 200);
-  if (sR) registrar('WS: la PyME recibe viaje:estado_cambiado', !!(await evento(sR, 'viaje:estado_cambiado', (d) => d.id_viaje === T1 && d.estado_nuevo === 'EN_RUTA')));
-  const paradas = (await api(C1, 'GET', `/api/choferes/viajes/${T1}`)).body?.paradas || [];
-  espera('confirmar parada lejos → 400', await api(C1, 'POST', `/api/viajes/${T1}/confirmar-parada`, { id_parada: paradas[0]?.id_parada, ...LEJOS }), 400, 'de la parada');
-  for (const p of paradas.slice(0, -1)) {
-    espera(`confirmar parada ${p.orden} → 200 sin cerrar`, await api(C1, 'POST', `/api/viajes/${T1}/confirmar-parada`, { id_parada: p.id_parada, lat: p.latitud, lng: p.longitud }), 200);
-  }
-  espera('EN_RUTA → DESCARGANDO → 200', await api(C1, 'PATCH', `/api/viajes/${T1}/estado`, { estado: 'DESCARGANDO' }), 200);
-  const ult = paradas[paradas.length - 1];
-  const cierre = await api(C1, 'POST', `/api/viajes/${T1}/confirmar-parada`, { id_parada: ult?.id_parada, lat: ult?.latitud, lng: ult?.longitud });
-  registrar('última parada → viaje_finalizado con precio_real y remito_url', cierre.status === 200 && cierre.body?.viaje_finalizado === true && typeof cierre.body?.precio_real === 'number' && !!cierre.body?.remito_url, `${cierre.status} ${JSON.stringify(cierre.body)}`);
-  if (sR) registrar('WS: la PyME recibe viaje:finalizado', !!(await evento(sR, 'viaje:finalizado', (d) => d.id_viaje === T1)));
+  const ps = ini.body?.estado ? ((await api(C1, 'GET', `/api/choferes/viajes/${T1}`)).body?.paradas || []) : [];
+  const [p1, p2, p3] = ps;
+  registrar('Paso 3: iniciar es la llegada a la parada 1 (id_parada y llegada_real)', ini.body?.id_parada === p1?.id_parada && ini.body?.llegada_real === ini.body?.fecha_inicio, JSON.stringify(ini.body));
+  espera('PATCH /estado en un viaje de PyME → 400', await api(C1, 'PATCH', `/api/viajes/${T1}/estado`, { estado: 'EN_RUTA' }), 400, 'En un viaje de PyME el estado cambia con iniciar');
+  const confirmar = (p, pos = p) => api(C1, 'POST', `/api/viajes/${T1}/confirmar-parada`, { id_parada: p?.id_parada, lat: pos?.latitud ?? pos?.lat, lng: pos?.longitud ?? pos?.lng });
+  const salir = () => api(C1, 'POST', `/api/choferes/viajes/${T1}/salir`);
+  espera('confirmar la parada 2 sin salir de la 1 → 400', await confirmar(p2), 400, 'Todavia estas en una parada');
+  const s1 = await salir();
+  espera('Salir de la parada 1 → 200', s1, 200);
+  registrar('queda EN_RUTA, sin finalizar, con salida_real de la parada 1', s1.body?.estado === 'EN_RUTA' && s1.body?.viaje_finalizado === false && s1.body?.id_parada === p1?.id_parada && !!s1.body?.salida_real, JSON.stringify(s1.body));
+  if (sR) registrar('WS: viaje:estado_cambiado con id_parada', !!(await evento(sR, 'viaje:estado_cambiado', (d) => d.id_viaje === T1 && d.id_parada === p1?.id_parada)));
+  espera('Salir estando EN_RUTA → 400', await salir(), 400, 'No estas en ninguna parada');
+  espera('saltear la parada 2 → 400', await confirmar(p3), 400, 'Primero tenes que confirmar la parada 2');
+  espera('confirmar otra vez la parada 1 → 400', await confirmar(p1), 400, 'ya fue confirmada');
+  espera('confirmar la parada 2 lejos → 400', await confirmar(p2, LEJOS), 400, 'de la parada');
+  const c2 = await confirmar(p2);
+  espera('confirmar la parada 2 → 200', c2, 200);
+  registrar('queda DESCARGANDO con llegada_real, sin finalizar', c2.body?.estado === 'DESCARGANDO' && !!c2.body?.llegada_real && c2.body?.viaje_finalizado === false && c2.body?.id_parada === p2?.id_parada, JSON.stringify(c2.body));
+  espera('Salir de la parada 2 → 200', await salir(), 200);
+  const c3 = await confirmar(p3);
+  espera('confirmar la última parada → 200', c3, 200);
+  registrar('confirmar la última YA NO finaliza (queda DESCARGANDO)', c3.body?.estado === 'DESCARGANDO' && c3.body?.viaje_finalizado === false, JSON.stringify(c3.body));
+  const antes = (await api(R, 'GET', `/api/organizaciones/${A}/viajes/${T1}`)).body || {};
+  registrar('todavía no terminó: DESCARGANDO y real null', antes.estado === 'DESCARGANDO' && antes.real === null, JSON.stringify({ e: antes.estado, real: antes.real }));
+  espera('remito todavía no disponible → 400', await api(R, 'GET', `/api/organizaciones/${A}/viajes/${T1}/remito`), 400, 'finalizados');
+  const cierre = await salir();
+  registrar('Salir de la última → FINALIZADO con precio_real y remito_url', cierre.status === 200 && cierre.body?.estado === 'FINALIZADO' && cierre.body?.viaje_finalizado === true && typeof cierre.body?.precio_real === 'number' && !!cierre.body?.remito_url, `${cierre.status} ${JSON.stringify(cierre.body)}`);
+  registrar('la respuesta trae estimado y real', !!cierre.body?.estimado && !!cierre.body?.real && casi(cierre.body.real.total_horas, cierre.body.real.manejo_horas + cierre.body.real.peon_horas), JSON.stringify({ estimado: cierre.body?.estimado, real: cierre.body?.real }));
+  espera('Salir de un viaje finalizado → 400', await salir(), 400);
+  if (sR) registrar('WS: viaje:finalizado con estimado, real y paradas', !!(await evento(sR, 'viaje:finalizado', (d) => d.id_viaje === T1 && d.estimado && d.real && Array.isArray(d.paradas))));
   const fin = (await api(R, 'GET', `/api/organizaciones/${A}/viajes/${T1}`)).body || {};
   registrar('FINALIZADO, puntualidad A_TIEMPO, aproximación 0', fin.estado === 'FINALIZADO' && fin.puntualidad_inicio === 'A_TIEMPO' && fin.duracion_aproximacion_origen === 0, JSON.stringify({ e: fin.estado, p: fin.puntualidad_inicio, a: fin.duracion_aproximacion_origen }));
-  registrar('historial termina CARGANDO,EN_RUTA,DESCARGANDO,FINALIZADO (origen CONDUCTOR)', historial(fin).endsWith('CONFIRMADO,CARGANDO,EN_RUTA,DESCARGANDO,FINALIZADO') && fin.historial_estados.slice(-4).every((h) => h.origen === 'CONDUCTOR'), historial(fin));
+  registrar('historial parada por parada', historial(fin).endsWith('CONFIRMADO,CARGANDO,EN_RUTA,DESCARGANDO,EN_RUTA,DESCARGANDO,FINALIZADO') && fin.historial_estados.slice(-6).every((h) => h.origen === 'CONDUCTOR'), historial(fin));
+  registrar('real = manejo + peón y duracion_real es ese total en minutos', !!fin.real && casi(fin.real.total_horas, fin.real.manejo_horas + fin.real.peon_horas) && Math.abs(fin.duracion_real - Math.round(fin.real.total_horas * 60)) <= 1, JSON.stringify({ real: fin.real, duracion_real: fin.duracion_real }));
+  const pf = fin.paradas || [];
+  registrar('cada parada con llegada y salida reales', pf.length === 3 && pf.every((p) => p.llegada_real && p.salida_real && ms(p.salida_real) >= ms(p.llegada_real)), JSON.stringify(pf.map((p) => [p.llegada_real, p.salida_real])));
+  registrar('peon_real_min, manejo_real_min (null en la 1) y diferencia_min', pf.every((p, i) => typeof p.peon_real_min === 'number' && typeof p.diferencia_min === 'number' && (i === 0 ? p.manejo_real_min === null : typeof p.manejo_real_min === 'number')), JSON.stringify(pf.map((p) => [p.peon_real_min, p.manejo_real_min, p.diferencia_min])));
+  registrar('diferencia_min = llegada real − estimada', pf.every((p) => Math.abs(p.diferencia_min - (ms(p.llegada_real) - ms(p.llegada_estimada)) / MIN) <= 1), JSON.stringify(pf.map((p) => p.diferencia_min)));
   registrar('duraciones calculadas (no null)', [fin.duracion_real, fin.duracion_carga, fin.duracion_descarga].every((x) => typeof x === 'number'), JSON.stringify([fin.duracion_real, fin.duracion_carga, fin.duracion_descarga]));
   const rem = await api(R, 'GET', `/api/organizaciones/${A}/viajes/${T1}/remito`);
   registrar('remito por la ruta de la PyME → 200 con URL', rem.status === 200 && /^https?:\/\/.+\.pdf$/.test(rem.body?.remito_url || ''), `${rem.status} ${JSON.stringify(rem.body)}`);
@@ -378,12 +454,16 @@ async function principal() {
   espera('iniciar → 200', await api(C1, 'POST', `/api/choferes/viajes/${T4}/iniciar`, ORIGEN), 200);
   const enCurso = await api(R, 'GET', `/api/organizaciones/${A}/viajes?grupo=en_curso`);
   registrar('grupo=en_curso lo incluye', enCurso.body?.some?.((v) => v.id_viaje === T4));
+  const dobles = await Promise.all([1, 2].map(() => api(C1, 'POST', `/api/choferes/viajes/${T4}/salir`)));
+  const st = dobles.map((r) => r.status).sort();
+  registrar('doble "Salir" simultáneo: uno 200 y el otro rechazado', st[0] === 200 && (st[1] === 409 || st[1] === 400), JSON.stringify(dobles));
   const cp = await api(M, 'POST', `/api/organizaciones/${A}/viajes/${T4}/cancelar`, { motivo: 'cliente cancelo el pedido' });
-  espera('cancelar en CARGANDO → 200', cp, 200);
+  espera('cancelar manejando (EN_RUTA) → 200', cp, 200);
   registrar('causa ORGANIZACION', cp.body?.estado === 'CANCELADO' && cp.body?.causa_cancelacion === 'ORGANIZACION', JSON.stringify(cp.body));
   const d4 = (await api(R, 'GET', `/api/organizaciones/${A}/viajes/${T4}`)).body || {};
   registrar('motivo_cancelacion guardado', d4.motivo_cancelacion === 'cliente cancelo el pedido', JSON.stringify(d4.motivo_cancelacion));
-  if (sC1) registrar('WS: el chofer recibe viaje:cancelado con estado_anterior CARGANDO', !!(await evento(sC1, 'viaje:cancelado', (d) => d.id_viaje === T4 && d.causa === 'ORGANIZACION' && d.estado_anterior === 'CARGANDO')));
+  registrar('Paso 3: cancelado en curso → real con lo medido hasta la cancelación', !!d4.real && casi(d4.real.total_horas, d4.real.manejo_horas + d4.real.peon_horas) && !!d4.estimado, JSON.stringify({ real: d4.real, estimado: d4.estimado }));
+  if (sC1) registrar('WS: el chofer recibe viaje:cancelado con estado_anterior EN_RUTA', !!(await evento(sC1, 'viaje:cancelado', (d) => d.id_viaje === T4 && d.causa === 'ORGANIZACION' && d.estado_anterior === 'EN_RUTA')));
   espera('PATCH sobre el cancelado → 4xx', await api(C1, 'PATCH', `/api/viajes/${T4}/estado`, { estado: 'EN_RUTA' }), 400);
 
   seccion('Desvincular cancela los viajes del chofer con esa PyME');
