@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-12  
-> Branch: claude/freight-marketplace-pivot-l08445 | Commits totales: 45 (+4 pendientes)
+> Branch: claude/freight-marketplace-pivot-l08445 | Commits totales: 46 (+4 pendientes)
 
 ---
 
@@ -62,7 +62,8 @@
 | eeb72fc | 08 Oct 2026 | Test — `scripts/api-tests/viajes.mjs`: viaje interno de PyME (Paso 2): crear con chofer asignado, confirmar con vehículo, rechazar, editar/reasignar, iniciar en el origen (50 m y ventana) directo a `CARGANDO`, cierre con remito, cancelaciones, desvinculación y `VENCIDO`, más eventos WebSocket. Staging: 115/115 |
 | ba05407 | 08 Oct 2026 | Test — modo `vencido` contra staging: 9/9 (`ASIGNADO` y `CONFIRMADO` pasan solos a `VENCIDO` al cerrar la ventana, con fila de historial `SISTEMA`) |
 | e12c1df | 12 Oct 2026 | Test — `viajes.mjs` al Paso 3 del backend: ciclo por parada con "Salir" (confirmar la última ya no finaliza, orden obligatorio, PATCH /estado da 400), bloques `estimado`/`real`, tiempos por parada, `estimar-costo` con tramos y 400 sin ruta en auto |
-| (pendiente) | 12 Oct 2026 | Test — corrida del Paso 3 contra staging: 148/148 (un primer intento se cortó por un error de red transitorio; el script ahora reintenta una vez y lo anota) |
+| d4ca7f4 | 12 Oct 2026 | Test — corrida del Paso 3 contra staging: 148/148 (un primer intento se cortó por un error de red transitorio; el script ahora reintenta una vez y lo anota) |
+| (pendiente) | 12 Oct 2026 | Test — modo `vencido` con el Paso 3: 9/9 (sin regresiones) |
 
 ---
 
