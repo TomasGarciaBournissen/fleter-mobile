@@ -95,3 +95,7 @@ El archivo `PROGRESO.md` en la raíz del proyecto documenta el estado actual de 
 - Registrar nuevos problemas conocidos si aparecen
 
 **El commit de PROGRESO.md va siempre incluido junto con los cambios de código, o inmediatamente después.**
+
+## Contrato de API y pruebas contra staging
+- El contrato vigente es `API.md` del repo del backend https://github.com/SamuelNakab/nombre-proyecto-back, **branch `develop`** (es lo que corre en staging). No usar el de `main`.
+- Las pruebas de contrato (`scripts/api-tests/`) se corren contra **staging** (`https://nombre-proyecto-back-staging.up.railway.app`), nunca contra producción.
