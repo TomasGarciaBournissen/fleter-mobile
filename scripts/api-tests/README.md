@@ -58,3 +58,15 @@ ESTADO=/tmp/viajes.json node scripts/api-tests/viajes.mjs vencido
 para que `vencido` verifique que pasaron solos a `VENCIDO`. Con `SOCKET_IO_CLIENT=<carpeta con
 socket.io-client>` suma las pruebas de eventos WebSocket (detrás de un proxy, con `https-proxy-agent`
 en la misma carpeta). La anticipación mínima se detecta sola del mensaje de error del servidor.
+
+## Lugares guardados y series — `series.mjs`
+
+Prueba el Paso 4 de `API.md` (branch `develop` del backend): lugares de la PyME, paradas con
+`{ id_lugar }`, que el chofer nunca vea el nombre del lugar (REST, sockets y el texto del remito PDF),
+series `DIARIA` / `DIAS_SEMANA` / `SEMANAL` / `MENSUAL` con las fechas verificadas en hora argentina,
+un solo `serie:asignada`, viajes de la serie independientes, cancelar la serie, desvincular al chofer
+(`series_borradas`) y el máximo de 10 paradas. Usa 2 canjes. Con `SOCKET_IO_CLIENT` suma los eventos.
+
+```bash
+node scripts/api-tests/series.mjs
+```
