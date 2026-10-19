@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fleter Mobile — Conductor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500&family=Josefin+Sans:wght@600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+/* ── Tokens: copia literal de src/theme.js / UXUI.md ───────────────── */
+:root{
+  --accent:#E85D2A; --accent-press:#D2521F; --on-accent:#1B1A17; --on-accent-large:#FFFFFF;
+  --bg:#FAF7F1; --surface:#FFFFFF; --surface2:#F2EDE2; --surface3:#ECE9E1;
+  --line:#E8E4DA; --line-strong:#D9D3C5;
+  --ink:#1B1A17; --ink2:#3F3B34; --ink3:#665F50; --ink4:#B8B2A2; --on-ink:#FFFFFF;
+  --accent-ink:#A63B14; --accent-soft:#FBE4D6; --accent-softer:#FFF1E7;
+  --ok:#2F8F4E; --ok-ink:#1F6B39; --ok-soft:#DCEFD8;
+  --warn:#C98A12; --warn-ink:#8A5E0B; --warn-soft:#FBEFCE;
+  --err:#B83232; --err-ink:#9C2626; --err-soft:#F5D9D4;
+  --info:#2E6FB7; --info-ink:#22578F; --info-soft:#D8E4F2;
+  --halo:rgba(232,93,42,.18);
+  --page:#EFEADF; --page-ink:#1B1A17; --page-ink3:#665F50; --frame:#1B1A17;
+  --f-display:'Archivo Black',system-ui,sans-serif;
+  --f-ui:'Manrope',system-ui,sans-serif;
+  --f-accent:'Josefin Sans',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+.dk{
+  --bg:#141310; --surface:#1C1A16; --surface2:#23201B; --surface3:#2B2822;
+  --line:#2E2A24; --line-strong:#3B362E;
+  --ink:#F4F0E7; --ink2:#CBC5B8; --ink3:#9E978A; --ink4:#6B655A; --on-ink:#141310;
+  --accent-ink:#F0865A; --accent-soft:#3B2116; --accent-softer:#2A1B13;
+  --ok:#4DB36E; --ok-ink:#7BD397; --ok-soft:#16301F;
+  --warn:#D9A23A; --warn-ink:#E9BC5C; --warn-soft:#33260A;
+  --err:#D95454; --err-ink:#F09090; --err-soft:#3A1717;
+  --info:#5C93D6; --info-ink:#8DB8EC; --info-soft:#14243A;
+  --halo:rgba(232,93,42,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --page:#0E0D0B; --page-ink:#F4F0E7; --page-ink3:#9E978A; --frame:#3B362E; }
+}
+:root[data-theme="dark"]{ --page:#0E0D0B; --page-ink:#F4F0E7; --page-ink3:#9E978A; --frame:#3B362E; }
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--page-ink);font-family:var(--f-ui);-webkit-font-smoothing:antialiased;line-height:1.45}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── Página de revisión ─────────────────────────────────────────────── */
+.wrap{max-width:1240px;margin:0 auto;padding:40px 16px 80px}
+.intro{max-width:680px;margin-bottom:28px}
+.intro h1{font-family:var(--f-display);font-size:32px;letter-spacing:-.02em;line-height:1.08;margin-bottom:10px}
+.intro p{color:var(--page-ink3);font-size:15px}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:20px 0 8px}
+.seg{display:inline-flex;border:1px solid var(--frame);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;color:var(--page-ink3)}
+.seg button[aria-pressed="true"]{background:var(--page-ink);color:var(--page)}
+.ctrl small{color:var(--page-ink3);font-size:13px}
+section.flow{margin-top:44px}
+section.flow>h2{font-family:var(--f-display);font-size:22px;letter-spacing:-.02em;margin-bottom:4px}
+section.flow>p{color:var(--page-ink3);font-size:14px;max-width:640px;margin-bottom:22px}
+.grid{display:flex;flex-wrap:wrap;gap:36px 28px}
+figure{width:min(360px,100%)}
+figcaption{margin-top:12px;padding:0 4px}
+figcaption b{display:block;font-size:14px;font-weight:700}
+figcaption span{display:block;font-size:13px;color:var(--page-ink3);margin-top:2px}
+figcaption button{margin-top:6px;border:1px solid var(--frame);background:transparent;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer}
+
+/* ── Teléfono ───────────────────────────────────────────────────────── */
+.phone{width:100%;aspect-ratio:360/760;max-height:760px;border-radius:38px;border:8px solid var(--frame);overflow:hidden;position:relative;background:var(--bg);color:var(--ink)}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg)}
+.status{height:40px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 22px 0 26px;font-size:13px;font-weight:700}
+.status svg{height:11px;fill:var(--ink)}
+.body{flex:1;overflow-y:auto;padding:8px 20px 20px;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.foot{flex:none;padding:12px 20px 26px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.foot.line{border-top:1px solid var(--line)}
+
+/* ── Marca ──────────────────────────────────────────────────────────── */
+.iso .b{fill:var(--accent)} .iso .t{fill:var(--ink)}
+.brand{display:flex;align-items:center;gap:9px}
+.brand svg{width:30px;height:30px}
+.brand .wm{font-family:var(--f-display);font-size:22px;letter-spacing:-.03em;line-height:1}
+.slogan{font-family:var(--f-accent);font-weight:600;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+
+/* ── Tipografía ─────────────────────────────────────────────────────── */
+.h1{font-family:var(--f-display);font-size:28px;letter-spacing:-.02em;line-height:1.08}
+.lead{font-size:15px;color:var(--ink2);margin-top:8px;max-width:30ch}
+.meta{font-size:12px;color:var(--ink3)}
+.mono{font-family:var(--f-mono)}
+.link{color:var(--accent-ink);font-weight:700;text-decoration:none;background:none;border:0;padding:0;cursor:pointer;font-size:14px}
+
+/* ── Controles ──────────────────────────────────────────────────────── */
+.top{display:flex;align-items:center;justify-content:space-between;height:44px;margin:0 -8px 8px}
+.back{width:44px;height:44px;border:0;background:transparent;display:grid;place-items:center;border-radius:10px;cursor:pointer}
+.back svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.field{margin-top:16px}
+.field label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.field label i{font-style:normal;text-transform:none;letter-spacing:0;font-weight:500}
+.in{height:44px;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:0 12px;display:flex;align-items:center;gap:8px;font-size:15px;color:var(--ink)}
+.in input{border:0;background:transparent;outline:0;flex:1;min-width:0;height:100%}
+.in input::placeholder{color:var(--ink3)}
+.in.focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--halo)}
+.in.err{border-color:var(--err)}
+.in .ico{width:20px;height:20px;stroke:var(--ink3);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.in .tog{border:0;background:transparent;width:36px;height:36px;margin-right:-8px;display:grid;place-items:center;cursor:pointer;border-radius:6px}
+.hint{font-size:12px;color:var(--ink3);margin-top:6px}
+.errmsg{font-size:13px;color:var(--err-ink);margin-top:8px;display:flex;gap:6px;align-items:flex-start}
+.errmsg svg{flex:none;width:16px;height:16px;margin-top:1px;stroke:var(--err-ink);fill:none;stroke-width:2;stroke-linecap:round}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.row2 .field{margin-top:16px}
+
+.btn{height:48px;border-radius:10px;border:0;width:100%;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:background .12s var(--ease)}
+.btn.pri{background:var(--accent);color:var(--on-accent)}
+.btn.pri:active{background:var(--accent-press)}
+.btn.pri[disabled]{background:var(--surface3);color:var(--ink4);cursor:default}
+.btn.out{background:var(--surface);border:1px solid var(--line-strong);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:active{background:var(--surface3)}
+.btn svg{width:20px;height:20px}
+.or{display:flex;align-items:center;gap:12px;color:var(--ink3);font-size:12px;margin:2px 0}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.center{text-align:center;font-size:14px;color:var(--ink2)}
+
+/* option cards */
+.opts{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+.opt{display:flex;gap:14px;text-align:left;width:100%;padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;align-items:flex-start;transition:border-color .12s var(--ease),background .12s var(--ease)}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-softer);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt .glyph{flex:none;width:40px;height:40px;border-radius:8px;background:var(--surface2);display:grid;place-items:center}
+.opt[aria-pressed="true"] .glyph{background:var(--accent-soft)}
+.opt .glyph svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.opt b{display:block;font-size:15px;font-weight:700}
+.opt span{display:block;font-size:13px;color:var(--ink2);margin-top:3px}
+.opt .tick{margin-left:auto;flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line-strong);display:grid;place-items:center}
+.opt[aria-pressed="true"] .tick{background:var(--accent);border-color:var(--accent)}
+.opt .tick svg{width:12px;height:12px;stroke:var(--on-accent);stroke-width:3;fill:none;opacity:0}
+.opt[aria-pressed="true"] .tick svg{opacity:1}
+.opt.sm{padding:12px 14px;align-items:center}
+.opt.sm b{font-size:14px}
+.opt.sm span{margin-top:0}
+
+/* chips de condiciones */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.chip svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;display:none}
+.chip[aria-pressed="true"] svg{display:block}
+
+/* stepper: el viaje de la caja — hechas en naranja, la actual es la caja que se sigue */
+.steps{display:flex;align-items:center;gap:10px;margin:4px 0 18px}
+.steps .bx{display:flex;gap:4px}
+.steps .bx i{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--line-strong)}
+.steps .bx i.done{background:var(--accent);border-color:var(--accent)}
+.steps .bx i.now{background:var(--ink);border-color:var(--ink)}
+.steps span{font-size:12px;color:var(--ink3);font-weight:600}
+
+/* código de invitación */
+.code{height:64px;border:1px solid var(--line);background:var(--surface);border-radius:10px;display:flex;align-items:center;padding:0 8px 0 16px;gap:8px;margin-top:24px}
+.code.focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--halo)}
+.code input{border:0;background:transparent;outline:0;flex:1;min-width:0;font-family:var(--f-mono);font-size:22px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}
+.code input::placeholder{color:var(--ink4)}
+.paste{height:36px;border:1px solid var(--line-strong);background:var(--surface2);border-radius:6px;padding:0 12px;font-size:13px;font-weight:600;cursor:pointer}
+
+/* notas */
+.note{border-radius:10px;padding:12px 14px;font-size:13px;display:flex;gap:10px;align-items:flex-start;margin-top:18px}
+.note svg{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;margin-top:1px}
+.note.info{background:var(--info-soft);color:var(--info-ink)}
+.note.ok{background:var(--ok-soft);color:var(--ok-ink)}
+.note.plain{background:var(--surface2);color:var(--ink2)}
+
+/* éxito */
+.seal{width:64px;height:64px;border-radius:16px;background:var(--ok-soft);display:grid;place-items:center;margin:28px 0 22px}
+.seal svg{width:30px;height:30px;stroke:var(--ok);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.next{margin-top:26px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.next li{list-style:none;display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-top:1px solid var(--line)}
+.next li:first-child{border-top:0}
+.next .n{flex:none;width:26px;height:26px;border-radius:6px;background:var(--surface2);font-family:var(--f-mono);font-size:13px;font-weight:500;display:grid;place-items:center;color:var(--ink2)}
+.next li.cur .n{background:var(--accent);color:var(--on-accent)}
+.next b{display:block;font-size:14px;font-weight:700}
+.next span{display:block;font-size:13px;color:var(--ink3);margin-top:1px}
+.pill{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:700}
+.pill.warn{background:var(--warn-soft);color:var(--warn-ink)}
+
+/* splash */
+.splash{background:var(--accent);color:var(--on-accent);align-items:center;justify-content:center}
+.splash .iso{width:120px;height:120px}
+.splash .iso .b{fill:var(--on-accent-large)} .splash .iso .t{fill:var(--on-accent)}
+.splash .iso rect{transform-box:fill-box;transform-origin:center bottom}
+.splash .wm{font-family:var(--f-display);font-size:44px;letter-spacing:-.03em;margin-top:18px;line-height:1}
+.splash .slogan{color:var(--on-accent);margin-top:14px;opacity:.85}
+.splash .bottom{position:absolute;bottom:34px;left:0;right:0;text-align:center;font-size:12px;font-weight:600;opacity:.75}
+@keyframes drop{0%{opacity:0;transform:translateY(-26px)}70%{opacity:1;transform:translateY(2px)}100%{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.play .iso rect{animation:drop .42s var(--ease) both}
+.play .iso rect:nth-child(1){animation-delay:.30s}.play .iso rect:nth-child(2){animation-delay:.42s}
+.play .iso rect:nth-child(4){animation-delay:.12s}.play .iso rect:nth-child(5){animation-delay:.22s}
+.play .iso rect:nth-child(6){animation-delay:0s}.play .iso rect:nth-child(3){animation-delay:.78s;animation-duration:.5s}
+.play .wm,.play .slogan{animation:rise .4s var(--ease) both}
+.play .wm{animation-delay:1.05s}.play .slogan{animation-delay:1.2s}
+@media (prefers-reduced-motion: reduce){.play *{animation:none!important}}
+
+@media (max-width:420px){.wrap{padding-top:28px}.intro h1{font-size:26px}.grid{gap:32px}}
+
+/* ── Fase 2: piezas nuevas ─────────────────────────────────────────── */
+.body.tabs-pad{padding-bottom:12px}
+.tabbar{flex:none;height:64px;border-top:1px solid var(--line);background:var(--surface);display:flex;justify-content:space-around;align-items:center;padding-bottom:6px}
+.tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--ink3);text-decoration:none;min-width:64px}
+.tabbar a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabbar a.on{color:var(--ink);font-weight:700}.tabbar a.on svg{stroke:var(--accent)}
+.tabbar .dot{position:relative}.tabbar .dot::after{content:"";position:absolute;top:-1px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+.sec{font-family:var(--f-display);font-size:14px;letter-spacing:-.01em;margin:22px 0 10px;display:flex;justify-content:space-between;align-items:baseline}
+.sec small{font-family:var(--f-ui);font-size:12px;font-weight:500;color:var(--ink3);letter-spacing:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.card+.card{margin-top:10px}
+.card.atn{border-color:var(--warn);box-shadow:inset 3px 0 0 var(--warn)}
+.top-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.b-run{background:var(--accent-soft);color:var(--accent-ink)}.b-run i{animation:latir 1.6s infinite}
+@keyframes latir{50%{opacity:.25}}
+.b-next{background:var(--info-soft);color:var(--info-ink)}
+.b-warn{background:var(--warn-soft);color:var(--warn-ink)}
+.b-ok{background:var(--ok-soft);color:var(--ok-ink)}
+.b-err{background:var(--err-soft);color:var(--err-ink)}
+.id{font-family:var(--f-mono);font-size:12px;color:var(--ink3)}
+.when{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;gap:10px}
+.when b{font-size:15px;font-weight:700}
+.when .emp{display:block;font-size:12px;color:var(--ink3);font-weight:500;margin-top:1px}
+.price{font-family:var(--f-display);font-size:20px;letter-spacing:-.02em;white-space:nowrap}
+.price.sm{font-size:17px}
+.route{margin-top:12px}
+.route li{list-style:none;display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:10px;position:relative;padding-bottom:10px}
+.route li:last-child{padding-bottom:0}
+.route li::before{content:"";position:absolute;left:6px;top:14px;bottom:0;width:1.5px;background:var(--line-strong)}
+.route li:last-child::before{display:none}
+.route .m{width:10px;height:10px;margin:4px 2px 0;border-radius:50%;background:var(--accent)}
+.route .m.s{background:var(--ink3)}.route .m.d{border-radius:2px;background:var(--ink)}
+.route .m.hecha{background:var(--ok)}
+.route li.hecha::before{background:var(--ok)}
+.route b{font-size:13px;font-weight:700;display:block}
+.route span{font-size:12px;color:var(--ink3)}
+.route .h{font-family:var(--f-mono);font-size:12px;color:var(--ink3);white-space:nowrap}
+.route li.aqui b{color:var(--accent-ink)}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.kv dt{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.kv dd{font-size:13px;font-weight:600;margin-top:1px}
+.kv dd.mono{font-family:var(--f-mono);font-weight:500}
+.big-when{font-family:var(--f-display);font-size:26px;letter-spacing:-.02em;line-height:1.1;margin-top:6px}
+.empresa{display:flex;align-items:center;gap:10px;margin-top:14px}
+.avatar{width:36px;height:36px;border-radius:8px;background:var(--surface2);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--ink2);flex:none}
+.empresa b{font-size:14px}.empresa span{display:block;font-size:12px;color:var(--ink3)}
+/* mapa esquemático */
+.map{position:relative;height:200px;border-radius:10px;overflow:hidden;background:var(--surface2);border:1px solid var(--line)}
+.map.tall{height:300px}
+.map svg{position:absolute;inset:0;width:100%;height:100%}
+.map .calle{stroke:var(--line-strong);stroke-width:7;fill:none;stroke-linecap:round}
+.map .calle.fina{stroke-width:3.5}
+.map .ruta{stroke:var(--accent);stroke-width:4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.map .hecho{stroke:var(--ink3);stroke-dasharray:1 7;stroke-width:4;fill:none;stroke-linecap:round}
+.map .o{fill:var(--accent)}.map .p{fill:var(--ink3)}.map .d{fill:var(--ink)}
+.map .yo{fill:var(--info)}.map .yo-halo{fill:var(--info);opacity:.18}
+.map .chip-map{position:absolute;left:10px;top:10px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:700}
+.map .exp{position:absolute;right:10px;bottom:10px;width:40px;height:40px;border-radius:10px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center}
+.map .exp svg{position:static;width:18px;height:18px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round}
+/* viaje activo */
+.etapa{margin-top:14px}
+.etapa .eyebrow-st{font-size:12px;font-weight:700;color:var(--accent-ink);display:flex;align-items:center;gap:6px}
+.etapa h1{font-family:var(--f-display);font-size:24px;letter-spacing:-.02em;line-height:1.12;margin-top:6px}
+.etapa p{font-size:14px;color:var(--ink2);margin-top:4px}
+.reloj{display:flex;gap:10px;margin-top:14px}
+.reloj div{flex:1;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 12px}
+.reloj dt{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.reloj dd{font-family:var(--f-mono);font-size:18px;font-weight:500;margin-top:2px}
+.alerta{border-radius:10px;padding:12px 14px;font-size:13px;display:flex;gap:10px;align-items:flex-start;margin-top:12px;background:var(--warn-soft);color:var(--warn-ink)}
+.alerta svg{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;margin-top:1px}
+.btn.big{height:56px;font-size:16px}
+.mini{display:flex;gap:10px}
+.mini .btn{height:44px;font-size:14px}
+.gps{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ok-ink);font-weight:600}
+.gps i{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+/* hojas */
+.sheet-wrap{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;flex-direction:column;justify-content:flex-end}
+.sheet{background:var(--surface);border-radius:14px 14px 0 0;padding:8px 16px 26px}
+.sheet .grab{width:36px;height:4px;border-radius:2px;background:var(--line-strong);margin:0 auto 14px}
+.sheet h3{font-family:var(--f-display);font-size:17px;letter-spacing:-.01em}
+.sheet p{font-size:13px;color:var(--ink2);margin-top:4px}
+.veh{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-top:10px;width:100%;background:var(--surface);text-align:left}
+.veh[aria-pressed="true"]{border:2px solid var(--accent);background:var(--accent-softer);padding:11px 13px}
+.veh[disabled]{opacity:1;background:var(--surface2)}
+.veh .g{width:36px;height:36px;border-radius:8px;background:var(--surface2);display:grid;place-items:center;flex:none}
+.veh .g svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.veh b{font-size:14px;display:block}.veh .pat{font-family:var(--f-mono);font-weight:500;letter-spacing:.08em}
+.veh span.s{display:block;font-size:12px;color:var(--ink3)}
+.veh span.no{display:block;font-size:12px;color:var(--err-ink);font-weight:600}
+/* resumen */
+.tabla{margin-top:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.tabla .r{display:grid;grid-template-columns:1fr 80px 80px;gap:8px;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.tabla .r:first-child{border-top:0;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.tabla .r span:not(:first-child){font-family:var(--f-mono);text-align:right}
+.tabla .r:first-child span{font-family:var(--f-ui)}
+/* listas */
+.mes{font-family:var(--f-display);font-size:14px;margin:20px 0 8px;display:flex;justify-content:space-between}
+.mes small{font-family:var(--f-ui);font-weight:500;font-size:12px;color:var(--ink3)}
+.fila{padding:14px 0;border-top:1px solid var(--line)}
+.fila:first-of-type{border-top:0}
+.filtros{display:flex;gap:8px;margin-top:14px;overflow:hidden}
+.filtro{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line-strong);font-size:13px;font-weight:600;color:var(--ink2);display:inline-flex;align-items:center;white-space:nowrap;background:var(--surface)}
+.filtro.on{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.lista{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-top:8px}
+.lista .it{display:flex;gap:12px;align-items:center;padding:13px 14px;border-top:1px solid var(--line)}
+.lista .it:first-child{border-top:0}
+.lista .it b{font-size:14px;display:block}.lista .it span{font-size:12px;color:var(--ink3)}
+.lista .it .chev{margin-left:auto;width:18px;height:18px;stroke:var(--ink3);fill:none;stroke-width:2}
+.lista .it .act{margin-left:auto;font-size:13px;font-weight:700;color:var(--accent-ink)}
+.seg3{display:flex;border:1px solid var(--line);border-radius:10px;background:var(--surface2);padding:3px;margin-top:8px}
+.seg3 span{flex:1;text-align:center;height:34px;line-height:34px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink2)}
+.seg3 span.on{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.vacio{text-align:left;margin-top:56px}
+.vacio .cajas{display:flex;gap:4px;margin-bottom:18px}
+.vacio .cajas i{width:18px;height:18px;border-radius:4px;border:1.5px dashed var(--line-strong)}
+.vacio h3{font-family:var(--f-display);font-size:17px}
+.vacio p{font-size:14px;color:var(--ink2);margin-top:6px;max-width:30ch}
+.permiso{margin-top:30px}
+.permiso .ico-big{width:56px;height:56px;border-radius:14px;background:var(--info-soft);display:grid;place-items:center;margin-bottom:22px}
+.permiso .ico-big svg{width:28px;height:28px;stroke:var(--info-ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.puntos{margin-top:22px}
+.puntos li{list-style:none;display:flex;gap:12px;margin-top:14px;font-size:14px;color:var(--ink2)}
+.puntos li b{color:var(--ink);display:block;font-size:14px}
+.puntos .n{flex:none;width:24px;height:24px;border-radius:6px;background:var(--surface2);font-family:var(--f-mono);font-size:12px;display:grid;place-items:center;color:var(--ink2)}
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-top:6px}
+.hdr .h1{font-size:26px}
+.btn.out svg,.btn.ghost svg{stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.empresa .avatar{display:grid}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+
+    <symbol id="iso" viewBox="0 0 48 48"><rect class="b" x="7" y="7" width="10" height="10" rx="2"/><rect class="b" x="19" y="7" width="10" height="10" rx="2"/><rect class="t" x="31" y="7" width="10" height="10" rx="2"/><rect class="b" x="7" y="19" width="10" height="10" rx="2"/><rect class="b" x="19" y="19" width="10" height="10" rx="2"/><rect class="b" x="7" y="31" width="10" height="10" rx="2"/></symbol>
+    <symbol id="back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></symbol>
+    <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5v.01"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="office" viewBox="0 0 24 24"><path d="M4 20.5V6l8-3v17.5M12 9h8v11.5M2.5 20.5h19M7 8.5v.01M7 12v.01M7 15.5v.01M16 12.5v.01M16 16v.01"/></symbol>
+    <symbol id="wheel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 14.5V21M9.6 11.2L3.4 9.4M14.4 11.2l6.2-1.8"/></symbol>
+    <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M14.5 8.5l2 2"/></symbol>
+    <symbol id="van" viewBox="0 0 24 24"><path d="M2.5 16.5V7.5h11v9M13.5 10.5h4l3 3.5v2.5h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></symbol>
+    <symbol id="truck" viewBox="0 0 24 24"><path d="M2 16.5V5.5h12.5v11M14.5 9h4.2l3.3 4v3.5h-7.5"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17.5" cy="17.5" r="1.8"/></symbol>
+    <symbol id="truckL" viewBox="0 0 24 24"><path d="M1.5 16.5V4.5h14v12M15.5 8.5h4l3 4v4h-7"/><circle cx="5" cy="17.5" r="1.6"/><circle cx="9.5" cy="17.5" r="1.6"/><circle cx="18.5" cy="17.5" r="1.6"/></symbol>
+    <symbol id="g" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 38.2 44 33 44 24c0-1.3-.1-2.4-.4-3.5z"/></symbol>
+    <symbol id="sig" viewBox="0 0 64 11"><path d="M1 10h2V7H1zM5 10h2V5H5zM9 10h2V3H9zM13 10h2V1h-2z"/><path d="M27 3.5a9 9 0 0 1 12 0l-1.3 1.4a7 7 0 0 0-9.4 0zM30 6.5a5 5 0 0 1 6 0l-3 3.3z"/><rect x="45" y="1" width="16" height="9" rx="2.5" fill="none" stroke="currentColor" stroke-width="1"/><rect x="46.5" y="2.5" width="11" height="6" rx="1.2"/><path d="M62.5 4v3"/></symbol>
+  
+  <symbol id="list" viewBox="0 0 24 24"><path d="M8 6.5h12M8 12h12M8 17.5h12M4 6.5v.01M4 12v.01M4 17.5v.01"/></symbol>
+  <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.3-6.5 8-6.5s7 2 8 6.5"/></symbol>
+  <symbol id="phone" viewBox="0 0 24 24"><path d="M5 3.5h3.5l1.8 4.5-2.3 1.5a11 11 0 0 0 6.5 6.5l1.5-2.3 4.5 1.8V19a2 2 0 0 1-2 2A17 17 0 0 1 3 5.5a2 2 0 0 1 2-2z"/></symbol>
+  <symbol id="nav" viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8z"/></symbol>
+  <symbol id="expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="loc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></symbol>
+  <symbol id="file" viewBox="0 0 24 24"><path d="M6 2.5h8l4 4v15H6z"/><path d="M14 2.5v4h4M9 12h6M9 16h6"/></symbol>
+</defs></svg>
+
+<div class="wrap">
+  <header class="intro">
+    <h1>El lado del conductor</h1>
+    <p>Prototipo de la fase 2: confirmar los viajes que asigna cada empresa, hacerlos parada por parada con el GPS, y cerrar con el remito. Por default en oscuro, como define UXUI.md; con el selector se ven todas en claro. Los datos y estados salen del contrato de <span class="mono">develop</span> (viaje interno, Pasos 2 a 4).</p>
+    <div class="ctrl">
+      <div class="seg" role="group" aria-label="Tema de las pantallas">
+        <button type="button" data-mode="rol" aria-pressed="true">Oscuro (default)</button>
+        <button type="button" data-mode="claro" aria-pressed="false">Claro</button>
+      </div>
+      <small>Cada pantalla existe en los dos modos.</small>
+    </div>
+  </header>
+
+  <!-- ═══════════════ VIAJES ═══════════════ -->
+  <section class="flow">
+    <h2>Mis viajes</h2>
+    <p>La pestaña principal. Lo que necesita una acción del conductor va arriba; después, el día y los próximos. Cada card trae los 9 datos sin cortar y el nombre de la empresa.</p>
+    <div class="grid">
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body tabs-pad">
+            <div class="hdr"><h1 class="h1">Viajes</h1></div>
+
+            <p class="sec">Para confirmar <small>1</small></p>
+            <div class="card atn">
+              <div class="top-row"><span class="badge b-warn">Sin confirmar</span><span class="id">VJ-2420</span></div>
+              <div class="when"><span><b>Mañana, 08:00</b><span class="emp">Distribuidora Norte</span></span><span class="price">$68.500</span></div>
+              <ul class="route">
+                <li><span class="m"></span><span><b>Depósito Pilar</b><span>Ruta 8 km 52, Pilar</span></span></li>
+                <li><span class="m s"></span><span><b>1 parada</b><span>Av. Mitre 1450, Vicente López</span></span></li>
+                <li><span class="m d"></span><span><b>Av. Corrientes 3200</b><span>Almagro, CABA</span></span></li>
+              </ul>
+              <dl class="kv"><div><dt>Condiciones</dt><dd>Frágil</dd></div><div><dt>Distancia</dt><dd>48 km</dd></div><div><dt>Tiempo</dt><dd>1 h 20 min</dd></div><div><dt>Confirmalo antes</dt><dd class="mono">mié 09:30</dd></div></dl>
+            </div>
+
+            <p class="sec">Hoy <small>mar 21 oct</small></p>
+            <div class="card">
+              <div class="top-row"><span class="badge b-next">Confirmado</span><span class="id">VJ-2421</span></div>
+              <div class="when"><span><b>Hoy, 14:30</b><span class="emp">Frigorífico Sur</span></span><span class="price sm">$32.000</span></div>
+              <p class="meta" style="margin-top:6px;font-size:13px;color:var(--ink2)">Mercado Central, Tapiales → Av. Rivadavia 6800, Flores. Sin paradas. Refrigerado. 21 km, 45 min.</p>
+            </div>
+          </div>
+          <nav class="tabbar"><a class="on" href="#"><span class="dot"><svg><use href="#list"/></svg></span>Viajes</a><a href="#"><svg><use href="#clock"/></svg>Historial</a><a href="#"><svg><use href="#user"/></svg>Perfil</a></nav>
+        </div></div>
+        <figcaption><b>Viajes</b><span>Lo que espera al conductor va primero, con borde ámbar y el límite para confirmar (cierra la ventana de inicio). Los demás, compactos pero con los 9 datos.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body tabs-pad">
+            <div class="card" style="border-color:var(--accent);margin-top:6px">
+              <div class="top-row"><span class="badge b-run"><i></i>En ruta</span><span class="id">VJ-2419</span></div>
+              <p style="font-weight:700;font-size:15px;margin-top:10px">Próxima: Av. Mitre 1450, Vicente López</p>
+              <p class="meta" style="font-size:13px;margin-top:2px">Llegás en ~18 min. Distribuidora Norte.</p>
+              <button class="btn pri" type="button" style="margin-top:12px;height:44px">Volver al viaje</button>
+            </div>
+            <div class="hdr" style="margin-top:20px"><h1 class="h1">Viajes</h1></div>
+            <p class="sec">Próximos</p>
+            <div class="card">
+              <div class="top-row"><span class="badge b-next">Confirmado</span><span class="id">VJ-2425</span></div>
+              <div class="when"><span><b>Jue 23 oct, 07:00</b><span class="emp">Distribuidora Norte</span></span><span class="price sm">$84.300</span></div>
+              <p class="meta" style="margin-top:6px;font-size:13px;color:var(--ink2)">Depósito Pilar → Av. Centenario 200, San Isidro. 2 paradas. Sin condiciones. 63 km, 2 h 05 min.</p>
+            </div>
+          </div>
+          <nav class="tabbar"><a class="on" href="#"><svg><use href="#list"/></svg>Viajes</a><a href="#"><svg><use href="#clock"/></svg>Historial</a><a href="#"><svg><use href="#user"/></svg>Perfil</a></nav>
+        </div></div>
+        <figcaption><b>Viajes con uno en curso</b><span>Si hay un viaje en curso, una card fija arriba lleva de vuelta a él (también al reabrir la app).</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body tabs-pad">
+            <div class="hdr"><h1 class="h1">Viajes</h1></div>
+            <div class="vacio">
+              <div class="cajas"><i></i><i></i><i></i></div>
+              <h3>Todavía no tenés viajes</h3>
+              <p>Cuando Distribuidora Norte te asigne uno, te aparece acá para que lo confirmes.</p>
+            </div>
+            <div class="note plain" style="margin-top:22px"><svg><use href="#info"/></svg><span>¿Trabajás con otra empresa? Pedile su código y sumala desde tu perfil.</span></div>
+          </div>
+          <nav class="tabbar"><a class="on" href="#"><svg><use href="#list"/></svg>Viajes</a><a href="#"><svg><use href="#clock"/></svg>Historial</a><a href="#"><svg><use href="#user"/></svg>Perfil</a></nav>
+        </div></div>
+        <figcaption><b>Sin viajes</b><span>Estado vacío con la siguiente acción posible, no un mensaje triste. Las cajas punteadas son la carga que todavía no llegó.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ═══════════════ CONFIRMAR ═══════════════ -->
+  <section class="flow">
+    <h2>Confirmar o rechazar</h2>
+    <p>Confirmar es elegir con qué vehículo se hace; el backend valida que cumpla las condiciones. Rechazar es final, por eso es la única acción con confirmación.</p>
+    <div class="grid">
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button><span class="id" style="margin-right:8px">VJ-2420</span></div>
+            <span class="badge b-warn">Sin confirmar</span>
+            <p class="big-when">Mañana, mié 22 oct, 08:00</p>
+            <div class="empresa"><span class="avatar">DN</span><span><b>Distribuidora Norte</b><span>Te lo asignó Ana Ferreyra</span></span></div>
+            <div class="map" style="margin-top:16px">
+              <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice"><path class="calle" d="M-10 150 C60 140 90 90 160 92 S260 60 330 40"/><path class="calle fina" d="M120 -10 L140 210M230 -10 L210 210M-10 60 L330 120"/><path class="ruta" d="M40 146 C80 138 110 96 160 93 S240 66 280 48"/><circle class="o" cx="40" cy="146" r="7"/><circle class="p" cx="160" cy="93" r="6"/><rect class="d" x="273" y="41" width="14" height="14" rx="2"/></svg>
+              <span class="exp"><svg><use href="#expand"/></svg></span>
+            </div>
+            <ul class="route" style="margin-top:16px">
+              <li><span class="m"></span><span><b>Depósito Pilar</b><span>Ruta 8 km 52, Pilar</span></span><span class="h">08:00</span></li>
+              <li><span class="m s"></span><span><b>Av. Mitre 1450</b><span>Vicente López</span></span><span class="h">~08:45</span></li>
+              <li><span class="m d"></span><span><b>Av. Corrientes 3200</b><span>Almagro, CABA</span></span><span class="h">~09:20</span></li>
+            </ul>
+            <dl class="kv"><div><dt>Condiciones</dt><dd>Frágil</dd></div><div><dt>Distancia</dt><dd>48 km</dd></div><div><dt>Tiempo</dt><dd>1 h 20 min</dd></div><div><dt>Precio estimado</dt><dd>$68.500</dd></div></dl>
+            <div class="note info"><svg><use href="#clock"/></svg><span>Lo podés iniciar de <b>07:00 a 09:30</b>, estando en el origen. Si no lo confirmás antes, vence.</span></div>
+          </div>
+          <div class="foot line"><button class="btn pri" type="button">Confirmar viaje</button><button class="btn ghost" type="button" style="color:var(--err-ink)">Rechazar</button></div>
+        </div></div>
+        <figcaption><b>Detalle del viaje</b><span>Todo lo que necesita para decidir: cuándo, para quién, el recorrido con horas estimadas, condiciones y la ventana para iniciarlo. ¿El conductor debe ver el precio? Hoy la API se lo manda; a confirmar.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body" style="opacity:.35">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button></div>
+            <span class="badge b-warn">Sin confirmar</span>
+            <p class="big-when">Mañana, mié 22 oct, 08:00</p>
+          </div>
+          <div class="sheet-wrap"><div class="sheet">
+            <div class="grab"></div>
+            <h3>¿Con qué vehículo lo hacés?</h3>
+            <p>El viaje pide <b>frágil</b>.</p>
+            <button class="veh" type="button" aria-pressed="true"><span class="g"><svg><use href="#van"/></svg></span><span style="flex:1"><b>Ford Transit <span class="pat">AE 421 KL</span></b><span class="s">Utilitario. Frágil y voluminoso.</span></span><span class="tick" style="border-color:var(--accent);background:var(--accent)"><svg viewBox="0 0 24 24" style="opacity:1"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></button>
+            <button class="veh" type="button" disabled><span class="g"><svg><use href="#truck"/></svg></span><span style="flex:1"><b>Iveco Daily <span class="pat">AD 118 PQ</span></b><span class="no">No lleva frágil</span></span></button>
+            <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px"><button class="btn pri" type="button">Confirmar con la Transit</button></div>
+          </div></div>
+        </div></div>
+        <figcaption><b>Elegir vehículo</b><span>Hoja inferior con sus vehículos. Los que no cumplen quedan visibles pero apagados y dicen por qué. Con un solo vehículo que cumple, se salta la hoja.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body" style="opacity:.35">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button></div>
+            <span class="badge b-warn">Sin confirmar</span>
+            <p class="big-when">Mañana, mié 22 oct, 08:00</p>
+          </div>
+          <div class="sheet-wrap"><div class="sheet">
+            <div class="grab"></div>
+            <h3>¿Rechazar VJ-2420?</h3>
+            <p>Distribuidora Norte va a ver que no lo hacés y lo tiene que asignar a otro conductor. No se puede deshacer.</p>
+            <div style="margin-top:18px;display:flex;flex-direction:column;gap:10px"><button class="btn" type="button" style="background:transparent;border:1px solid var(--err);color:var(--err-ink)">Rechazar el viaje</button><button class="btn ghost" type="button">Volver</button></div>
+          </div></div>
+        </div></div>
+        <figcaption><b>Rechazar</b><span>Dice qué pasa después, en la voz de la app. El botón de peligro dice la acción entera, no «Sí».</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ═══════════════ VIAJE ACTIVO ═══════════════ -->
+  <section class="flow">
+    <h2>El viaje, parada por parada</h2>
+    <p>Una sola pantalla que cambia según el momento. Siempre hay una sola acción principal, grande y abajo, para usar con una mano y sin mirar mucho.</p>
+    <div class="grid">
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="permiso">
+              <div class="ico-big"><svg><use href="#loc"/></svg></div>
+              <h1 class="h1">Fleter necesita tu ubicación durante el viaje</h1>
+              <ul class="puntos">
+                <li><span class="n">1</span><span><b>Para iniciar y confirmar paradas</b>La app verifica que estés en cada dirección.</span></li>
+                <li><span class="n">2</span><span><b>Para que la empresa siga el viaje</b>Ve tu posición solo mientras el viaje está en curso.</span></li>
+                <li><span class="n">3</span><span><b>Con la pantalla apagada</b>Elegí «Permitir siempre» para que no se corte en el bolsillo.</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="foot"><button class="btn pri" type="button">Permitir ubicación</button><p class="meta" style="text-align:center">Fuera de un viaje, Fleter no usa tu ubicación.</p></div>
+        </div></div>
+        <figcaption><b>Permiso de ubicación</b><span>Antes del pedido del sistema, explicamos para qué: sin «Permitir siempre» el GPS se corta en segundo plano. Aparece la primera vez que va a iniciar un viaje.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button><span class="id" style="margin-right:8px">VJ-2420</span></div>
+            <div class="map">
+              <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice"><path class="calle" d="M-10 150 C60 140 90 90 160 92 S260 60 330 40"/><path class="calle fina" d="M120 -10 L140 210M-10 60 L330 120"/><path class="hecho" d="M190 176 C150 170 90 160 52 148"/><circle class="o" cx="46" cy="146" r="7"/><circle class="yo-halo" cx="196" cy="178" r="16"/><circle class="yo" cx="196" cy="178" r="6"/></svg>
+              <span class="chip-map">A 1,1 km del origen</span>
+            </div>
+            <div class="etapa">
+              <span class="eyebrow-st" style="color:var(--info-ink)">Confirmado con la Transit</span>
+              <h1>Andá al origen para iniciar</h1>
+              <p>Depósito Pilar, Ruta 8 km 52. Iniciá cuando estés en la puerta.</p>
+            </div>
+            <div class="reloj"><div><dt>Programado</dt><dd>08:00</dd></div><div><dt>Podés iniciar</dt><dd>07:00–09:30</dd></div></div>
+            <div class="mini" style="margin-top:12px"><button class="btn out" type="button"><svg><use href="#nav"/></svg>Cómo llegar</button><button class="btn out" type="button"><svg><use href="#phone"/></svg>Llamar</button></div>
+          </div>
+          <div class="foot line"><button class="btn pri big" type="button">Iniciar viaje</button><button class="btn ghost" type="button" style="color:var(--err-ink);height:40px">Cancelar viaje</button></div>
+        </div></div>
+        <figcaption><b>Antes de iniciar</b><span>Muestra a cuánto está del origen. Si toca Iniciar lejos o fuera de horario, el error del backend aparece tal cual («estás a 1112 m…»). Puede cancelar solo antes de iniciar. «Cómo llegar» abre Google Maps o Waze.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top" style="justify-content:space-between"><span class="gps" style="margin-left:8px"><i></i>Compartiendo ubicación</span><span class="id" style="margin-right:8px">VJ-2420</span></div>
+            <div class="etapa" style="margin-top:4px">
+              <span class="eyebrow-st"><span class="badge b-run"><i></i>Cargando</span></span>
+              <h1>Estás en Depósito Pilar</h1>
+              <p>Cuando termines de cargar, tocá «Salir de la parada».</p>
+            </div>
+            <div class="reloj"><div><dt>Llegaste</dt><dd>07:52</dd></div><div><dt>En la parada</dt><dd>18:04</dd></div></div>
+            <p class="sec">Recorrido</p>
+            <ul class="route">
+              <li class="aqui"><span class="m"></span><span><b>Depósito Pilar</b><span>Acá estás. Frágil.</span></span><span class="h">07:52</span></li>
+              <li><span class="m s"></span><span><b>Av. Mitre 1450</b><span>Vicente López</span></span><span class="h">~08:45</span></li>
+              <li><span class="m d"></span><span><b>Av. Corrientes 3200</b><span>Almagro, CABA</span></span><span class="h">~09:20</span></li>
+            </ul>
+          </div>
+          <div class="foot line"><button class="btn pri big" type="button">Salir de la parada</button></div>
+        </div></div>
+        <figcaption><b>Cargando en el origen</b><span>Iniciar = llegar a la parada 1. El reloj mide el tiempo de peón, que el backend registra al salir. Siempre visible que la ubicación se está compartiendo.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="map tall" style="margin-top:4px">
+              <svg viewBox="0 0 320 300" preserveAspectRatio="xMidYMid slice"><path class="calle" d="M-10 250 C60 230 100 160 170 150 S270 90 330 60"/><path class="calle fina" d="M140 -10 L160 310M-10 90 L330 170M250 -10 L230 310"/><path class="hecho" d="M30 246 C70 236 96 196 118 176"/><path class="ruta" d="M118 176 C130 162 150 152 170 150 S240 120 250 112"/><circle class="o" cx="30" cy="246" r="6"/><circle class="p" cx="250" cy="112" r="7"/><rect class="d" x="292" y="62" width="13" height="13" rx="2"/><circle class="yo-halo" cx="118" cy="176" r="16"/><circle class="yo" cx="118" cy="176" r="6"/></svg>
+              <span class="chip-map"><span class="badge b-run" style="height:18px;padding:0 7px"><i></i>En ruta</span></span>
+              <span class="exp"><svg><use href="#expand"/></svg></span>
+            </div>
+            <div class="alerta"><svg><use href="#alert"/></svg><span><b>Te desviaste de la ruta.</b> La recalculamos: seguí por Av. Maipú.</span></div>
+            <div class="etapa">
+              <span class="eyebrow-st" style="color:var(--ink3)">Próxima parada, 2 de 3</span>
+              <h1>Av. Mitre 1450, Vicente López</h1>
+              <p>Llegás en <b>~18 min</b>, a las 08:46.</p>
+            </div>
+          </div>
+          <div class="foot line"><div class="mini"><button class="btn out" type="button"><svg><use href="#nav"/></svg>Cómo llegar</button><button class="btn out" type="button"><svg><use href="#phone"/></svg>Llamar</button></div><button class="btn pri big" type="button">Llegué a la parada</button></div>
+        </div></div>
+        <figcaption><b>En ruta</b><span>Mapa grande con la ruta recalculada, alertas de desvío del backend y la próxima parada con ETA. «Llegué» confirma por proximidad (radio que define el backend; si está lejos, muestra su mensaje).</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top" style="justify-content:space-between"><span class="gps" style="margin-left:8px"><i></i>Compartiendo ubicación</span><span class="id" style="margin-right:8px">VJ-2420</span></div>
+            <div class="etapa" style="margin-top:4px">
+              <span class="eyebrow-st"><span class="badge b-run"><i></i>En parada</span><span style="color:var(--ink3);font-weight:600">Última parada</span></span>
+              <h1>Estás en Av. Corrientes 3200</h1>
+              <p>Cuando termines de descargar, salí para terminar el viaje y generar el remito.</p>
+            </div>
+            <div class="reloj"><div><dt>Llegaste</dt><dd>09:24</dd></div><div><dt>En la parada</dt><dd>06:41</dd></div></div>
+            <p class="sec">Recorrido</p>
+            <ul class="route">
+              <li class="hecha"><span class="m hecha"></span><span><b>Depósito Pilar</b><span>Cargado</span></span><span class="h">07:52–08:10</span></li>
+              <li class="hecha"><span class="m hecha"></span><span><b>Av. Mitre 1450</b><span>Entregado</span></span><span class="h">08:49–09:02</span></li>
+              <li class="aqui"><span class="m d"></span><span><b>Av. Corrientes 3200</b><span>Acá estás</span></span><span class="h">09:24</span></li>
+            </ul>
+          </div>
+          <div class="foot line"><button class="btn pri big" type="button">Salir y terminar el viaje</button></div>
+        </div></div>
+        <figcaption><b>Última parada</b><span>El botón cambia de texto en la última: salir de acá termina el viaje (contrato del Paso 3). Las paradas hechas quedan en verde con sus horas reales.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ═══════════════ CIERRE, HISTORIAL, PERFIL ═══════════════ -->
+  <section class="flow">
+    <h2>Cierre, historial y perfil</h2>
+    <p>El final del viaje, lo que ya hizo, y lo que configura: vehículos, empresas y apariencia.</p>
+    <div class="grid">
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div style="margin-top:28px;margin-bottom:20px;width:64px;height:64px">
+              <svg viewBox="0 0 34 34" width="64" height="64" aria-hidden="true"><rect x="0" y="0" width="10" height="10" rx="2" fill="var(--ok)"/><rect x="12" y="0" width="10" height="10" rx="2" fill="var(--ok)"/><rect x="24" y="0" width="10" height="10" rx="2" fill="var(--ink)"/><rect x="0" y="12" width="10" height="10" rx="2" fill="var(--ok)"/><rect x="12" y="12" width="10" height="10" rx="2" fill="var(--ok)"/><rect x="0" y="24" width="10" height="10" rx="2" fill="var(--ok)"/></svg>
+            </div>
+            <span class="badge b-ok">Entregado</span>
+            <h1 class="h1" style="margin-top:10px">Viaje terminado</h1>
+            <p class="lead">VJ-2420 para Distribuidora Norte. Ya tienen el remito.</p>
+            <div class="tabla">
+              <div class="r"><span></span><span>Estimado</span><span>Real</span></div>
+              <div class="r"><span>Manejo</span><span>1 h 05</span><span>1 h 12</span></div>
+              <div class="r"><span>Carga y descarga</span><span>0 h 30</span><span>0 h 38</span></div>
+              <div class="r"><span>Distancia</span><span>48 km</span><span>51 km</span></div>
+              <div class="r"><span style="font-weight:700">Precio</span><span>$68.500</span><span style="font-weight:700">$71.200</span></div>
+            </div>
+          </div>
+          <div class="foot"><button class="btn pri" type="button">Ver mis viajes</button><button class="btn out" type="button"><svg><use href="#file"/></svg>Ver remito</button></div>
+        </div></div>
+        <figcaption><b>Viaje terminado</b><span>El peak-end dentro del sistema: las cajas se ponen verdes (entregado). Estimado vs. real lado a lado, con lo que falta como «A confirmar».</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body tabs-pad">
+            <div class="hdr"><h1 class="h1">Historial</h1></div>
+            <div class="filtros"><span class="filtro on">Todos</span><span class="filtro">Entregados</span><span class="filtro">Cancelados</span><span class="filtro">Vencidos</span></div>
+            <p class="mes">Octubre 2026 <small>14 viajes</small></p>
+            <div class="card">
+              <div class="top-row"><span class="badge b-ok">Entregado</span><span class="id">VJ-2416</span></div>
+              <div class="when"><span><b>Lun 20 oct, 09:00</b><span class="emp">Distribuidora Norte</span></span><span class="price sm">$71.200</span></div>
+              <p class="meta" style="margin-top:6px;font-size:13px;color:var(--ink2)">Depósito Pilar → Av. Corrientes 3200, Almagro. 1 parada. Frágil. 51 km, 1 h 50 min.</p>
+            </div>
+            <div class="card">
+              <div class="top-row"><span class="badge b-err">Vencido</span><span class="id">VJ-2409</span></div>
+              <div class="when"><span><b>Vie 17 oct, 06:30</b><span class="emp">Frigorífico Sur</span></span><span class="price sm" style="color:var(--ink3)">$29.400</span></div>
+              <p class="meta" style="margin-top:6px;font-size:13px;color:var(--ink2)">Mercado Central → Av. Rivadavia 6800, Flores. Sin paradas. Refrigerado. 21 km. No se inició a tiempo.</p>
+            </div>
+          </div>
+          <nav class="tabbar"><a href="#"><svg><use href="#list"/></svg>Viajes</a><a class="on" href="#"><svg><use href="#clock"/></svg>Historial</a><a href="#"><svg><use href="#user"/></svg>Perfil</a></nav>
+        </div></div>
+        <figcaption><b>Historial</b><span>Agrupado por mes, con filtros. Cancelados y vencidos dicen el motivo en la misma fila.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body tabs-pad">
+            <div class="hdr"><h1 class="h1">Perfil</h1></div>
+            <div class="empresa" style="margin-top:12px"><span class="avatar">MG</span><span><b>Martín Gómez</b><span>martin.gomez@gmail.com</span></span></div>
+            <p class="sec">Mis empresas</p>
+            <div class="lista">
+              <div class="it"><span class="avatar">DN</span><span><b>Distribuidora Norte</b><span>Desde octubre 2026</span></span><svg class="chev"><use href="#chev"/></svg></div>
+              <div class="it"><span class="avatar">FS</span><span><b>Frigorífico Sur</b><span>Desde septiembre 2026</span></span><svg class="chev"><use href="#chev"/></svg></div>
+              <div class="it"><span class="avatar" style="border-style:dashed"><svg width="16" height="16" viewBox="0 0 24 24" style="stroke:var(--ink2);fill:none;stroke-width:2"><use href="#plus"/></svg></span><span><b style="color:var(--accent-ink)">Sumar una empresa</b><span>Con el código que te pasan</span></span></div>
+            </div>
+            <p class="sec">Mis vehículos</p>
+            <div class="lista">
+              <div class="it"><span class="avatar"><svg width="18" height="18" viewBox="0 0 24 24" style="stroke:var(--ink);fill:none;stroke-width:1.8"><use href="#van"/></svg></span><span><b>Ford Transit <span class="mono" style="letter-spacing:.08em;font-weight:500">AE 421 KL</span></b><span>Utilitario. Frágil y voluminoso.</span></span><svg class="chev"><use href="#chev"/></svg></div>
+              <div class="it"><span class="avatar"><svg width="18" height="18" viewBox="0 0 24 24" style="stroke:var(--ink);fill:none;stroke-width:1.8"><use href="#plus"/></svg></span><span><b style="color:var(--accent-ink)">Agregar vehículo</b></span></div>
+            </div>
+            <p class="sec">Apariencia</p>
+            <div class="seg3"><span>Claro</span><span class="on">Oscuro</span><span>Sistema</span></div>
+          </div>
+          <nav class="tabbar"><a href="#"><svg><use href="#list"/></svg>Viajes</a><a href="#"><svg><use href="#clock"/></svg>Historial</a><a class="on" href="#"><svg><use href="#user"/></svg>Perfil</a></nav>
+        </div></div>
+        <figcaption><b>Perfil</b><span>Empresas (sumar con código, entrar a una para desvincularse con confirmación y aviso si hay un viaje en curso: ISSUES.md #1), vehículos y Apariencia Claro / Oscuro / Sistema.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='fleter-proto2-mode', mode='rol';
+  try{ mode=localStorage.getItem(KEY)||'rol'; }catch(e){}
+  function apply(m){
+    document.querySelectorAll('.phone').forEach(function(p){ p.classList.toggle('dk', m==='rol'); });
+    document.querySelectorAll('.seg button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.mode===m)); });
+    try{ localStorage.setItem(KEY,m); }catch(e){}
+  }
+  document.querySelectorAll('.seg button').forEach(function(b){ b.addEventListener('click',function(){ apply(b.dataset.mode); }); });
+  apply(mode);
+  document.querySelectorAll('a[href="#"]').forEach(function(a){ a.addEventListener('click',function(e){ e.preventDefault(); }); });
+})();
+</script>
+</body>
+</html>
