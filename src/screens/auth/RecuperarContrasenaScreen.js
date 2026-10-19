@@ -47,16 +47,12 @@ export default function RecuperarContrasenaScreen({ navigation, route }) {
       <Pantalla
         onVolver={() => setEnviado(false)}
         pie={
-          <>
-            <Boton titulo="Volver a entrar" onPress={() => navigation.navigate('Login')} />
-            <Boton
-              variante="fantasma"
-              deshabilitado={espera > 0}
-              cargando={cargando}
-              onPress={mandar}
-              titulo={espera > 0 ? `Mandarlo de nuevo en ${reloj}` : 'Mandarlo de nuevo'}
-            />
-          </>
+          <Boton
+            deshabilitado={espera > 0}
+            cargando={cargando}
+            onPress={mandar}
+            titulo={espera > 0 ? `Volver a enviar en ${reloj}` : 'Volver a enviar'}
+          />
         }
       >
         <Titulo>Revisá tu email</Titulo>

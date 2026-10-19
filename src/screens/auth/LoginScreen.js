@@ -104,7 +104,7 @@ export default function LoginScreen({ navigation }) {
       <View style={s.olvide}>
         <Enlace style={{ fontSize: 13 }} onPress={() => navigation.navigate('RecuperarContrasena', { email })}>Olvidé mi contraseña</Enlace>
       </View>
-      {DEV_MODE ? <Nota tipo="info">Modo desarrollo: entrás sin contraseña. Con «conductor» en el email entrás como conductor.</Nota> : null}
+      {DEV_MODE ? <Nota>Modo desarrollo: entrás sin contraseña. Con «conductor» en el email entrás como conductor.</Nota> : null}
     </Pantalla>
   );
 }

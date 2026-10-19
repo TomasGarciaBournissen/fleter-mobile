@@ -37,7 +37,7 @@ export default function CodigoConductorScreen({ navigation, route }) {
       <Bajada>Pedile el código a la empresa con la que trabajás. Con eso empezás a recibir sus viajes.</Bajada>
       <CampoCodigo value={codigo} onChange={(c) => { setCodigo(c); setError(''); }} accessibilityLabel="Código de invitación de la empresa" />
       {error ? <Nota tipo="error">{error}</Nota> : <Meta style={{ marginTop: 8 }}>Si trabajás con varias empresas, sumás las otras después desde tu perfil.</Meta>}
-      <Nota tipo="info">Cada empresa ve solo los viajes que te asigna ella, nunca los de las otras.</Nota>
+      <Nota>Cada empresa ve solo los viajes que te asigna ella, nunca los de las otras.</Nota>
     </Pantalla>
   );
 }

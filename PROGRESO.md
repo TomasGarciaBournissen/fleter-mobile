@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-19  
-> Branch: staging | Commits totales: 61
+> Branch: staging | Commits totales: 62
 
 ---
 
@@ -76,6 +76,7 @@
 | (este commit) | 19 Oct 2026 | Prototipo — `prototype/comparacion-estilos.html`: login, tipo de cuenta, empresa registrada e inicio de la empresa hechos dos veces (skill mobile-app-ui-design vs. sistema Fleter) para elegir dirección visual |
 | `7df9b87` | 19 Oct 2026 | Feat — fase 0 + fase 1 del rediseño: kit `src/components/ui/`, servicios de organizaciones/invitaciones/vehículos, Google login, AuthContext con perfil `/me`, `altaEnCurso` y `rolEnAlta`, RootNavigator con splash animado y `OnboardingEmpresaStack`, 13 pantallas nuevas de entrada y alta en claro y oscuro. Se descarta el estilo de la skill (regla en CLAUDE.md) y se borra la comparación |
 | (este commit) | 19 Oct 2026 | Prototipo — fase 2 (conductor): `prototype/fleter-mobile-fase2-conductor.html` con 14 pantallas: viajes (con viaje en curso y vacío), detalle con confirmar/rechazar, hoja de vehículo, permiso de ubicación, viaje activo (antes de iniciar, cargando, en ruta con desvío, última parada), viaje terminado con estimado vs. real, historial y perfil. Oscuro por default, conmutable a claro |
+| (este commit) | 19 Oct 2026 | Fix — revisión del dueño: «Volver a enviar» en vez de «Volver a entrar» al recuperar la contraseña, se saca la nota de las dos cuentas en Tipo de cuenta, notas informativas en gris (no azul), el conductor no ve precios (prototipo fase 2 sin precios). Fase 2 aprobada |
 
 ---
 
@@ -204,7 +205,7 @@ Modelo empresa + conductores. Componentes base en `src/components/ui/`. Todas en
 |----------|-------|--------|
 | Login web no funciona | Firebase web SDK vs React Native Firebase SDK se comportan diferente | ❌ Sin resolver |
 | Entrar con Google sin configurar | Faltan `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` / `_IOS_` / `_ANDROID_` en `.env` y habilitar Google en Firebase Auth. Además el backend no tiene alta con Google: una cuenta de Google nueva da 404 en /login y la app le pide crear la cuenta primero | ⚠️ Pendiente de config |
-| `tipo_vehiculo` | Es texto libre en el backend; el mobile nuevo manda `utilitario` / `camion_chico` / `camion_grande`. Confirmar con backend si hay que normalizar | ⚠️ A confirmar |
+| `tipo_vehiculo` | Texto libre en el backend (`z.string()`, sin categorías): el mobile manda `utilitario` / `camion_chico` / `camion_grande` | ✅ Decidido (19 Oct 2026) |
 | Web sin mapas | `react-native-maps` rompe el bundle web; `MapViewWrapper.web.js` muestra un placeholder (solo afecta a Expo web) | ✅ Resuelto |
 | Retomar viaje activo | Fletero cierra y vuelve a abrir la app — `DisponiblesScreen` detecta viaje activo y navega automáticamente | ✅ Resuelto |
 | Conductor no ve viajes con requisitos | `RegisterFleteroScreen` no registra vehículo ni condiciones → backend filtra por elegibilidad | ❌ Pendiente Fase 1 completa |

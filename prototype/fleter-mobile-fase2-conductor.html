@@ -384,7 +384,7 @@ figcaption button{margin-top:6px;border:1px solid var(--frame);background:transp
   <!-- ═══════════════ VIAJES ═══════════════ -->
   <section class="flow">
     <h2>Mis viajes</h2>
-    <p>La pestaña principal. Lo que necesita una acción del conductor va arriba; después, el día y los próximos. Cada card trae los 9 datos sin cortar y el nombre de la empresa.</p>
+    <p>La pestaña principal. Lo que necesita una acción del conductor va arriba; después, el día y los próximos. Cada card trae los datos del viaje sin cortar y el nombre de la empresa. El conductor nunca ve el precio.</p>
     <div class="grid">
 
       <figure>
@@ -396,7 +396,7 @@ figcaption button{margin-top:6px;border:1px solid var(--frame);background:transp
             <p class="sec">Para confirmar <small>1</small></p>
             <div class="card atn">
               <div class="top-row"><span class="badge b-warn">Sin confirmar</span><span class="id">VJ-2420</span></div>
-              <div class="when"><span><b>Mañana, 08:00</b><span class="emp">Distribuidora Norte</span></span><span class="price">$68.500</span></div>
+              <div class="when"><span><b>Mañana, 08:00</b><span class="emp">Distribuidora Norte</span></span></div>
               <ul class="route">
                 <li><span class="m"></span><span><b>Depósito Pilar</b><span>Ruta 8 km 52, Pilar</span></span></li>
                 <li><span class="m s"></span><span><b>1 parada</b><span>Av. Mitre 1450, Vicente López</span></span></li>
@@ -408,13 +408,13 @@ figcaption button{margin-top:6px;border:1px solid var(--frame);background:transp
             <p class="sec">Hoy <small>mar 21 oct</small></p>
             <div class="card">
               <div class="top-row"><span class="badge b-next">Confirmado</span><span class="id">VJ-2421</span></div>
-              <div class="when"><span><b>Hoy, 14:30</b><span class="emp">Frigorífico Sur</span></span><span class="price sm">$32.000</span></div>
+              <div class="when"><span><b>Hoy, 14:30</b><span class="emp">Frigorífico Sur</span></span></div>
               <p class="meta" style="margin-top:6px;font-size:13px;color:var(--ink2)">Mercado Central, Tapiales → Av. Rivadavia 6800, Flores. Sin paradas. Refrigerado. 21 km, 45 min.</p>
             </div>
           </div>
           <nav class="tabbar"><a class="on" href="#"><span class="dot"><svg><use href="#list"/></svg></span>Viajes</a><a href="#"><svg><use href="#clock"/></svg>Historial</a><a href="#"><svg><use href="#user"/></svg>Perfil</a></nav>
         </div></div>
-        <figcaption><b>Viajes</b><span>Lo que espera al conductor va primero, con borde ámbar y el límite para confirmar (cierra la ventana de inicio). Los demás, compactos pero con los 9 datos.</span></figcaption>
+        <figcaption><b>Viajes</b><span>Lo que espera al conductor va primero, con borde ámbar y el límite para confirmar (cierra la ventana de inicio). Los demás, compactos pero con todos los datos.</span></figcaption>
       </figure>
 
       <figure>
@@ -431,7 +431,7 @@ figcaption button{margin-top:6px;border:1px solid var(--frame);background:transp
             <p class="sec">Próximos</p>
             <div class="card">
               <div class="top-row"><span class="badge b-next">Confirmado</span><span class="id">VJ-2425</span></div>
-              <div class="when"><span><b>Jue 23 oct, 07:00</b><span class="emp">Distribuidora Norte</span></span><span class="price sm">$84.300</span></div>
+              <div class="when"><span><b>Jue 23 oct, 07:00</b><span class="emp">Distribuidora Norte</span></span></div>
               <p class="meta" style="margin-top:6px;font-size:13px;color:var(--ink2)">Depósito Pilar → Av. Centenario 200, San Isidro. 2 paradas. Sin condiciones. 63 km, 2 h 05 min.</p>
             </div>
           </div>
@@ -482,12 +482,12 @@ figcaption button{margin-top:6px;border:1px solid var(--frame);background:transp
               <li><span class="m s"></span><span><b>Av. Mitre 1450</b><span>Vicente López</span></span><span class="h">~08:45</span></li>
               <li><span class="m d"></span><span><b>Av. Corrientes 3200</b><span>Almagro, CABA</span></span><span class="h">~09:20</span></li>
             </ul>
-            <dl class="kv"><div><dt>Condiciones</dt><dd>Frágil</dd></div><div><dt>Distancia</dt><dd>48 km</dd></div><div><dt>Tiempo</dt><dd>1 h 20 min</dd></div><div><dt>Precio estimado</dt><dd>$68.500</dd></div></dl>
-            <div class="note info"><svg><use href="#clock"/></svg><span>Lo podés iniciar de <b>07:00 a 09:30</b>, estando en el origen. Si no lo confirmás antes, vence.</span></div>
+            <dl class="kv"><div><dt>Condiciones</dt><dd>Frágil</dd></div><div><dt>Distancia</dt><dd>48 km</dd></div><div><dt>Tiempo</dt><dd>1 h 20 min</dd></div><div><dt>Vehículo</dt><dd>Lo elegís al confirmar</dd></div></dl>
+            <div class="note plain"><svg><use href="#clock"/></svg><span>Lo podés iniciar de <b>07:00 a 09:30</b>, estando en el origen. Si no lo confirmás antes, vence.</span></div>
           </div>
           <div class="foot line"><button class="btn pri" type="button">Confirmar viaje</button><button class="btn ghost" type="button" style="color:var(--err-ink)">Rechazar</button></div>
         </div></div>
-        <figcaption><b>Detalle del viaje</b><span>Todo lo que necesita para decidir: cuándo, para quién, el recorrido con horas estimadas, condiciones y la ventana para iniciarlo. ¿El conductor debe ver el precio? Hoy la API se lo manda; a confirmar.</span></figcaption>
+        <figcaption><b>Detalle del viaje</b><span>Todo lo que necesita para decidir: cuándo, para quién, el recorrido con horas estimadas, condiciones y la ventana para iniciarlo. El conductor no ve el precio: el pago es entre él y la empresa, por fuera de la app.</span></figcaption>
       </figure>
 
       <figure>
@@ -667,12 +667,12 @@ figcaption button{margin-top:6px;border:1px solid var(--frame);background:transp
               <div class="r"><span>Manejo</span><span>1 h 05</span><span>1 h 12</span></div>
               <div class="r"><span>Carga y descarga</span><span>0 h 30</span><span>0 h 38</span></div>
               <div class="r"><span>Distancia</span><span>48 km</span><span>51 km</span></div>
-              <div class="r"><span style="font-weight:700">Precio</span><span>$68.500</span><span style="font-weight:700">$71.200</span></div>
+              <div class="r"><span style="font-weight:700">Total</span><span>1 h 35</span><span style="font-weight:700">1 h 50</span></div>
             </div>
           </div>
           <div class="foot"><button class="btn pri" type="button">Ver mis viajes</button><button class="btn out" type="button"><svg><use href="#file"/></svg>Ver remito</button></div>
         </div></div>
-        <figcaption><b>Viaje terminado</b><span>El peak-end dentro del sistema: las cajas se ponen verdes (entregado). Estimado vs. real lado a lado, con lo que falta como «A confirmar».</span></figcaption>
+        <figcaption><b>Viaje terminado</b><span>El peak-end dentro del sistema: las cajas se ponen verdes (entregado). Estimado vs. real en tiempos y distancia, sin precio.</span></figcaption>
       </figure>
 
       <figure>
@@ -684,12 +684,12 @@ figcaption button{margin-top:6px;border:1px solid var(--frame);background:transp
             <p class="mes">Octubre 2026 <small>14 viajes</small></p>
             <div class="card">
               <div class="top-row"><span class="badge b-ok">Entregado</span><span class="id">VJ-2416</span></div>
-              <div class="when"><span><b>Lun 20 oct, 09:00</b><span class="emp">Distribuidora Norte</span></span><span class="price sm">$71.200</span></div>
+              <div class="when"><span><b>Lun 20 oct, 09:00</b><span class="emp">Distribuidora Norte</span></span></div>
               <p class="meta" style="margin-top:6px;font-size:13px;color:var(--ink2)">Depósito Pilar → Av. Corrientes 3200, Almagro. 1 parada. Frágil. 51 km, 1 h 50 min.</p>
             </div>
             <div class="card">
               <div class="top-row"><span class="badge b-err">Vencido</span><span class="id">VJ-2409</span></div>
-              <div class="when"><span><b>Vie 17 oct, 06:30</b><span class="emp">Frigorífico Sur</span></span><span class="price sm" style="color:var(--ink3)">$29.400</span></div>
+              <div class="when"><span><b>Vie 17 oct, 06:30</b><span class="emp">Frigorífico Sur</span></span></div>
               <p class="meta" style="margin-top:6px;font-size:13px;color:var(--ink2)">Mercado Central → Av. Rivadavia 6800, Flores. Sin paradas. Refrigerado. 21 km. No se inició a tiempo.</p>
             </div>
           </div>

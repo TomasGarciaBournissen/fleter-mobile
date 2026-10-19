@@ -2,10 +2,9 @@ import React, { useState, useCallback } from 'react';
 import { View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
-import { Pantalla, Titulo, Opcion, Nota, Boton } from '../../components/ui';
+import { Pantalla, Titulo, Opcion, Boton } from '../../components/ui';
 
-// El rol de la cuenta no cambia después del registro (API.md), por eso
-// el aviso de las dos cuentas y un botón que dice qué cuenta se crea.
+// El botón dice qué cuenta se crea (el rol no cambia después del registro).
 export default function TipoCuentaScreen({ navigation }) {
   const [tipo, setTipo] = useState('EMPRESA');
   const { setRolEnAlta } = useAuth();
@@ -42,7 +41,6 @@ export default function TipoCuentaScreen({ navigation }) {
           onPress={() => setTipo('CONDUCTOR')}
         />
       </View>
-      <Nota>Si hacés las dos cosas, vas a necesitar dos cuentas con emails distintos.</Nota>
     </Pantalla>
   );
 }
