@@ -106,3 +106,7 @@ Rules:
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
 - A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.
+
+## Contrato de API y pruebas contra staging
+- El contrato vigente es `API.md` del repo del backend https://github.com/SamuelNakab/nombre-proyecto-back, **branch `develop`** (es lo que corre en staging). No usar el de `main`.
+- Las pruebas de contrato (`scripts/api-tests/`) se corren contra **staging** (`https://nombre-proyecto-back-staging.up.railway.app`), nunca contra producción.

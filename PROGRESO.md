@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-19  
-> Branch: master | Commits totales: 40
+> Branch: claude/eager-bohr-8r69lz | Commits totales: 54
 
 ---
 
@@ -56,6 +56,20 @@
 | (este commit) | 19 Oct 2026 | Chore — knowledge graph de graphify en `graphify-out/` (567 nodos, 1547 aristas, 23 comunidades; código + docs, sin `.claude/`). Actualizar con `graphify update .` |
 | (este commit) | 19 Oct 2026 | Docs — `ISSUES.md`: desvincular cancela viajes en curso (con propuesta), aviso antes de `VENCIDO`, y reglas a tener en cuenta (reconexión WS, radio 50 m, remito con foto) |
 | (pendiente) | 17 Sep 2026 | Feat — mapa real en `DetalleViajeScreen` (pantalla de aceptar viaje del conductor): reemplaza el placeholder "Mapa disponible en Fase 4" por MapView con pins de origen/paradas/destino, `ruta_planeada` si viene (si no, línea recta entre paradas) y encuadre automático del recorrido. Build Release apuntando al backend de producción |
+| (pendiente) | 30 Sep 2026 | Docs/Prototipo — pivot a herramienta B2B de gestión de flota: auditoría (fases 1–3) y prototipo HTML interactivo del panel de empresa en `prototype/fleter-empresa-prototype.html` (Nuevo viaje con repetición, Calendario mes/semana, tabla de Viajes, Fleteros, detalle de viaje con simulación de GPS). Sin cambios en el código de la app; el código del marketplace no se elimina |
+| (pendiente) | 30 Sep 2026 | Docs — `docs/PIVOT_EMPRESA_BACKEND.md`: fase 5 del pivot a panel de empresa, orientada al backend (modelo de datos aditivo, contrato de API, máquina de estados reutilizando la existente, series recurrentes, sockets, suscripción, migración sobre la base compartida, hitos por dependencia y preguntas abiertas). Sin cambios de código |
+| 8cef846 | 07 Oct 2026 | Test — `scripts/api-tests/organizaciones.mjs`: pruebas de contrato de la capa de identidad nueva del backend (PyMEs, miembros, invitaciones, canje, choferes, `GET /api/auth/me`), 109 verificaciones en dos modos por el límite de canjes. Validadas contra un mock local |
+| 3d71ed8 | 07 Oct 2026 | Test — reintento ante 500 de Neon despertando; nota de `NODE_USE_ENV_PROXY=1` |
+| 48b209c | 07 Oct 2026 | Test — corrida contra staging: `principal` 94/94, `extra` 15/15. El límite de canjes es por IP (no por usuario) y anda; la prueba del `429` ahora insiste hasta 60 intentos porque la IP de salida del entorno de Claude rota |
+| 7a0447d | 07 Oct 2026 | PROGRESO: staging pasa las 109 pruebas de identidad |
+| eeb72fc | 08 Oct 2026 | Test — `scripts/api-tests/viajes.mjs`: viaje interno de PyME (Paso 2): crear con chofer asignado, confirmar con vehículo, rechazar, editar/reasignar, iniciar en el origen (50 m y ventana) directo a `CARGANDO`, cierre con remito, cancelaciones, desvinculación y `VENCIDO`, más eventos WebSocket. Staging: 115/115 |
+| ba05407 | 08 Oct 2026 | Test — modo `vencido` contra staging: 9/9 (`ASIGNADO` y `CONFIRMADO` pasan solos a `VENCIDO` al cerrar la ventana, con fila de historial `SISTEMA`) |
+| e12c1df | 12 Oct 2026 | Test — `viajes.mjs` al Paso 3 del backend: ciclo por parada con "Salir" (confirmar la última ya no finaliza, orden obligatorio, PATCH /estado da 400), bloques `estimado`/`real`, tiempos por parada, `estimar-costo` con tramos y 400 sin ruta en auto |
+| d4ca7f4 | 12 Oct 2026 | Test — corrida del Paso 3 contra staging: 148/148 (un primer intento se cortó por un error de red transitorio; el script ahora reintenta una vez y lo anota) |
+| c11458d | 12 Oct 2026 | Test — modo `vencido` con el Paso 3: 9/9 (sin regresiones) |
+| 9a49e25 | 16 Oct 2026 | CLAUDE.md: el contrato vigente es `API.md` de `develop` del backend; pruebas solo en staging |
+| 8519e7f | 16 Oct 2026 | Test — `scripts/api-tests/series.mjs`: Paso 4 (lugares guardados y series). Lugares (CRUD, nombre único sin mayúsculas, snapshot, borrado lógico), el chofer nunca ve el nombre (REST, sockets, remito PDF), series DIARIA/DIAS_SEMANA/SEMANAL/MENSUAL con fechas en hora argentina, un solo `serie:asignada`, viajes independientes, cancelar serie, desvincular (`series_borradas`) y máximo 10 paradas. Staging: 113/113 |
+| (pendiente) | 19 Oct 2026 | Docs — `docs/CAMBIO_DE_ENFOQUE.md`: constancia del cambio de marketplace a herramienta de gestión para PyMEs (motivos, decisiones, ciclo del viaje, estado de backend y mobile, fase 2) |
 
 ---
 
