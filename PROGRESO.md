@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-19  
-> Branch: claude/eager-bohr-8r69lz | Commits totales: 54
+> Branch: staging | Commits totales: 55
 
 ---
 
@@ -70,6 +70,7 @@
 | 9a49e25 | 16 Oct 2026 | CLAUDE.md: el contrato vigente es `API.md` de `develop` del backend; pruebas solo en staging |
 | 8519e7f | 16 Oct 2026 | Test — `scripts/api-tests/series.mjs`: Paso 4 (lugares guardados y series). Lugares (CRUD, nombre único sin mayúsculas, snapshot, borrado lógico), el chofer nunca ve el nombre (REST, sockets, remito PDF), series DIARIA/DIAS_SEMANA/SEMANAL/MENSUAL con fechas en hora argentina, un solo `serie:asignada`, viajes independientes, cancelar serie, desvincular (`series_borradas`) y máximo 10 paradas. Staging: 113/113 |
 | (pendiente) | 19 Oct 2026 | Docs — `docs/CAMBIO_DE_ENFOQUE.md`: constancia del cambio de marketplace a herramienta de gestión para PyMEs (motivos, decisiones, ciclo del viaje, estado de backend y mobile, fase 2) |
+| (este commit) | 19 Oct 2026 | Prototipo — fase 1 del rediseño (branch `staging`): `prototype/fleter-mobile-fase1-auth.html` con 16 pantallas de entrada y alta (splash, login, error, recuperar contraseña, tipo de cuenta, registro PyME, PyME sin organización, crear PyME, sumarse con código, PyME creada, registro de conductor en 3 pasos con licencia y vehículo, vincularse con código, conductor listo). Solo diseño; la lógica se conecta al aprobarlo |
 
 ---
 

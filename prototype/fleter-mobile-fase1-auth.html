@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fleter Mobile — Entrada y alta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500&family=Josefin+Sans:wght@600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Tokens: copia literal de src/theme.js / UXUI.md ───────────────── */
+:root{
+  --accent:#E85D2A; --accent-press:#D2521F; --on-accent:#1B1A17; --on-accent-large:#FFFFFF;
+  --bg:#FAF7F1; --surface:#FFFFFF; --surface2:#F2EDE2; --surface3:#ECE9E1;
+  --line:#E8E4DA; --line-strong:#D9D3C5;
+  --ink:#1B1A17; --ink2:#3F3B34; --ink3:#665F50; --ink4:#B8B2A2; --on-ink:#FFFFFF;
+  --accent-ink:#A63B14; --accent-soft:#FBE4D6; --accent-softer:#FFF1E7;
+  --ok:#2F8F4E; --ok-ink:#1F6B39; --ok-soft:#DCEFD8;
+  --warn:#C98A12; --warn-ink:#8A5E0B; --warn-soft:#FBEFCE;
+  --err:#B83232; --err-ink:#9C2626; --err-soft:#F5D9D4;
+  --info:#2E6FB7; --info-ink:#22578F; --info-soft:#D8E4F2;
+  --halo:rgba(232,93,42,.18);
+  --page:#EFEADF; --page-ink:#1B1A17; --page-ink3:#665F50; --frame:#1B1A17;
+  --f-display:'Archivo Black',system-ui,sans-serif;
+  --f-ui:'Manrope',system-ui,sans-serif;
+  --f-accent:'Josefin Sans',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+.dk{
+  --bg:#141310; --surface:#1C1A16; --surface2:#23201B; --surface3:#2B2822;
+  --line:#2E2A24; --line-strong:#3B362E;
+  --ink:#F4F0E7; --ink2:#CBC5B8; --ink3:#9E978A; --ink4:#6B655A; --on-ink:#141310;
+  --accent-ink:#F0865A; --accent-soft:#3B2116; --accent-softer:#2A1B13;
+  --ok:#4DB36E; --ok-ink:#7BD397; --ok-soft:#16301F;
+  --warn:#D9A23A; --warn-ink:#E9BC5C; --warn-soft:#33260A;
+  --err:#D95454; --err-ink:#F09090; --err-soft:#3A1717;
+  --info:#5C93D6; --info-ink:#8DB8EC; --info-soft:#14243A;
+  --halo:rgba(232,93,42,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --page:#0E0D0B; --page-ink:#F4F0E7; --page-ink3:#9E978A; --frame:#3B362E; }
+}
+:root[data-theme="dark"]{ --page:#0E0D0B; --page-ink:#F4F0E7; --page-ink3:#9E978A; --frame:#3B362E; }
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--page-ink);font-family:var(--f-ui);-webkit-font-smoothing:antialiased;line-height:1.45}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── Página de revisión ─────────────────────────────────────────────── */
+.wrap{max-width:1240px;margin:0 auto;padding:40px 16px 80px}
+.intro{max-width:680px;margin-bottom:28px}
+.intro h1{font-family:var(--f-display);font-size:32px;letter-spacing:-.02em;line-height:1.08;margin-bottom:10px}
+.intro p{color:var(--page-ink3);font-size:15px}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:20px 0 8px}
+.seg{display:inline-flex;border:1px solid var(--frame);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;color:var(--page-ink3)}
+.seg button[aria-pressed="true"]{background:var(--page-ink);color:var(--page)}
+.ctrl small{color:var(--page-ink3);font-size:13px}
+section.flow{margin-top:44px}
+section.flow>h2{font-family:var(--f-display);font-size:22px;letter-spacing:-.02em;margin-bottom:4px}
+section.flow>p{color:var(--page-ink3);font-size:14px;max-width:640px;margin-bottom:22px}
+.grid{display:flex;flex-wrap:wrap;gap:36px 28px}
+figure{width:min(360px,100%)}
+figcaption{margin-top:12px;padding:0 4px}
+figcaption b{display:block;font-size:14px;font-weight:700}
+figcaption span{display:block;font-size:13px;color:var(--page-ink3);margin-top:2px}
+figcaption button{margin-top:6px;border:1px solid var(--frame);background:transparent;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer}
+
+/* ── Teléfono ───────────────────────────────────────────────────────── */
+.phone{width:100%;aspect-ratio:360/760;max-height:760px;border-radius:38px;border:8px solid var(--frame);overflow:hidden;position:relative;background:var(--bg);color:var(--ink)}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg)}
+.status{height:40px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 22px 0 26px;font-size:13px;font-weight:700}
+.status svg{height:11px;fill:var(--ink)}
+.body{flex:1;overflow-y:auto;padding:8px 20px 20px;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.foot{flex:none;padding:12px 20px 26px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.foot.line{border-top:1px solid var(--line)}
+
+/* ── Marca ──────────────────────────────────────────────────────────── */
+.iso .b{fill:var(--accent)} .iso .t{fill:var(--ink)}
+.brand{display:flex;align-items:center;gap:9px}
+.brand svg{width:30px;height:30px}
+.brand .wm{font-family:var(--f-display);font-size:22px;letter-spacing:-.03em;line-height:1}
+.slogan{font-family:var(--f-accent);font-weight:600;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+
+/* ── Tipografía ─────────────────────────────────────────────────────── */
+.h1{font-family:var(--f-display);font-size:28px;letter-spacing:-.02em;line-height:1.08}
+.lead{font-size:15px;color:var(--ink2);margin-top:8px;max-width:30ch}
+.meta{font-size:12px;color:var(--ink3)}
+.mono{font-family:var(--f-mono)}
+.link{color:var(--accent-ink);font-weight:700;text-decoration:none;background:none;border:0;padding:0;cursor:pointer;font-size:14px}
+
+/* ── Controles ──────────────────────────────────────────────────────── */
+.top{display:flex;align-items:center;justify-content:space-between;height:44px;margin:0 -8px 8px}
+.back{width:44px;height:44px;border:0;background:transparent;display:grid;place-items:center;border-radius:10px;cursor:pointer}
+.back svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.field{margin-top:16px}
+.field label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.field label i{font-style:normal;text-transform:none;letter-spacing:0;font-weight:500}
+.in{height:44px;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:0 12px;display:flex;align-items:center;gap:8px;font-size:15px;color:var(--ink)}
+.in input{border:0;background:transparent;outline:0;flex:1;min-width:0;height:100%}
+.in input::placeholder{color:var(--ink3)}
+.in.focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--halo)}
+.in.err{border-color:var(--err)}
+.in .ico{width:20px;height:20px;stroke:var(--ink3);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.in .tog{border:0;background:transparent;width:36px;height:36px;margin-right:-8px;display:grid;place-items:center;cursor:pointer;border-radius:6px}
+.hint{font-size:12px;color:var(--ink3);margin-top:6px}
+.errmsg{font-size:13px;color:var(--err-ink);margin-top:8px;display:flex;gap:6px;align-items:flex-start}
+.errmsg svg{flex:none;width:16px;height:16px;margin-top:1px;stroke:var(--err-ink);fill:none;stroke-width:2;stroke-linecap:round}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.row2 .field{margin-top:16px}
+
+.btn{height:48px;border-radius:10px;border:0;width:100%;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:background .12s var(--ease)}
+.btn.pri{background:var(--accent);color:var(--on-accent)}
+.btn.pri:active{background:var(--accent-press)}
+.btn.pri[disabled]{background:var(--surface3);color:var(--ink4);cursor:default}
+.btn.out{background:var(--surface);border:1px solid var(--line-strong);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:active{background:var(--surface3)}
+.btn svg{width:20px;height:20px}
+.or{display:flex;align-items:center;gap:12px;color:var(--ink3);font-size:12px;margin:2px 0}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.center{text-align:center;font-size:14px;color:var(--ink2)}
+
+/* option cards */
+.opts{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+.opt{display:flex;gap:14px;text-align:left;width:100%;padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;align-items:flex-start;transition:border-color .12s var(--ease),background .12s var(--ease)}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-softer);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt .glyph{flex:none;width:40px;height:40px;border-radius:8px;background:var(--surface2);display:grid;place-items:center}
+.opt[aria-pressed="true"] .glyph{background:var(--accent-soft)}
+.opt .glyph svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.opt b{display:block;font-size:15px;font-weight:700}
+.opt span{display:block;font-size:13px;color:var(--ink2);margin-top:3px}
+.opt .tick{margin-left:auto;flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line-strong);display:grid;place-items:center}
+.opt[aria-pressed="true"] .tick{background:var(--accent);border-color:var(--accent)}
+.opt .tick svg{width:12px;height:12px;stroke:var(--on-accent);stroke-width:3;fill:none;opacity:0}
+.opt[aria-pressed="true"] .tick svg{opacity:1}
+.opt.sm{padding:12px 14px;align-items:center}
+.opt.sm b{font-size:14px}
+.opt.sm span{margin-top:0}
+
+/* chips de condiciones */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.chip svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;display:none}
+.chip[aria-pressed="true"] svg{display:block}
+
+/* stepper: el viaje de la caja — hechas en naranja, la actual es la caja que se sigue */
+.steps{display:flex;align-items:center;gap:10px;margin:4px 0 18px}
+.steps .bx{display:flex;gap:4px}
+.steps .bx i{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--line-strong)}
+.steps .bx i.done{background:var(--accent);border-color:var(--accent)}
+.steps .bx i.now{background:var(--ink);border-color:var(--ink)}
+.steps span{font-size:12px;color:var(--ink3);font-weight:600}
+
+/* código de invitación */
+.code{height:64px;border:1px solid var(--line);background:var(--surface);border-radius:10px;display:flex;align-items:center;padding:0 8px 0 16px;gap:8px;margin-top:24px}
+.code.focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--halo)}
+.code input{border:0;background:transparent;outline:0;flex:1;min-width:0;font-family:var(--f-mono);font-size:22px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}
+.code input::placeholder{color:var(--ink4)}
+.paste{height:36px;border:1px solid var(--line-strong);background:var(--surface2);border-radius:6px;padding:0 12px;font-size:13px;font-weight:600;cursor:pointer}
+
+/* notas */
+.note{border-radius:10px;padding:12px 14px;font-size:13px;display:flex;gap:10px;align-items:flex-start;margin-top:18px}
+.note svg{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;margin-top:1px}
+.note.info{background:var(--info-soft);color:var(--info-ink)}
+.note.ok{background:var(--ok-soft);color:var(--ok-ink)}
+.note.plain{background:var(--surface2);color:var(--ink2)}
+
+/* éxito */
+.seal{width:64px;height:64px;border-radius:16px;background:var(--ok-soft);display:grid;place-items:center;margin:28px 0 22px}
+.seal svg{width:30px;height:30px;stroke:var(--ok);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.next{margin-top:26px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.next li{list-style:none;display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-top:1px solid var(--line)}
+.next li:first-child{border-top:0}
+.next .n{flex:none;width:26px;height:26px;border-radius:6px;background:var(--surface2);font-family:var(--f-mono);font-size:13px;font-weight:500;display:grid;place-items:center;color:var(--ink2)}
+.next li.cur .n{background:var(--accent);color:var(--on-accent)}
+.next b{display:block;font-size:14px;font-weight:700}
+.next span{display:block;font-size:13px;color:var(--ink3);margin-top:1px}
+.pill{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:700}
+.pill.warn{background:var(--warn-soft);color:var(--warn-ink)}
+
+/* splash */
+.splash{background:var(--accent);color:var(--on-accent);align-items:center;justify-content:center}
+.splash .iso{width:120px;height:120px}
+.splash .iso .b{fill:var(--on-accent-large)} .splash .iso .t{fill:var(--on-accent)}
+.splash .iso rect{transform-box:fill-box;transform-origin:center bottom}
+.splash .wm{font-family:var(--f-display);font-size:44px;letter-spacing:-.03em;margin-top:18px;line-height:1}
+.splash .slogan{color:var(--on-accent);margin-top:14px;opacity:.85}
+.splash .bottom{position:absolute;bottom:34px;left:0;right:0;text-align:center;font-size:12px;font-weight:600;opacity:.75}
+@keyframes drop{0%{opacity:0;transform:translateY(-26px)}70%{opacity:1;transform:translateY(2px)}100%{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.play .iso rect{animation:drop .42s var(--ease) both}
+.play .iso rect:nth-child(1){animation-delay:.30s}.play .iso rect:nth-child(2){animation-delay:.42s}
+.play .iso rect:nth-child(4){animation-delay:.12s}.play .iso rect:nth-child(5){animation-delay:.22s}
+.play .iso rect:nth-child(6){animation-delay:0s}.play .iso rect:nth-child(3){animation-delay:.78s;animation-duration:.5s}
+.play .wm,.play .slogan{animation:rise .4s var(--ease) both}
+.play .wm{animation-delay:1.05s}.play .slogan{animation-delay:1.2s}
+@media (prefers-reduced-motion: reduce){.play *{animation:none!important}}
+
+@media (max-width:420px){.wrap{padding-top:28px}.intro h1{font-size:26px}.grid{gap:32px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="iso" viewBox="0 0 48 48"><rect class="b" x="7" y="7" width="10" height="10" rx="2"/><rect class="b" x="19" y="7" width="10" height="10" rx="2"/><rect class="t" x="31" y="7" width="10" height="10" rx="2"/><rect class="b" x="7" y="19" width="10" height="10" rx="2"/><rect class="b" x="19" y="19" width="10" height="10" rx="2"/><rect class="b" x="7" y="31" width="10" height="10" rx="2"/></symbol>
+    <symbol id="back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></symbol>
+    <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5v.01"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="office" viewBox="0 0 24 24"><path d="M4 20.5V6l8-3v17.5M12 9h8v11.5M2.5 20.5h19M7 8.5v.01M7 12v.01M7 15.5v.01M16 12.5v.01M16 16v.01"/></symbol>
+    <symbol id="wheel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 14.5V21M9.6 11.2L3.4 9.4M14.4 11.2l6.2-1.8"/></symbol>
+    <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M14.5 8.5l2 2"/></symbol>
+    <symbol id="van" viewBox="0 0 24 24"><path d="M2.5 16.5V7.5h11v9M13.5 10.5h4l3 3.5v2.5h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></symbol>
+    <symbol id="truck" viewBox="0 0 24 24"><path d="M2 16.5V5.5h12.5v11M14.5 9h4.2l3.3 4v3.5h-7.5"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17.5" cy="17.5" r="1.8"/></symbol>
+    <symbol id="truckL" viewBox="0 0 24 24"><path d="M1.5 16.5V4.5h14v12M15.5 8.5h4l3 4v4h-7"/><circle cx="5" cy="17.5" r="1.6"/><circle cx="9.5" cy="17.5" r="1.6"/><circle cx="18.5" cy="17.5" r="1.6"/></symbol>
+    <symbol id="g" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 38.2 44 33 44 24c0-1.3-.1-2.4-.4-3.5z"/></symbol>
+    <symbol id="sig" viewBox="0 0 64 11"><path d="M1 10h2V7H1zM5 10h2V5H5zM9 10h2V3H9zM13 10h2V1h-2z"/><path d="M27 3.5a9 9 0 0 1 12 0l-1.3 1.4a7 7 0 0 0-9.4 0zM30 6.5a5 5 0 0 1 6 0l-3 3.3z"/><rect x="45" y="1" width="16" height="9" rx="2.5" fill="none" stroke="currentColor" stroke-width="1"/><rect x="46.5" y="2.5" width="11" height="6" rx="1.2"/><path d="M62.5 4v3"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header class="intro">
+    <h1>Entrada y alta</h1>
+    <p>Prototipo de la fase 1 del plan: cómo entra cada persona a Fleter y cómo queda lista para trabajar. Pantallas estáticas para revisar diseño y textos; la lógica se suma cuando las apruebes. Los campos salen del contrato de <span class="mono">develop</span>.</p>
+    <div class="ctrl">
+      <div class="seg" role="group" aria-label="Tema de las pantallas">
+        <button type="button" data-mode="rol" aria-pressed="true">Por rol</button>
+        <button type="button" data-mode="claro" aria-pressed="false">Todo claro</button>
+        <button type="button" data-mode="oscuro" aria-pressed="false">Todo oscuro</button>
+      </div>
+      <small>Por rol: PyME en claro, conductor en oscuro (los defaults de UXUI.md).</small>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════ ENTRADA ═══════════════════════ -->
+  <section class="flow">
+    <h2>Entrada</h2>
+    <p>Lo mismo para los dos roles. Después de entrar, la app lleva a cada uno a su lado según su cuenta.</p>
+    <div class="grid">
+
+      <figure>
+        <div class="phone" data-role="pyme"><div class="scr splash play" id="splash">
+          <svg class="iso" aria-hidden="true"><use href="#iso"/></svg>
+          <div class="wm">Fleter</div>
+          <div class="slogan">Tu logística, de punta a punta.</div>
+        </div></div>
+        <figcaption><b>Splash</b><span>El único momento animado: las cajas se estiban y la última, la que se sigue, cae arriba a la derecha.</span><button type="button" id="replay">Repetir animación</button></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="pyme"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="brand" style="margin-top:20px"><svg class="iso" aria-hidden="true"><use href="#iso"/></svg><span class="wm">Fleter</span></div>
+            <div class="slogan" style="margin-top:10px">Tu logística, de punta a punta.</div>
+            <h1 class="h1" style="margin-top:40px">Entrá a tu cuenta</h1>
+            <div class="field"><label for="l-em">Email</label><div class="in focus"><input id="l-em" type="email" autocomplete="email" value="ana@distribuidoranorte.com.ar"></div></div>
+            <div class="field"><label for="l-pw">Contraseña</label><div class="in"><input id="l-pw" type="password" autocomplete="current-password" value="contraseña1"><button type="button" class="tog" aria-label="Mostrar contraseña" data-pw="l-pw"><svg class="ico"><use href="#eye"/></svg></button></div></div>
+            <div style="margin-top:12px;text-align:right"><button type="button" class="link" style="font-size:13px">Olvidé mi contraseña</button></div>
+          </div>
+          <div class="foot">
+            <button class="btn pri" type="button">Entrar</button>
+            <div class="or">o</div>
+            <button class="btn out" type="button"><svg><use href="#g"/></svg>Entrar con Google</button>
+            <p class="center" style="margin-top:6px">¿Todavía no tenés cuenta? <button type="button" class="link">Creala</button></p>
+          </div>
+        </div></div>
+        <figcaption><b>Login</b><span>Marca y eslogan arriba, acciones abajo al alcance del pulgar. Un solo botón naranja.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="brand" style="margin-top:20px"><svg class="iso" aria-hidden="true"><use href="#iso"/></svg><span class="wm">Fleter</span></div>
+            <div class="slogan" style="margin-top:10px">Tu logística, de punta a punta.</div>
+            <h1 class="h1" style="margin-top:40px">Entrá a tu cuenta</h1>
+            <div class="field"><label for="e-em">Email</label><div class="in err"><input id="e-em" type="email" value="martin.gomez@gmail.com"></div></div>
+            <div class="field"><label for="e-pw">Contraseña</label><div class="in err"><input id="e-pw" type="password" value="123456"><button type="button" class="tog" aria-label="Mostrar contraseña" data-pw="e-pw"><svg class="ico"><use href="#eye"/></svg></button></div>
+              <p class="errmsg" role="alert"><svg><use href="#alert"/></svg><span>El email o la contraseña no coinciden. Revisalos, o recuperá la contraseña si no te acordás.</span></p></div>
+            <div style="margin-top:12px;text-align:right"><button type="button" class="link" style="font-size:13px">Olvidé mi contraseña</button></div>
+          </div>
+          <div class="foot">
+            <button class="btn pri" type="button">Entrar</button>
+            <div class="or">o</div>
+            <button class="btn out" type="button"><svg><use href="#g"/></svg>Entrar con Google</button>
+            <p class="center" style="margin-top:6px">¿Todavía no tenés cuenta? <button type="button" class="link">Creala</button></p>
+          </div>
+        </div></div>
+        <figcaption><b>Login con error</b><span>El error va pegado al campo y dice qué hacer. Mostrado en oscuro, como lo ve un conductor.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="pyme"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button></div>
+            <h1 class="h1">Recuperá tu contraseña</h1>
+            <p class="lead">Te mandamos un link a tu email para que crees una nueva.</p>
+            <div class="field" style="margin-top:28px"><label for="r-em">Email de tu cuenta</label><div class="in focus"><input id="r-em" type="email" autocomplete="email" value="ana@distribuidoranorte.com.ar"></div></div>
+          </div>
+          <div class="foot"><button class="btn pri" type="button">Mandar link</button></div>
+        </div></div>
+        <figcaption><b>Recuperar contraseña</b><span>Un solo campo; el email viene precargado si ya lo escribiste en el login.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="pyme"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button></div>
+            <h1 class="h1">Revisá tu email</h1>
+            <p class="lead">Mandamos el link a <b style="color:var(--ink)">ana@distribuidoranorte.com.ar</b>. Vence en 1 hora.</p>
+            <div class="note plain"><svg><use href="#info"/></svg><span>Si no te llega en unos minutos, buscalo en spam o promociones.</span></div>
+          </div>
+          <div class="foot">
+            <button class="btn pri" type="button">Volver a entrar</button>
+            <button class="btn ghost" type="button" disabled style="color:var(--ink3)">Mandarlo de nuevo en <span class="mono">0:42</span></button>
+          </div>
+        </div></div>
+        <figcaption><b>Link enviado</b><span>Reenviar se habilita después de un minuto, para no llenar la casilla.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ ALTA PyME ═══════════════════════ -->
+  <section class="flow">
+    <h2>Alta de una PyME</h2>
+    <p>Quien trabaja en la PyME crea su cuenta y después crea la PyME (queda como responsable) o se suma a una que ya existe con un código.</p>
+    <div class="grid">
+
+      <figure>
+        <div class="phone" data-role="pyme"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button></div>
+            <h1 class="h1">¿Cómo vas a usar Fleter?</h1>
+            <div class="opts" data-single>
+              <button class="opt" type="button" aria-pressed="true" data-cta="Crear cuenta de PyME"><span class="glyph"><svg><use href="#office"/></svg></span><span><b>Trabajo en una PyME</b><span>Cargo los viajes, se los asigno a nuestros conductores y los sigo en vivo.</span></span><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></button>
+              <button class="opt" type="button" aria-pressed="false" data-cta="Crear cuenta de conductor"><span class="glyph"><svg><use href="#wheel"/></svg></span><span><b>Soy conductor</b><span>Recibo los viajes de las PyMEs con las que trabajo y los hago con la app. Es gratis.</span></span><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></button>
+            </div>
+            <div class="note plain"><svg><use href="#info"/></svg><span>Si hacés las dos cosas, vas a necesitar dos cuentas con emails distintos.</span></div>
+          </div>
+          <div class="foot"><button class="btn pri" type="button" id="tipo-cta">Crear cuenta de PyME</button></div>
+        </div></div>
+        <figcaption><b>Tipo de cuenta</b><span>El botón dice qué cuenta vas a crear. El aviso de dos cuentas sale del contrato: el rol no cambia después.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="pyme"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button></div>
+            <div class="steps"><span class="bx"><i class="now"></i><i></i></span><span>Paso 1 de 2: tus datos</span></div>
+            <h1 class="h1">Creá tu cuenta</h1>
+            <div class="row2">
+              <div class="field"><label for="p-n">Nombre</label><div class="in"><input id="p-n" autocomplete="given-name" value="Ana"></div></div>
+              <div class="field"><label for="p-a">Apellido</label><div class="in"><input id="p-a" autocomplete="family-name" value="Ferreyra"></div></div>
+            </div>
+            <div class="field"><label for="p-d">DNI</label><div class="in"><input id="p-d" class="mono" inputmode="numeric" value="30.512.774"></div></div>
+            <div class="field"><label for="p-e">Email</label><div class="in"><input id="p-e" type="email" autocomplete="email" value="ana@distribuidoranorte.com.ar"></div></div>
+            <div class="field"><label for="p-t">Teléfono <i>(opcional)</i></label><div class="in"><input id="p-t" type="tel" autocomplete="tel" class="mono" value="11 4521-0390"></div></div>
+            <div class="field"><label for="p-p">Contraseña</label><div class="in focus"><input id="p-p" type="password" autocomplete="new-password" value="norte2026"><button type="button" class="tog" aria-label="Mostrar contraseña" data-pw="p-p"><svg class="ico"><use href="#eye"/></svg></button></div><p class="hint">Mínimo 6 caracteres.</p></div>
+          </div>
+          <div class="foot line">
+            <button class="btn pri" type="button">Crear mi cuenta</button>
+            <p class="meta" style="text-align:center">Al crearla aceptás los <button class="link" style="font-size:12px" type="button">términos</button> y la <button class="link" style="font-size:12px" type="button">política de privacidad</button>.</p>
+          </div>
+        </div></div>
+        <figcaption><b>Registro de usuario de PyME</b><span>Sin CUIT ni empresa acá: eso va en la PyME. El stepper son las cajas del isotipo; la oscura es dónde estás.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="pyme"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="steps" style="margin-top:12px"><span class="bx"><i class="done"></i><i class="now"></i></span><span>Paso 2 de 2: tu PyME</span></div>
+            <h1 class="h1">Hola, Ana. Falta tu PyME.</h1>
+            <p class="lead">Todo en Fleter pasa adentro de una PyME: viajes, conductores y lugares.</p>
+            <div class="opts" data-single>
+              <button class="opt" type="button" aria-pressed="true" data-cta="Crear la PyME"><span class="glyph"><svg><use href="#plus"/></svg></span><span><b>Crear la PyME de mi empresa</b><span>Quedás como responsable: invitás a tu equipo y a tus conductores.</span></span><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></button>
+              <button class="opt" type="button" aria-pressed="false" data-cta="Ingresar el código"><span class="glyph"><svg><use href="#key"/></svg></span><span><b>Sumarme a una PyME</b><span>Alguien de tu equipo te pasó un código de invitación.</span></span><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></button>
+            </div>
+          </div>
+          <div class="foot"><button class="btn pri" type="button">Crear la PyME</button><button class="btn ghost" type="button">Salir de la cuenta</button></div>
+        </div></div>
+        <figcaption><b>Sin PyME todavía</b><span>Es lo que ve una cuenta sin PyME (organizacion: null) cada vez que entra, hasta que elige.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="pyme"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button></div>
+            <h1 class="h1">Datos de tu PyME</h1>
+            <p class="lead">Van a aparecer en los remitos de cada viaje.</p>
+            <div class="field" style="margin-top:22px"><label for="o-n">Nombre</label><div class="in"><input id="o-n" value="Distribuidora Norte"></div><p class="hint">Como la conocen tus conductores.</p></div>
+            <div class="field"><label for="o-c">CUIT</label><div class="in focus"><input id="o-c" class="mono" inputmode="numeric" value="30-71234567-1"></div></div>
+            <div class="field"><label for="o-r">Razón social <i>(opcional)</i></label><div class="in"><input id="o-r" value="Distribuidora Norte SRL"></div></div>
+            <div class="field"><label for="o-d">Dirección <i>(opcional)</i></label><div class="in"><svg class="ico"><use href="#pin"/></svg><input id="o-d" placeholder="Buscá la dirección"></div></div>
+          </div>
+          <div class="foot line"><button class="btn pri" type="button">Crear PyME</button></div>
+        </div></div>
+        <figcaption><b>Crear PyME</b><span>CUIT con guiones mientras escribís; el backend lo normaliza. Dirección con autocompletado, como en Nuevo viaje.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="pyme"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button></div>
+            <h1 class="h1">Ingresá el código</h1>
+            <p class="lead">Te lo pasa un responsable de tu PyME. Sirve una sola vez y vence a las 72 horas.</p>
+            <div class="code focus"><input aria-label="Código de invitación" value="K7MQ2-" placeholder="XXXXX-XXXXX" autocomplete="one-time-code" spellcheck="false"><button class="paste" type="button">Pegar</button></div>
+            <p class="hint">Podés pegarlo tal cual te llegó, con o sin guion.</p>
+          </div>
+          <div class="foot"><button class="btn pri" type="button" disabled>Sumarme a la PyME</button></div>
+        </div></div>
+        <figcaption><b>Sumarse con código (miembro)</b><span>Un campo grande en mono que acepta pegar. El botón se habilita con los 10 caracteres.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="pyme"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="seal"><svg><use href="#check"/></svg></div>
+            <h1 class="h1">Distribuidora Norte ya está en Fleter</h1>
+            <div style="margin-top:12px;display:flex;gap:8px;align-items:center"><span class="pill warn">Período de prueba</span><span class="meta">Sos responsable</span></div>
+            <ol class="next">
+              <li class="cur"><span class="n">1</span><span><b>Invitá a tus conductores</b><span>Les pasás un código y se vinculan desde su app.</span></span></li>
+              <li><span class="n">2</span><span><b>Guardá tus lugares</b><span>Depósito, clientes frecuentes: después los elegís con un toque.</span></span></li>
+              <li><span class="n">3</span><span><b>Cargá el primer viaje</b><span>Con conductor asignado y precio estimado.</span></span></li>
+            </ol>
+          </div>
+          <div class="foot"><button class="btn pri" type="button">Invitar conductores</button><button class="btn ghost" type="button">Ir al inicio</button></div>
+        </div></div>
+        <figcaption><b>PyME creada</b><span>Los números sí son una secuencia: así se arranca. Sin conductores no hay viajes, por eso va primero.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ ALTA CONDUCTOR ═══════════════════════ -->
+  <section class="flow">
+    <h2>Alta de un conductor</h2>
+    <p>Tres pasos para quedar habilitado (datos, licencia, vehículo) y un cuarto opcional para vincularse a la primera PyME.</p>
+    <div class="grid">
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button></div>
+            <div class="steps"><span class="bx"><i class="now"></i><i></i><i></i></span><span>Paso 1 de 3: tus datos</span></div>
+            <h1 class="h1">Creá tu cuenta de conductor</h1>
+            <div class="row2">
+              <div class="field"><label for="c-n">Nombre</label><div class="in"><input id="c-n" autocomplete="given-name" value="Martín"></div></div>
+              <div class="field"><label for="c-a">Apellido</label><div class="in"><input id="c-a" autocomplete="family-name" value="Gómez"></div></div>
+            </div>
+            <div class="field"><label for="c-d">DNI</label><div class="in"><input id="c-d" class="mono" inputmode="numeric" value="32.415.880"></div></div>
+            <div class="field"><label for="c-t">Teléfono <i>(opcional)</i></label><div class="in"><input id="c-t" class="mono" type="tel" value="11 6034-2218"></div><p class="hint">Para que la PyME te pueda llamar durante un viaje.</p></div>
+            <div class="field"><label for="c-e">Email</label><div class="in"><input id="c-e" type="email" value="martin.gomez@gmail.com"></div></div>
+            <div class="field"><label for="c-p">Contraseña</label><div class="in"><input id="c-p" type="password" value="camion2026"><button type="button" class="tog" aria-label="Mostrar contraseña" data-pw="c-p"><svg class="ico"><use href="#eye"/></svg></button></div><p class="hint">Mínimo 6 caracteres.</p></div>
+          </div>
+          <div class="foot line"><button class="btn pri" type="button">Seguir con la licencia</button></div>
+        </div></div>
+        <figcaption><b>Conductor: datos</b><span>Mismos campos que la PyME. El CTA nombra el paso que viene.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button></div>
+            <div class="steps"><span class="bx"><i class="done"></i><i class="now"></i><i></i></span><span>Paso 2 de 3: tu licencia</span></div>
+            <h1 class="h1">Tu licencia de conducir</h1>
+            <p class="lead">Copiá los datos tal como figuran en la licencia.</p>
+            <div class="field" style="margin-top:22px"><label for="c-l">Número de licencia</label><div class="in focus"><input id="c-l" class="mono" value="32415880"></div><p class="hint">En la mayoría de las licencias es tu DNI.</p></div>
+            <div class="field"><label for="c-v">Vencimiento</label><div class="in"><svg class="ico"><use href="#cal"/></svg><input id="c-v" class="mono" value="31/12/2027" readonly></div><p class="hint">Se elige en un calendario; no se escribe.</p></div>
+          </div>
+          <div class="foot line"><button class="btn pri" type="button">Seguir con el vehículo</button></div>
+        </div></div>
+        <figcaption><b>Conductor: licencia</b><span>Número y vencimiento (requeridos en registro-conductor). La fecha abre la hoja de calendario del sistema de diseño.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="top"><button class="back" type="button" aria-label="Volver"><svg><use href="#back"/></svg></button></div>
+            <div class="steps"><span class="bx"><i class="done"></i><i class="done"></i><i class="now"></i></span><span>Paso 3 de 3: tu vehículo</span></div>
+            <h1 class="h1">¿Con qué vehículo trabajás?</h1>
+            <div class="opts" data-single style="margin-top:18px;gap:8px">
+              <button class="opt sm" type="button" aria-pressed="true"><span class="glyph"><svg><use href="#van"/></svg></span><span><b>Utilitario</b><span class="meta">Hasta 1.000 kg</span></span><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></button>
+              <button class="opt sm" type="button" aria-pressed="false"><span class="glyph"><svg><use href="#truck"/></svg></span><span><b>Camión chico</b><span class="meta">Hasta 3.500 kg</span></span><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></button>
+              <button class="opt sm" type="button" aria-pressed="false"><span class="glyph"><svg><use href="#truckL"/></svg></span><span><b>Camión grande</b><span class="meta">Hasta 12.000 kg</span></span><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></button>
+            </div>
+            <div class="field"><label for="c-pa">Patente</label><div class="in"><input id="c-pa" class="mono" style="letter-spacing:.08em" value="AE 421 KL"></div></div>
+            <div class="row2">
+              <div class="field"><label for="c-ma">Marca</label><div class="in"><input id="c-ma" value="Ford"></div></div>
+              <div class="field"><label for="c-mo">Modelo</label><div class="in"><input id="c-mo" value="Transit"></div></div>
+              <div class="field" style="margin-top:12px"><label for="c-an">Año</label><div class="in"><input id="c-an" class="mono" inputmode="numeric" value="2022"></div></div>
+              <div class="field" style="margin-top:12px"><label for="c-co">Color</label><div class="in"><input id="c-co" value="Blanco"></div></div>
+            </div>
+            <div class="field"><label>Qué puede llevar</label>
+              <div class="chips" data-multi>
+                <button class="chip" type="button" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Frágil</button>
+                <button class="chip" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Refrigerado</button>
+                <button class="chip" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Carga pesada</button>
+                <button class="chip" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Peligroso</button>
+                <button class="chip" type="button" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Voluminoso</button>
+              </div>
+              <p class="hint">Solo te van a asignar viajes que tu vehículo pueda llevar.</p>
+            </div>
+          </div>
+          <div class="foot line"><button class="btn pri" type="button">Crear mi cuenta</button><button class="btn ghost" type="button">Cargar el vehículo después</button></div>
+        </div></div>
+        <figcaption><b>Conductor: vehículo</b><span>Arregla el problema conocido: hoy el registro no carga vehículo ni condiciones. Se puede saltear, con aviso en la pantalla siguiente.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <h1 class="h1" style="margin-top:28px">Sumate a tu PyME</h1>
+            <p class="lead">Pedile el código a la PyME con la que trabajás. Con eso empezás a recibir sus viajes.</p>
+            <div class="code focus"><input aria-label="Código de la PyME" value="GZ32F-JNQSR" placeholder="XXXXX-XXXXX" autocomplete="one-time-code" spellcheck="false"><button class="paste" type="button">Pegar</button></div>
+            <p class="hint">Si trabajás con varias PyMEs, sumás las otras después desde tu perfil.</p>
+            <div class="note info"><svg><use href="#info"/></svg><span>Cada PyME ve solo los viajes que te asigna ella, nunca los de las otras.</span></div>
+          </div>
+          <div class="foot"><button class="btn pri" type="button">Vincularme</button><button class="btn ghost" type="button">Lo hago después</button></div>
+        </div></div>
+        <figcaption><b>Conductor: código de PyME</b><span>Opcional. La nota responde la duda obvia de quien trabaja para varias PyMEs.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone" data-role="conductor"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="seal"><svg><use href="#check"/></svg></div>
+            <h1 class="h1">Ya trabajás con Distribuidora Norte</h1>
+            <p class="lead">Cuando te asignen un viaje te va a aparecer en Viajes para que lo confirmes.</p>
+            <ul class="next">
+              <li><span class="n" style="background:var(--accent-soft);color:var(--accent-ink)"><svg width="16" height="16" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><use href="#van"/></svg></span><span><b>Ford Transit <span class="mono" style="font-weight:500;letter-spacing:.08em">AE 421 KL</span></b><span>Utilitario. Frágil y voluminoso.</span></span></li>
+            </ul>
+          </div>
+          <div class="foot"><button class="btn pri" type="button">Ver mis viajes</button><button class="btn ghost" type="button">Sumar otra PyME</button></div>
+        </div></div>
+        <figcaption><b>Conductor listo</b><span>Confirma con quién trabaja y con qué vehículo, que es lo que define qué viajes le llegan.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  // Tema de las pantallas
+  var KEY='fleter-proto-mode', mode='rol';
+  try{ mode=localStorage.getItem(KEY)||'rol'; }catch(e){}
+  function apply(m){
+    mode=m;
+    document.querySelectorAll('.phone').forEach(function(p){
+      var dark = m==='oscuro' || (m==='rol' && p.dataset.role==='conductor');
+      p.classList.toggle('dk', dark);
+    });
+    document.querySelectorAll('.seg button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.mode===m)); });
+    try{ localStorage.setItem(KEY,m); }catch(e){}
+  }
+  document.querySelectorAll('.seg button').forEach(function(b){ b.addEventListener('click',function(){ apply(b.dataset.mode); }); });
+  apply(mode);
+
+  // Mostrar / ocultar contraseña
+  document.querySelectorAll('[data-pw]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var i=document.getElementById(b.dataset.pw); var show=i.type==='password';
+      i.type=show?'text':'password';
+      b.setAttribute('aria-label', show?'Ocultar contraseña':'Mostrar contraseña');
+    });
+  });
+
+  // Option cards (una sola) y chips (varias)
+  document.querySelectorAll('[data-single]').forEach(function(g){
+    g.querySelectorAll('.opt').forEach(function(o){
+      o.addEventListener('click',function(){
+        g.querySelectorAll('.opt').forEach(function(x){ x.setAttribute('aria-pressed', String(x===o)); });
+        var cta=g.closest('.scr').querySelector('.foot .btn.pri');
+        if(cta && o.dataset.cta) cta.textContent=o.dataset.cta;
+      });
+    });
+  });
+  document.querySelectorAll('[data-multi] .chip').forEach(function(c){
+    c.addEventListener('click',function(){ c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed')!=='true')); });
+  });
+
+  // Código: formato XXXXX-XXXXX, habilita el botón al completarse
+  document.querySelectorAll('.code input').forEach(function(i){
+    function fmt(){
+      var v=i.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10);
+      i.value = v.length>5 ? v.slice(0,5)+'-'+v.slice(5) : v;
+      var btn=i.closest('.scr').querySelector('.foot .btn.pri');
+      if(btn) btn.disabled = v.length<10;
+    }
+    i.addEventListener('input',fmt);
+  });
+
+  // Repetir splash
+  var s=document.getElementById('splash');
+  document.getElementById('replay').addEventListener('click',function(){ s.classList.remove('play'); void s.offsetWidth; s.classList.add('play'); });
+})();
+</script>
+</body>
+</html>
