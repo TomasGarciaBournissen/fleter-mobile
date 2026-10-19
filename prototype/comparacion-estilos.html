@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparación de estilos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500&family=Josefin+Sans:wght@600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Sistema Fleter (UXUI.md) */
+  --accent:#E85D2A; --accent-press:#D2521F; --on-accent:#1B1A17;
+  --bg:#FAF7F1; --surface:#FFFFFF; --surface2:#F2EDE2; --surface3:#ECE9E1;
+  --line:#E8E4DA; --line-strong:#D9D3C5;
+  --ink:#1B1A17; --ink2:#3F3B34; --ink3:#665F50; --ink4:#B8B2A2; --on-ink:#FFFFFF;
+  --accent-ink:#A63B14; --accent-soft:#FBE4D6; --accent-softer:#FFF1E7;
+  --ok:#2F8F4E; --ok-ink:#1F6B39; --ok-soft:#DCEFD8;
+  --warn:#C98A12; --warn-ink:#8A5E0B; --warn-soft:#FBEFCE;
+  --info:#2E6FB7; --info-ink:#22578F; --info-soft:#D8E4F2;
+  --halo:rgba(232,93,42,.18);
+  /* Variante skill: base neutra blanca, tinta, naranja al 10% */
+  --s-bg:#F6F6F4; --s-card:#FFFFFF; --s-ink:#16151A; --s-accent:#E85D2A;
+  --s-shadow:0 8px 24px rgba(22,21,26,.06), 0 2px 6px rgba(22,21,26,.04);
+  --s-shadow-accent:0 10px 24px rgba(232,93,42,.28);
+  --s-green:#22A35A; --s-green-soft:#E6F6EC; --s-blue:#3B7BE0; --s-blue-soft:#E8F0FD; --s-amber:#E2A11B; --s-amber-soft:#FDF3DD;
+  /* Página */
+  --page:#E9E5DC; --page-ink:#1B1A17; --page-ink3:#665F50; --frame:#1B1A17;
+  --f-display:'Archivo Black',system-ui,sans-serif; --f-ui:'Manrope',system-ui,sans-serif;
+  --f-accent:'Josefin Sans',system-ui,sans-serif; --f-mono:'JetBrains Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --page:#0E0D0B; --page-ink:#F4F0E7; --page-ink3:#9E978A; --frame:#3B362E; } }
+:root[data-theme="dark"]{ --page:#0E0D0B; --page-ink:#F4F0E7; --page-ink3:#9E978A; --frame:#3B362E; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--page-ink);font-family:var(--f-ui);-webkit-font-smoothing:antialiased;line-height:1.45}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.wrap{max-width:1100px;margin:0 auto;padding:40px 16px 80px}
+.intro{max-width:700px}
+.intro h1{font-family:var(--f-display);font-size:32px;letter-spacing:-.02em;line-height:1.08;margin-bottom:10px}
+.intro p{color:var(--page-ink3);font-size:15px;margin-top:8px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:22px}
+.legend div{border:1px solid var(--frame);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--page-ink3)}
+.legend b{display:block;color:var(--page-ink);font-size:14px;margin-bottom:4px}
+section.pair{margin-top:48px}
+section.pair>h2{font-family:var(--f-display);font-size:22px;letter-spacing:-.02em}
+section.pair>p{color:var(--page-ink3);font-size:14px;max-width:680px;margin:4px 0 20px}
+.two{display:flex;flex-wrap:wrap;gap:28px}
+figure{width:min(360px,100%)}
+figcaption{margin-top:12px;padding:0 4px}
+figcaption b{display:block;font-size:14px}
+figcaption span{display:block;font-size:13px;color:var(--page-ink3);margin-top:2px}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;margin-bottom:6px;border:1px solid var(--frame)}
+figcaption button{margin-top:8px;border:1px solid var(--frame);background:transparent;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer}
+
+.phone{width:100%;aspect-ratio:360/760;max-height:760px;border-radius:38px;border:8px solid var(--frame);overflow:hidden;position:relative}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column}
+.status{height:40px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 22px 0 26px;font-size:13px;font-weight:700}
+.status svg{height:11px;fill:currentColor}
+.body{flex:1;overflow-y:auto;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.foot{flex:none;display:flex;flex-direction:column;gap:10px}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.mono{font-family:var(--f-mono)}
+
+/* ════════════ A · VARIANTE SKILL ════════════ */
+.A{background:var(--s-bg);color:var(--s-ink);font-family:var(--f-ui)}
+.A .scr{background:var(--s-bg)}
+.A .body{padding:8px 24px 24px}
+.A .foot{padding:12px 24px 28px}
+.A .t1{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.A .t2{font-size:18px;font-weight:800;letter-spacing:-.01em}
+.A .tb{font-size:15px;font-weight:500;opacity:.8}
+.A .ts{font-size:13px;font-weight:500;opacity:.6}
+.A .logo{width:56px;height:56px;border-radius:18px;background:var(--s-accent);display:grid;place-items:center;box-shadow:var(--s-shadow-accent),inset 0 1px 0 rgba(255,255,255,.35)}
+.A .logo svg{width:30px;height:30px}
+.A .glow{position:relative}
+.A .glow::before{content:"";position:absolute;inset:-18px;background:radial-gradient(circle,rgba(232,93,42,.28),transparent 65%);filter:blur(10px);z-index:0}
+.A .glow>*{position:relative;z-index:1}
+.A .inp{height:56px;border-radius:16px;background:var(--s-card);box-shadow:var(--s-shadow);display:flex;align-items:center;gap:12px;padding:0 18px;margin-top:12px}
+.A .inp input{border:0;background:transparent;outline:0;flex:1;font-size:15px;font-weight:500;min-width:0}
+.A .inp.on{box-shadow:0 0 0 2px var(--s-accent),var(--s-shadow-accent)}
+.A .inp svg.i{opacity:.45}
+.A .btn{height:56px;border-radius:18px;border:0;width:100%;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:transform .15s var(--ease)}
+.A .btn:active{transform:scale(.98)}
+.A .btn.pri{background:var(--s-accent);color:#fff;box-shadow:var(--s-shadow-accent),inset 0 1px 0 rgba(255,255,255,.35)}
+.A .btn.sec{background:rgba(232,93,42,.08);color:var(--s-accent);border:1px solid rgba(232,93,42,.10)}
+.A .btn.wht{background:var(--s-card);box-shadow:var(--s-shadow)}
+.A .btn svg{width:20px;height:20px}
+.A .card{background:var(--s-card);border-radius:24px;box-shadow:var(--s-shadow);padding:20px}
+.A .opt{display:flex;gap:16px;align-items:center;width:100%;text-align:left;background:var(--s-card);border:0;border-radius:24px;box-shadow:var(--s-shadow);padding:20px;cursor:pointer;margin-top:16px;transition:box-shadow .15s var(--ease),transform .15s var(--ease)}
+.A .opt[aria-pressed="true"]{box-shadow:0 0 0 2px var(--s-accent),var(--s-shadow-accent);transform:translateY(-1px)}
+.A .opt .em{flex:none;width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:28px}
+.A .opt b{display:block;font-size:16px;font-weight:800}
+.A .opt span.d{display:block;font-size:13px;font-weight:500;opacity:.6;margin-top:2px}
+.A .chipnav{position:absolute;left:16px;right:16px;bottom:18px;height:64px;border-radius:22px;background:var(--s-card);box-shadow:0 12px 32px rgba(22,21,26,.12);display:flex;justify-content:space-around;align-items:center}
+.A .chipnav a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;opacity:.45;color:var(--s-ink);text-decoration:none}
+.A .chipnav a.on{opacity:1;color:var(--s-accent)}
+.A .chipnav .plus{width:48px;height:48px;border-radius:16px;background:var(--s-accent);color:#fff;display:grid;place-items:center;opacity:1;box-shadow:var(--s-shadow-accent)}
+.A .av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#F7B48F,#E85D2A);display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;flex:none}
+.A .stat{flex:1;background:var(--s-card);border-radius:20px;box-shadow:var(--s-shadow);padding:14px 16px}
+.A .stat .ts{white-space:nowrap}
+.A .stat b{display:block;font-size:24px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.A .live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--s-accent);background:rgba(232,93,42,.10);border-radius:999px;padding:4px 10px}
+.A .live i{width:7px;height:7px;border-radius:50%;background:var(--s-accent);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(232,93,42,.5)}70%{box-shadow:0 0 0 7px rgba(232,93,42,0)}100%{box-shadow:0 0 0 0 rgba(232,93,42,0)}}
+.A .track{display:flex;align-items:center;gap:6px;margin:16px 0 6px}
+.A .track i{height:6px;flex:1;border-radius:999px;background:rgba(22,21,26,.08)}
+.A .track i.d{background:var(--s-accent)}
+.A .track i.n{background:linear-gradient(90deg,var(--s-accent) 55%,rgba(22,21,26,.08) 55%)}
+.A .qa{display:flex;gap:10px;margin-top:16px}
+.A .qa button{flex:1;height:44px;border-radius:14px;border:0;background:var(--s-bg);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+.A .up{display:flex;gap:14px;align-items:center;padding:14px 0;border-top:1px solid rgba(22,21,26,.06)}
+.A .up:first-child{border-top:0}
+.A .tile{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;flex:none;font-size:22px}
+.A .badge{font-size:11px;font-weight:800;border-radius:999px;padding:3px 9px;white-space:nowrap}
+/* éxito A */
+.A .burst{position:relative;width:120px;height:120px;margin:40px auto 28px;display:grid;place-items:center}
+.A .burst .core{width:96px;height:96px;border-radius:32px;background:var(--s-accent);display:grid;place-items:center;box-shadow:0 18px 40px rgba(232,93,42,.40),inset 0 1px 0 rgba(255,255,255,.4)}
+.A .burst .core svg{width:44px;height:44px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.A .burst .sp{position:absolute;width:10px;height:10px;border-radius:3px}
+@keyframes pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+@keyframes fly{0%{transform:translate(0,0) scale(.3);opacity:0}30%{opacity:1}100%{transform:translate(var(--x),var(--y)) scale(1) rotate(40deg);opacity:0}}
+.A .play .core{animation:pop .6s var(--ease) both}
+.A .play .sp{animation:fly 1.2s var(--ease) .25s both}
+
+/* ════════════ B · SISTEMA FLETER ════════════ */
+.B{background:var(--bg);color:var(--ink)}
+.B .scr{background:var(--bg)}
+.B .body{padding:8px 20px 20px}
+.B .foot{padding:12px 20px 26px;background:var(--bg)}
+.B .brand{display:flex;align-items:center;gap:9px}
+.B .brand svg{width:30px;height:30px}
+.B .iso .b{fill:var(--accent)} .B .iso .t{fill:var(--ink)}
+.B .wm{font-family:var(--f-display);font-size:22px;letter-spacing:-.03em;line-height:1}
+.B .slogan{font-family:var(--f-accent);font-weight:600;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.B .h1{font-family:var(--f-display);font-size:28px;letter-spacing:-.02em;line-height:1.08}
+.B .lead{font-size:15px;color:var(--ink2);margin-top:8px}
+.B .meta{font-size:12px;color:var(--ink3)}
+.B .field{margin-top:16px}
+.B .field label{display:block;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.B .in{height:44px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:0 12px;display:flex;align-items:center;font-size:15px}
+.B .in input{border:0;background:transparent;outline:0;flex:1;min-width:0}
+.B .in.focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--halo)}
+.B .btn{height:48px;border-radius:10px;border:0;width:100%;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}
+.B .btn.pri{background:var(--accent);color:var(--on-accent)}
+.B .btn.out{background:var(--surface);border:1px solid var(--line-strong)}
+.B .btn.ghost{background:transparent}
+.B .btn svg{width:20px;height:20px}
+.B .link{color:var(--accent-ink);font-weight:700;background:none;border:0;cursor:pointer;font-size:14px}
+.B .or{display:flex;align-items:center;gap:12px;color:var(--ink3);font-size:12px}
+.B .or::before,.B .or::after{content:"";flex:1;height:1px;background:var(--line)}
+.B .opt{display:flex;gap:14px;text-align:left;width:100%;padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;align-items:flex-start;margin-top:12px}
+.B .opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-softer);box-shadow:inset 0 0 0 1px var(--accent)}
+.B .opt .glyph{flex:none;width:40px;height:40px;border-radius:8px;background:var(--surface2);display:grid;place-items:center}
+.B .opt[aria-pressed="true"] .glyph{background:var(--accent-soft)}
+.B .opt b{display:block;font-size:15px;font-weight:700}
+.B .opt span.d{display:block;font-size:13px;color:var(--ink2);margin-top:3px}
+.B .tick{margin-left:auto;flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line-strong);display:grid;place-items:center}
+.B .opt[aria-pressed="true"] .tick{background:var(--accent);border-color:var(--accent)}
+.B .tick svg{width:12px;height:12px;stroke:var(--on-accent);stroke-width:3;fill:none;opacity:0}
+.B .opt[aria-pressed="true"] .tick svg{opacity:1}
+.B .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.B .badge{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.B .badge i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.B .b-run{background:var(--accent-soft);color:var(--accent-ink)}
+.B .b-run i{animation:pulseB 1.6s infinite}
+@keyframes pulseB{50%{opacity:.25}}
+.B .b-next{background:var(--info-soft);color:var(--info-ink)}
+.B .b-warn{background:var(--warn-soft);color:var(--warn-ink)}
+.B .kv{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.B .kv dt{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.B .kv dd{font-size:13px;font-weight:600;color:var(--ink);margin-top:1px}
+.B .route{margin-top:12px}
+.B .route li{list-style:none;display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;position:relative;padding-bottom:10px}
+.B .route li:last-child{padding-bottom:0}
+.B .route li::before{content:"";position:absolute;left:6px;top:14px;bottom:0;width:1.5px;background:var(--line-strong)}
+.B .route li:last-child::before{display:none}
+.B .route .m{width:10px;height:10px;margin:4px 2px 0;border-radius:50%;background:var(--accent)}
+.B .route .m.s{background:var(--ink3)}
+.B .route .m.d{border-radius:2px;background:var(--ink)}
+.B .route b{font-size:13px;font-weight:700;display:block}
+.B .route span{font-size:12px;color:var(--ink3)}
+.B .price{font-family:var(--f-display);font-size:20px;letter-spacing:-.02em}
+.B .note{border-radius:10px;padding:12px 14px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+.B .note.warn{background:var(--warn-soft);color:var(--warn-ink)}
+.B .sec{font-family:var(--f-display);font-size:14px;letter-spacing:-.01em;margin:22px 0 10px}
+.B .tabs{flex:none;height:64px;border-top:1px solid var(--line);background:var(--surface);display:flex;justify-content:space-around;align-items:center;padding-bottom:6px}
+.B .tabs a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--ink3);text-decoration:none;min-width:56px}
+.B .tabs a.on{color:var(--ink);font-weight:700}
+.B .tabs a.on svg{color:var(--accent)}
+.B .tabs .nuevo{width:40px;height:32px;border-radius:8px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center}
+.B .next{margin-top:24px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.B .next li{list-style:none;display:flex;gap:14px;padding:14px 16px;border-top:1px solid var(--line)}
+.B .next li:first-child{border-top:0}
+.B .next .n{flex:none;width:26px;height:26px;border-radius:6px;background:var(--surface2);font-family:var(--f-mono);font-size:13px;display:grid;place-items:center}
+.B .next li.cur .n{background:var(--accent);color:var(--on-accent)}
+.B .next b{display:block;font-size:14px}
+.B .next span{display:block;font-size:13px;color:var(--ink3)}
+.B .pill{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:700;background:var(--warn-soft);color:var(--warn-ink)}
+/* éxito B: el isotipo se arma */
+.B .stack{width:84px;height:84px;margin:30px 0 22px}
+.B .stack rect{transform-box:fill-box;transform-origin:center bottom}
+@keyframes drop{0%{opacity:0;transform:translateY(-22px)}70%{opacity:1;transform:translateY(2px)}100%{opacity:1;transform:none}}
+.B .play .stack rect{animation:drop .4s var(--ease) both}
+.B .play .stack rect:nth-child(6){animation-delay:0s}.B .play .stack rect:nth-child(4){animation-delay:.1s}.B .play .stack rect:nth-child(5){animation-delay:.2s}
+.B .play .stack rect:nth-child(1){animation-delay:.3s}.B .play .stack rect:nth-child(2){animation-delay:.4s}.B .play .stack rect:nth-child(3){animation-delay:.75s;animation-duration:.5s}
+@media (prefers-reduced-motion: reduce){.play *,.A .live i,.B .b-run i{animation:none!important}}
+@media (max-width:420px){.intro h1{font-size:26px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="iso" viewBox="0 0 48 48"><rect class="b" x="7" y="7" width="10" height="10" rx="2"/><rect class="b" x="19" y="7" width="10" height="10" rx="2"/><rect class="t" x="31" y="7" width="10" height="10" rx="2"/><rect class="b" x="7" y="19" width="10" height="10" rx="2"/><rect class="b" x="19" y="19" width="10" height="10" rx="2"/><rect class="b" x="7" y="31" width="10" height="10" rx="2"/></symbol>
+  <symbol id="isoW" viewBox="0 0 48 48"><rect fill="#fff" x="7" y="7" width="10" height="10" rx="2"/><rect fill="#fff" x="19" y="7" width="10" height="10" rx="2"/><rect fill="#16151A" x="31" y="7" width="10" height="10" rx="2"/><rect fill="#fff" x="7" y="19" width="10" height="10" rx="2"/><rect fill="#fff" x="19" y="19" width="10" height="10" rx="2"/><rect fill="#fff" x="7" y="31" width="10" height="10" rx="2"/></symbol>
+  <symbol id="mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></symbol>
+  <symbol id="lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+  <symbol id="eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="office" viewBox="0 0 24 24"><path d="M4 20.5V6l8-3v17.5M12 9h8v11.5M2.5 20.5h19M7 8.5v.01M7 12v.01M7 15.5v.01M16 12.5v.01M16 16v.01"/></symbol>
+  <symbol id="wheel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 14.5V21M9.6 11.2L3.4 9.4M14.4 11.2l6.2-1.8"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="home" viewBox="0 0 24 24"><path d="M3.5 10.5L12 4l8.5 6.5V20h-5.5v-6h-6v6H3.5z"/></symbol>
+  <symbol id="list" viewBox="0 0 24 24"><path d="M8 6.5h12M8 12h12M8 17.5h12M4 6.5v.01M4 12v.01M4 17.5v.01"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 5.2a3.5 3.5 0 0 1 0 6.6M18 14.8c1.9.7 3.1 2.4 3.5 5.2"/></symbol>
+  <symbol id="more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></symbol>
+  <symbol id="phone" viewBox="0 0 24 24"><path d="M5 3.5h3.5l1.8 4.5-2.3 1.5a11 11 0 0 0 6.5 6.5l1.5-2.3 4.5 1.8V19a2 2 0 0 1-2 2A17 17 0 0 1 3 5.5a2 2 0 0 1 2-2z"/></symbol>
+  <symbol id="map" viewBox="0 0 24 24"><path d="M9 4.5L3.5 6.5v13L9 17.5l6 2 5.5-2v-13L15 6.5z"/><path d="M9 4.5v13M15 6.5v13"/></symbol>
+  <symbol id="alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></symbol>
+  <symbol id="g" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 38.2 44 33 44 24c0-1.3-.1-2.4-.4-3.5z"/></symbol>
+  <symbol id="sig" viewBox="0 0 64 11"><path d="M1 10h2V7H1zM5 10h2V5H5zM9 10h2V3H9zM13 10h2V1h-2z"/><path d="M27 3.5a9 9 0 0 1 12 0l-1.3 1.4a7 7 0 0 0-9.4 0zM30 6.5a5 5 0 0 1 6 0l-3 3.3z"/><rect x="45" y="1" width="16" height="9" rx="2.5" fill="none" stroke="currentColor" stroke-width="1"/><rect x="46.5" y="2.5" width="11" height="6" rx="1.2"/></symbol>
+</defs></svg>
+
+<div class="wrap">
+  <header class="intro">
+    <h1>Dos estilos, mismas pantallas</h1>
+    <p>Cuatro pantallas de la app hechas dos veces con el mismo contenido. A la izquierda, siguiendo la skill mobile-app-ui-design al pie de la letra. A la derecha, con el sistema de diseño de Fleter (UXUI.md).</p>
+    <div class="legend">
+      <div><b>A · Skill mobile-app-ui-design</b>Una sola familia tipográfica, base blanca, sombras suaves teñidas, cards de 24 px de radio, íconos con fondo de color, brillo detrás de lo importante y un festejo al final.</div>
+      <div><b>B · Sistema Fleter</b>Las 4 tipografías con un rol cada una, fondo crema, cards con borde y sin sombra, radios de 6 a 14 px, estados en 5 familias de color y la regla de los 9 datos.</div>
+    </div>
+  </header>
+
+  <!-- ─────────────── 1 · LOGIN ─────────────── -->
+  <section class="pair">
+    <h2>1. Login</h2>
+    <p>Mismo contenido: marca, email, contraseña, entrar, Google y crear cuenta.</p>
+    <div class="two">
+      <figure>
+        <div class="phone A"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="glow" style="width:56px;margin-top:28px"><div class="logo"><svg><use href="#isoW"/></svg></div></div>
+            <h1 class="t1" style="margin-top:28px">Bienvenida de nuevo 👋</h1>
+            <p class="tb" style="margin-top:6px">Entrá para ver tus viajes de hoy.</p>
+            <div style="margin-top:20px">
+              <label class="inp on"><svg class="i"><use href="#mail"/></svg><input aria-label="Email" value="ana@distribuidoranorte.com.ar"></label>
+              <label class="inp"><svg class="i"><use href="#lock"/></svg><input aria-label="Contraseña" type="password" value="contraseña1"><svg class="i"><use href="#eye"/></svg></label>
+            </div>
+            <p class="ts" style="text-align:right;margin-top:14px;opacity:1;color:var(--s-accent);font-weight:700">¿Olvidaste tu contraseña?</p>
+          </div>
+          <div class="foot" style="padding-bottom:28px">
+            <button class="btn pri" type="button">Entrar</button>
+            <button class="btn wht" type="button"><svg><use href="#g"/></svg>Seguir con Google</button>
+            <p class="ts" style="text-align:center;margin-top:4px">¿No tenés cuenta? <b style="color:var(--s-accent);opacity:1">Creala</b></p>
+          </div>
+        </div></div>
+        <figcaption><span class="tag">A · Skill</span><b>Cálido y blando</b><span>Logo con brillo, saludo con emoji, campos flotando sobre sombras, botón con sombra naranja. Se parece a cualquier app de consumo bien hecha.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone B"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <div class="brand" style="margin-top:20px"><svg class="iso"><use href="#iso"/></svg><span class="wm">Fleter</span></div>
+            <div class="slogan" style="margin-top:10px">Tu logística, de punta a punta.</div>
+            <h1 class="h1" style="margin-top:40px">Entrá a tu cuenta</h1>
+            <div class="field"><label>Email</label><div class="in focus"><input aria-label="Email" value="ana@distribuidoranorte.com.ar"></div></div>
+            <div class="field"><label>Contraseña</label><div class="in"><input aria-label="Contraseña" type="password" value="contraseña1"></div></div>
+            <div style="margin-top:12px;text-align:right"><button class="link" type="button" style="font-size:13px">Olvidé mi contraseña</button></div>
+          </div>
+          <div class="foot">
+            <button class="btn pri" type="button">Entrar</button>
+            <div class="or">o</div>
+            <button class="btn out" type="button"><svg><use href="#g"/></svg>Entrar con Google</button>
+            <p style="text-align:center;font-size:14px;color:var(--ink2);margin-top:6px">¿Todavía no tenés cuenta? <button class="link" type="button">Creala</button></p>
+          </div>
+        </div></div>
+        <figcaption><span class="tag">B · Sistema Fleter</span><b>Seco y de herramienta</b><span>Marca y eslogan, labels visibles, bordes en vez de sombras, texto en tinta sobre el naranja. Es la pantalla del prototipo de fase 1.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ─────────────── 2 · TIPO DE CUENTA ─────────────── -->
+  <section class="pair">
+    <h2>2. Tipo de cuenta</h2>
+    <p>Elegir entre cuenta de empresa y de conductor.</p>
+    <div class="two">
+      <figure>
+        <div class="phone A"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <h1 class="t1" style="margin-top:36px">¿Cómo vas a usar Fleter?</h1>
+            <p class="tb" style="margin-top:6px">Elegí una opción. Después no se cambia.</p>
+            <div data-single style="margin-top:12px">
+              <button class="opt" type="button" aria-pressed="true"><span class="em" style="background:var(--s-blue-soft)">🏢</span><span><b>Trabajo en una empresa</b><span class="d">Cargo viajes y los sigo en vivo.</span></span></button>
+              <button class="opt" type="button" aria-pressed="false"><span class="em" style="background:var(--s-amber-soft)">🚚</span><span><b>Soy conductor</b><span class="d">Hago los viajes con la app. Gratis.</span></span></button>
+            </div>
+          </div>
+          <div class="foot"><button class="btn pri" type="button">Continuar</button></div>
+        </div></div>
+        <figcaption><span class="tag">A · Skill</span><b>Selección con personalidad</b><span>Emojis grandes sobre fondos de color, la opción elegida se eleva con brillo. Textos más cortos y un botón genérico, como recomienda la skill.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone B"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <h1 class="h1" style="margin-top:44px">¿Cómo vas a usar Fleter?</h1>
+            <div data-single style="margin-top:12px">
+              <button class="opt" type="button" aria-pressed="true"><span class="glyph"><svg class="i"><use href="#office"/></svg></span><span><b>Trabajo en una empresa</b><span class="d">Cargo los viajes, se los asigno a nuestros conductores y los sigo en vivo.</span></span><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></button>
+              <button class="opt" type="button" aria-pressed="false"><span class="glyph"><svg class="i"><use href="#wheel"/></svg></span><span><b>Soy conductor</b><span class="d">Recibo los viajes de las empresas con las que trabajo y los hago con la app. Es gratis.</span></span><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></button>
+            </div>
+          </div>
+          <div class="foot"><button class="btn pri" type="button">Crear cuenta de empresa</button></div>
+        </div></div>
+        <figcaption><span class="tag">B · Sistema Fleter</span><b>Selección explicada</b><span>Íconos de línea, check explícito y un botón que dice qué cuenta vas a crear (UXUI prohíbe «Continuar» a secas).</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ─────────────── 3 · EMPRESA REGISTRADA ─────────────── -->
+  <section class="pair">
+    <h2>3. Empresa registrada</h2>
+    <p>El final del alta: la regla «peak-end» de la skill dice que este momento es el que se recuerda.</p>
+    <div class="two">
+      <figure>
+        <div class="phone A"><div class="scr play" id="okA">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body" style="text-align:center">
+            <div class="burst">
+              <span class="sp" style="background:#E85D2A;--x:-58px;--y:-48px"></span><span class="sp" style="background:#3B7BE0;--x:56px;--y:-54px"></span>
+              <span class="sp" style="background:#22A35A;--x:-64px;--y:30px"></span><span class="sp" style="background:#E2A11B;--x:62px;--y:36px"></span>
+              <span class="sp" style="background:#E85D2A;--x:4px;--y:-72px"></span><span class="sp" style="background:#3B7BE0;--x:-12px;--y:70px"></span>
+              <div class="core"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+            </div>
+            <h1 class="t1">¡Listo, Ana! 🎉</h1>
+            <p class="tb" style="margin-top:8px">Distribuidora Norte ya está en Fleter.</p>
+            <div class="card" style="margin-top:28px;text-align:left;display:flex;gap:14px;align-items:center">
+              <span class="tile" style="background:var(--s-blue-soft)">👥</span>
+              <span><b style="font-size:15px;font-weight:800;display:block">Invitá a tus conductores</b><span class="ts">Es el primer paso para cargar viajes.</span></span>
+            </div>
+          </div>
+          <div class="foot"><button class="btn pri" type="button">Invitar conductores</button><button class="btn sec" type="button">Más tarde</button></div>
+        </div></div>
+        <figcaption><span class="tag">A · Skill</span><b>Festejo</b><span>Check que rebota, papelitos de colores, emoji. Un solo próximo paso.</span><button type="button" data-replay="okA">Repetir</button></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone B"><div class="scr play" id="okB">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <svg class="stack iso" viewBox="0 0 48 48" aria-hidden="true"><rect class="b" x="7" y="7" width="10" height="10" rx="2"/><rect class="b" x="19" y="7" width="10" height="10" rx="2"/><rect class="t" x="31" y="7" width="10" height="10" rx="2"/><rect class="b" x="7" y="19" width="10" height="10" rx="2"/><rect class="b" x="19" y="19" width="10" height="10" rx="2"/><rect class="b" x="7" y="31" width="10" height="10" rx="2"/></svg>
+            <h1 class="h1">Distribuidora Norte ya está en Fleter</h1>
+            <div style="margin-top:12px;display:flex;gap:8px;align-items:center"><span class="pill">Período de prueba</span><span class="meta">Sos responsable</span></div>
+            <ol class="next">
+              <li class="cur"><span class="n">1</span><span><b>Invitá a tus conductores</b><span>Les pasás un código y se vinculan desde su app.</span></span></li>
+              <li><span class="n">2</span><span><b>Guardá tus lugares</b><span>Depósito y clientes frecuentes.</span></span></li>
+              <li><span class="n">3</span><span><b>Cargá el primer viaje</b><span>Con conductor y precio estimado.</span></span></li>
+            </ol>
+          </div>
+          <div class="foot"><button class="btn pri" type="button">Invitar conductores</button><button class="btn ghost" type="button">Ir al inicio</button></div>
+        </div></div>
+        <figcaption><span class="tag">B · Sistema Fleter</span><b>Festejo con la marca</b><span>Aplicando la misma regla dentro del sistema: las cajas del isotipo se estiban y cae la de seguimiento. Sin papelitos ni emojis; tres pasos reales.</span><button type="button" data-replay="okB">Repetir</button></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ─────────────── 4 · INICIO ─────────────── -->
+  <section class="pair">
+    <h2>4. Inicio de la empresa</h2>
+    <p>Pantalla con datos reales: un viaje en curso, uno sin confirmar y uno confirmado. Acá es donde más se separan los dos estilos.</p>
+    <div class="two">
+      <figure>
+        <div class="phone A"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body" style="padding-bottom:100px">
+            <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+              <span class="av">AF</span>
+              <span><span class="ts" style="display:block">Distribuidora Norte</span><span class="t2">Buen día, Ana ☀️</span></span>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:20px">
+              <div class="stat"><b>3</b><span class="ts">viajes hoy</span></div>
+              <div class="stat"><b style="color:var(--s-accent)">1</b><span class="ts">en ruta</span></div>
+              <div class="stat"><b>$184k</b><span class="ts">del día</span></div>
+            </div>
+            <div class="card" style="margin-top:20px">
+              <span class="live"><i></i>En ruta</span>
+              <p class="t2" style="margin-top:12px">Martín llega a las 15:40</p>
+              <p class="ts" style="margin-top:2px">Depósito Pilar → Av. Corrientes 3200</p>
+              <div class="track"><i class="d"></i><i class="n"></i><i></i></div>
+              <div style="display:flex;justify-content:space-between" class="ts"><span>Cargó</span><span>En ruta</span><span>Entrega</span></div>
+              <div class="qa"><button type="button"><svg class="i" style="width:16px;height:16px"><use href="#phone"/></svg>Llamar</button><button type="button"><svg class="i" style="width:16px;height:16px"><use href="#map"/></svg>Ver mapa</button></div>
+            </div>
+            <p class="t2" style="margin-top:24px">Próximos</p>
+            <div class="card" style="margin-top:12px;padding:6px 20px">
+              <div class="up"><span class="tile" style="background:var(--s-amber-soft)">⏳</span><span style="flex:1;min-width:0"><b style="font-size:15px;font-weight:800;display:block">16:00 · Lomas de Zamora</b><span class="ts">Juan Pérez</span></span><span class="badge" style="background:var(--s-amber-soft);color:#9A6A08">Sin confirmar</span></div>
+              <div class="up"><span class="tile" style="background:var(--s-blue-soft)">📦</span><span style="flex:1;min-width:0"><b style="font-size:15px;font-weight:800;display:block">17:30 · Vicente López</b><span class="ts">Martín Gómez</span></span><span class="badge" style="background:var(--s-blue-soft);color:#2459AE">Confirmado</span></div>
+            </div>
+          </div>
+          <nav class="chipnav"><a class="on" href="#"><svg class="i"><use href="#home"/></svg>Inicio</a><a href="#"><svg class="i"><use href="#list"/></svg>Viajes</a><a href="#" class="plus" aria-label="Nuevo viaje"><svg class="i"><use href="#plus"/></svg></a><a href="#"><svg class="i"><use href="#users"/></svg>Equipo</a><a href="#"><svg class="i"><use href="#more"/></svg>Más</a></nav>
+        </div></div>
+        <figcaption><span class="tag">A · Skill</span><b>Resumen emocional</b><span>Estado contado en una frase («Martín llega a las 15:40»), barra de progreso, accesos rápidos y KPIs grandes. Se lee en 2 segundos, pero de cada viaje faltan datos: paradas, condiciones, distancia, precio.</span></figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone B"><div class="scr">
+          <div class="status"><span>9:41</span><svg><use href="#sig"/></svg></div>
+          <div class="body">
+            <p class="meta" style="margin-top:8px">Distribuidora Norte</p>
+            <h1 class="h1" style="font-size:24px;margin-top:2px">Hoy, mar 21 oct</h1>
+            <div class="note warn" style="margin-top:16px"><svg class="i" style="width:18px;height:18px"><use href="#alert"/></svg><span><b>VJ-2420 sin confirmar.</b> Juan Pérez tiene hasta las 17:30 para confirmarlo.</span></div>
+            <p class="sec">En curso</p>
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span class="badge b-run"><i></i>En ruta</span><span class="mono meta">VJ-2419</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px"><span><b style="font-size:14px;display:block">Hoy 14:30</b><span class="meta">Martín Gómez, Ford Transit</span></span><span class="price">$68.500</span></div>
+              <ul class="route">
+                <li><span class="m"></span><span><b>Depósito Pilar</b><span>Ruta 8 km 52, Pilar</span></span></li>
+                <li><span class="m s"></span><span><b>1 parada</b><span>Av. Mitre 1450, Vicente López</span></span></li>
+                <li><span class="m d"></span><span><b>Av. Corrientes 3200</b><span>Almagro, CABA</span></span></li>
+              </ul>
+              <dl class="kv"><div><dt>Condiciones</dt><dd>Frágil</dd></div><div><dt>Distancia</dt><dd>48 km</dd></div><div><dt>Tiempo</dt><dd>1 h 20 min</dd></div><div><dt>Llega</dt><dd class="mono">~15:40</dd></div></dl>
+            </div>
+            <p class="sec">Próximos de hoy</p>
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span class="badge b-warn">Sin confirmar</span><span class="mono meta">VJ-2420</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px"><span><b style="font-size:14px;display:block">Hoy 16:00</b><span class="meta">Juan Pérez</span></span><span class="price" style="font-size:17px">$41.200</span></div>
+              <p class="meta" style="margin-top:4px">Depósito Pilar → Lomas de Zamora. Sin paradas. Sin condiciones. 62 km, 1 h 35 min.</p>
+            </div>
+          </div>
+          <nav class="tabs"><a class="on" href="#"><svg class="i"><use href="#home"/></svg>Inicio</a><a href="#"><svg class="i"><use href="#list"/></svg>Viajes</a><a href="#"><span class="nuevo"><svg class="i"><use href="#plus"/></svg></span>Nuevo</a><a href="#"><svg class="i"><use href="#users"/></svg>Conductores</a><a href="#"><svg class="i"><use href="#more"/></svg>Más</a></nav>
+        </div></div>
+        <figcaption><span class="tag">B · Sistema Fleter</span><b>Panel de control</b><span>Lo urgente arriba como nota, y cada viaje con sus 9 datos sin cortar: fecha y hora, origen, paradas, destino, condiciones, distancia, tiempo, precio y estado. Más denso, más completo.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+</div>
+<script>
+document.querySelectorAll('[data-single]').forEach(function(g){
+  g.querySelectorAll('.opt').forEach(function(o){ o.addEventListener('click',function(){ g.querySelectorAll('.opt').forEach(function(x){ x.setAttribute('aria-pressed',String(x===o)); }); }); });
+});
+document.querySelectorAll('[data-replay]').forEach(function(b){
+  b.addEventListener('click',function(){ var s=document.getElementById(b.dataset.replay); s.classList.remove('play'); void s.offsetWidth; s.classList.add('play'); });
+});
+document.querySelectorAll('nav a').forEach(function(a){ a.addEventListener('click',function(e){ e.preventDefault(); }); });
+</script>
+</body>
+</html>
