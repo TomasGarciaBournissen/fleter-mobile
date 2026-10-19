@@ -1,0 +1,380 @@
+{
+  "App.js": {
+    "mtime": 1792433602.8208187,
+    "seen": 1792434179.1727152,
+    "ast_hash": "5319bfb8800da5e9676e9cd972a9dbd8",
+    "semantic_hash": "5319bfb8800da5e9676e9cd972a9dbd8"
+  },
+  "app.json": {
+    "mtime": 1792433602.8208187,
+    "seen": 1792434179.1727362,
+    "ast_hash": "c63404bae79daec24b2cef910bf217a0",
+    "semantic_hash": "c63404bae79daec24b2cef910bf217a0"
+  },
+  "index.js": {
+    "mtime": 1792433602.8368187,
+    "seen": 1792434179.1727433,
+    "ast_hash": "33caa6d28d87fc7e637c033d0d7124b1",
+    "semantic_hash": "33caa6d28d87fc7e637c033d0d7124b1"
+  },
+  "package.json": {
+    "mtime": 1792433602.8488185,
+    "seen": 1792434179.1727486,
+    "ast_hash": "fc578a9a97e92c19621269d1c376a852",
+    "semantic_hash": "fc578a9a97e92c19621269d1c376a852"
+  },
+  "src/components/Isotipo.js": {
+    "mtime": 1792433602.8552206,
+    "seen": 1792434179.172753,
+    "ast_hash": "81636bf8ac5d0bcb9823a43003f4899f",
+    "semantic_hash": "81636bf8ac5d0bcb9823a43003f4899f"
+  },
+  "src/components/LocationPickerModal.js": {
+    "mtime": 1792433602.8552775,
+    "seen": 1792434179.1728077,
+    "ast_hash": "a42ce16337789282a31b57e05bcefe21",
+    "semantic_hash": "a42ce16337789282a31b57e05bcefe21"
+  },
+  "src/components/MapViewWrapper.js": {
+    "mtime": 1792433602.8552775,
+    "seen": 1792434179.1728146,
+    "ast_hash": "e9d9d23be85eefe42b088fe8d8c9662f",
+    "semantic_hash": "e9d9d23be85eefe42b088fe8d8c9662f"
+  },
+  "src/components/SelectorApariencia.js": {
+    "mtime": 1792433602.8552775,
+    "seen": 1792434179.172817,
+    "ast_hash": "8990e1410b2e10d9d424490fb5c47e55",
+    "semantic_hash": "8990e1410b2e10d9d424490fb5c47e55"
+  },
+  "src/context/AuthContext.js": {
+    "mtime": 1792433602.8552775,
+    "seen": 1792434179.1728187,
+    "ast_hash": "26d3d6d74501d4d958130b513f7a93f4",
+    "semantic_hash": "26d3d6d74501d4d958130b513f7a93f4"
+  },
+  "src/context/SocketContext.js": {
+    "mtime": 1792433602.8555954,
+    "seen": 1792434179.1728208,
+    "ast_hash": "9518f78f9cd55f14f3f8a6ddb9774634",
+    "semantic_hash": "9518f78f9cd55f14f3f8a6ddb9774634"
+  },
+  "src/context/ThemeContext.js": {
+    "mtime": 1792433602.8555954,
+    "seen": 1792434179.172823,
+    "ast_hash": "47ea4bc68243025add5812642c7ff71d",
+    "semantic_hash": "47ea4bc68243025add5812642c7ff71d"
+  },
+  "src/hooks/useMiEmpresa.js": {
+    "mtime": 1792433602.8555954,
+    "seen": 1792434179.1728265,
+    "ast_hash": "0f384ada56fc542b5a62688623f70228",
+    "semantic_hash": "0f384ada56fc542b5a62688623f70228"
+  },
+  "src/mocks/firebase-app.js": {
+    "mtime": 1792433602.8555954,
+    "seen": 1792434179.1728287,
+    "ast_hash": "a0ac28ab9841b3af41beee4f709c86c3",
+    "semantic_hash": "a0ac28ab9841b3af41beee4f709c86c3"
+  },
+  "src/mocks/firebase-auth.js": {
+    "mtime": 1792433602.8560083,
+    "seen": 1792434179.1728306,
+    "ast_hash": "32c7134f1f12a41a3690c3b99fe912ca",
+    "semantic_hash": "32c7134f1f12a41a3690c3b99fe912ca"
+  },
+  "src/navigation/AuthStack.js": {
+    "mtime": 1792433602.8560083,
+    "seen": 1792434179.1728325,
+    "ast_hash": "6da67ff0093fe2c656c11c66c9c40be6",
+    "semantic_hash": "6da67ff0093fe2c656c11c66c9c40be6"
+  },
+  "src/navigation/ClienteStack.js": {
+    "mtime": 1792433602.8561327,
+    "seen": 1792434179.1728346,
+    "ast_hash": "489792f8c414e77412720f9a8fe1b082",
+    "semantic_hash": "489792f8c414e77412720f9a8fe1b082"
+  },
+  "src/navigation/FleteroStack.js": {
+    "mtime": 1792433602.8561327,
+    "seen": 1792434179.1728363,
+    "ast_hash": "fb05dfbf4233f85e6bda86c2895258fe",
+    "semantic_hash": "fb05dfbf4233f85e6bda86c2895258fe"
+  },
+  "src/navigation/GerenteStack.js": {
+    "mtime": 1792433602.8561327,
+    "seen": 1792434179.172839,
+    "ast_hash": "9f32effb3a6f8e9cff34f958a925458e",
+    "semantic_hash": "9f32effb3a6f8e9cff34f958a925458e"
+  },
+  "src/navigation/RootNavigator.js": {
+    "mtime": 1792433602.8561327,
+    "seen": 1792434179.1728415,
+    "ast_hash": "3935f8004a7e6d51a492031e49dff92a",
+    "semantic_hash": "3935f8004a7e6d51a492031e49dff92a"
+  },
+  "src/screens/auth/CuentaPendienteScreen.js": {
+    "mtime": 1792433602.8564224,
+    "seen": 1792434179.172844,
+    "ast_hash": "7be9eff58c6aa363f03164b190237051",
+    "semantic_hash": "7be9eff58c6aa363f03164b190237051"
+  },
+  "src/screens/auth/LoginScreen.js": {
+    "mtime": 1792433602.8565896,
+    "seen": 1792434179.1728468,
+    "ast_hash": "93e7948560e3cd7bbe2ab9afd6cc2241",
+    "semantic_hash": "93e7948560e3cd7bbe2ab9afd6cc2241"
+  },
+  "src/screens/auth/RegisterClienteScreen.js": {
+    "mtime": 1792433602.8565896,
+    "seen": 1792434179.17285,
+    "ast_hash": "a37ea40bf71d37f7862724cb299cc5e1",
+    "semantic_hash": "a37ea40bf71d37f7862724cb299cc5e1"
+  },
+  "src/screens/auth/RegisterFleteroScreen.js": {
+    "mtime": 1792433602.8565896,
+    "seen": 1792434179.1728542,
+    "ast_hash": "835c02e99ee0269b684af12c366063ec",
+    "semantic_hash": "835c02e99ee0269b684af12c366063ec"
+  },
+  "src/screens/auth/RegisterGerenteScreen.js": {
+    "mtime": 1792433602.8565896,
+    "seen": 1792434179.172858,
+    "ast_hash": "4a797ec22ea1b1b757a54f246ad9b7f0",
+    "semantic_hash": "4a797ec22ea1b1b757a54f246ad9b7f0"
+  },
+  "src/screens/cliente/BuscandoFleteroScreen.js": {
+    "mtime": 1792433602.8565896,
+    "seen": 1792434179.1728618,
+    "ast_hash": "da37b0f280dbe45ce054fcc3f860447d",
+    "semantic_hash": "da37b0f280dbe45ce054fcc3f860447d"
+  },
+  "src/screens/cliente/CalificacionScreen.js": {
+    "mtime": 1792433602.8574817,
+    "seen": 1792434179.1728642,
+    "ast_hash": "900dbaedf6851a65e9ce6ab4b13c883a",
+    "semantic_hash": "900dbaedf6851a65e9ce6ab4b13c883a"
+  },
+  "src/screens/cliente/ConfirmacionViajeScreen.js": {
+    "mtime": 1792433602.8574817,
+    "seen": 1792434179.1728675,
+    "ast_hash": "9584d79f795065fd974f1f97f4fd57eb",
+    "semantic_hash": "9584d79f795065fd974f1f97f4fd57eb"
+  },
+  "src/screens/cliente/CrearViajeScreen.js": {
+    "mtime": 1792433602.8574817,
+    "seen": 1792434179.1728706,
+    "ast_hash": "a10840feb74539a58f9789e1cd474616",
+    "semantic_hash": "a10840feb74539a58f9789e1cd474616"
+  },
+  "src/screens/cliente/HistorialScreen.js": {
+    "mtime": 1792433602.8574817,
+    "seen": 1792434179.1728733,
+    "ast_hash": "69c3feac8521458fe6e065da270e9dc6",
+    "semantic_hash": "69c3feac8521458fe6e065da270e9dc6"
+  },
+  "src/screens/cliente/HomeScreen.js": {
+    "mtime": 1792433602.8574817,
+    "seen": 1792434179.172877,
+    "ast_hash": "9b93d04369454b741a9949544f8e5a64",
+    "semantic_hash": "9b93d04369454b741a9949544f8e5a64"
+  },
+  "src/screens/cliente/PerfilScreen.js": {
+    "mtime": 1792433602.8574817,
+    "seen": 1792434179.1728802,
+    "ast_hash": "c6aa81d320016d983b1b9a80e0c560de",
+    "semantic_hash": "c6aa81d320016d983b1b9a80e0c560de"
+  },
+  "src/screens/cliente/ViajeActivoScreen.js": {
+    "mtime": 1792433602.8574817,
+    "seen": 1792434179.1728837,
+    "ast_hash": "6f6038e44672da3065f2a487e3a8231a",
+    "semantic_hash": "6f6038e44672da3065f2a487e3a8231a"
+  },
+  "src/screens/fletero/AsignadosScreen.js": {
+    "mtime": 1792433602.8574817,
+    "seen": 1792434179.1728857,
+    "ast_hash": "2561ee3617c4409af3d2af7bb53bc493",
+    "semantic_hash": "2561ee3617c4409af3d2af7bb53bc493"
+  },
+  "src/screens/fletero/CobroScreen.js": {
+    "mtime": 1792433602.8611906,
+    "seen": 1792434179.1728892,
+    "ast_hash": "06fde6297e0dc4a58deed078bb430590",
+    "semantic_hash": "06fde6297e0dc4a58deed078bb430590"
+  },
+  "src/screens/fletero/DetalleViajeScreen.js": {
+    "mtime": 1792433602.8611906,
+    "seen": 1792434179.1728919,
+    "ast_hash": "f3b7b7f32afab4cb6b06f279edc0d478",
+    "semantic_hash": "f3b7b7f32afab4cb6b06f279edc0d478"
+  },
+  "src/screens/fletero/DisponiblesScreen.js": {
+    "mtime": 1792433602.8611906,
+    "seen": 1792434179.1728945,
+    "ast_hash": "e20b43d3ffb396b425441633e664a636",
+    "semantic_hash": "e20b43d3ffb396b425441633e664a636"
+  },
+  "src/screens/fletero/HistorialFleteroScreen.js": {
+    "mtime": 1792433602.8611906,
+    "seen": 1792434179.1728961,
+    "ast_hash": "9cd22bdea48f454b6a23c0ded632e6fb",
+    "semantic_hash": "9cd22bdea48f454b6a23c0ded632e6fb"
+  },
+  "src/screens/fletero/NuevoViajeModal.js": {
+    "mtime": 1792433602.8611906,
+    "seen": 1792434179.1728983,
+    "ast_hash": "b11c77f901f8b80f2737e9950f821007",
+    "semantic_hash": "b11c77f901f8b80f2737e9950f821007"
+  },
+  "src/screens/fletero/PerfilFleteroScreen.js": {
+    "mtime": 1792433602.8611906,
+    "seen": 1792434179.1729012,
+    "ast_hash": "c6737c23f1e25d79853c9049dacdf316",
+    "semantic_hash": "c6737c23f1e25d79853c9049dacdf316"
+  },
+  "src/screens/fletero/QREntregaScreen.js": {
+    "mtime": 1792433602.8611906,
+    "seen": 1792434179.172903,
+    "ast_hash": "53f58940f6803f941897bf9fc8061801",
+    "semantic_hash": "53f58940f6803f941897bf9fc8061801"
+  },
+  "src/screens/fletero/ViajeActivoFleteroScreen.js": {
+    "mtime": 1792433602.8611906,
+    "seen": 1792434179.1729057,
+    "ast_hash": "e0beea3041830f0dffb65f2c790ec315",
+    "semantic_hash": "e0beea3041830f0dffb65f2c790ec315"
+  },
+  "src/screens/gerente/AsignarConductorScreen.js": {
+    "mtime": 1792433602.8611906,
+    "seen": 1792434179.172907,
+    "ast_hash": "3447f5ea3cf682d19a7643e2cde25a9e",
+    "semantic_hash": "3447f5ea3cf682d19a7643e2cde25a9e"
+  },
+  "src/screens/gerente/ConductoresScreen.js": {
+    "mtime": 1792433602.8650756,
+    "seen": 1792434179.1729093,
+    "ast_hash": "939d7198fb0f93a9412ccec9085c95a9",
+    "semantic_hash": "939d7198fb0f93a9412ccec9085c95a9"
+  },
+  "src/screens/gerente/DetalleViajeGerenteScreen.js": {
+    "mtime": 1792433602.8650756,
+    "seen": 1792434179.1729157,
+    "ast_hash": "ad44588f4474fbdc1cba88940b24b962",
+    "semantic_hash": "ad44588f4474fbdc1cba88940b24b962"
+  },
+  "src/screens/gerente/DisponiblesGerenteScreen.js": {
+    "mtime": 1792433602.8650756,
+    "seen": 1792434179.172918,
+    "ast_hash": "0863a98635a0439485e3b60c3720ba34",
+    "semantic_hash": "0863a98635a0439485e3b60c3720ba34"
+  },
+  "src/screens/gerente/EmpresaHomeScreen.js": {
+    "mtime": 1792433602.8650756,
+    "seen": 1792434179.1729198,
+    "ast_hash": "c72d7b25421dec12a33ccfcb89f13d15",
+    "semantic_hash": "c72d7b25421dec12a33ccfcb89f13d15"
+  },
+  "src/screens/gerente/FlotaScreen.js": {
+    "mtime": 1792433602.8650756,
+    "seen": 1792434179.1729217,
+    "ast_hash": "196c77d2e21780092fb41267055d82e4",
+    "semantic_hash": "196c77d2e21780092fb41267055d82e4"
+  },
+  "src/screens/gerente/HistorialEmpresaScreen.js": {
+    "mtime": 1792433602.8650756,
+    "seen": 1792434179.1729233,
+    "ast_hash": "c0d210cd36d3ae440ff16ead0170110f",
+    "semantic_hash": "c0d210cd36d3ae440ff16ead0170110f"
+  },
+  "src/screens/gerente/PerfilGerenteScreen.js": {
+    "mtime": 1792433602.8650756,
+    "seen": 1792434179.172925,
+    "ast_hash": "7905388882a4cf6a242943d8e95a6959",
+    "semantic_hash": "7905388882a4cf6a242943d8e95a6959"
+  },
+  "src/screens/gerente/ViajeActivoGerenteScreen.js": {
+    "mtime": 1792433602.8650756,
+    "seen": 1792434179.1729264,
+    "ast_hash": "73306e929ed9228f5ec86d99baa6b2d3",
+    "semantic_hash": "73306e929ed9228f5ec86d99baa6b2d3"
+  },
+  "src/services/api.js": {
+    "mtime": 1792433602.8650756,
+    "seen": 1792434179.1729283,
+    "ast_hash": "d518c07eee24b484f9a12ea873fcc3f4",
+    "semantic_hash": "d518c07eee24b484f9a12ea873fcc3f4"
+  },
+  "src/services/auth.js": {
+    "mtime": 1792433602.866982,
+    "seen": 1792434179.17293,
+    "ast_hash": "aa6884c984ef23a3cca27a93bef9eae8",
+    "semantic_hash": "aa6884c984ef23a3cca27a93bef9eae8"
+  },
+  "src/services/firebase.js": {
+    "mtime": 1792433602.866982,
+    "seen": 1792434179.1729317,
+    "ast_hash": "9b38bf34c945104da27cab1b5bf98a41",
+    "semantic_hash": "9b38bf34c945104da27cab1b5bf98a41"
+  },
+  "src/services/socket.js": {
+    "mtime": 1792433602.866982,
+    "seen": 1792434179.1729333,
+    "ast_hash": "70c68abb2833b1ce41c976d5901126fc",
+    "semantic_hash": "70c68abb2833b1ce41c976d5901126fc"
+  },
+  "src/tasks/locationTask.js": {
+    "mtime": 1792433602.866982,
+    "seen": 1792434179.1729348,
+    "ast_hash": "6cbdc12e6366cf14df0b441205f0a669",
+    "semantic_hash": "6cbdc12e6366cf14df0b441205f0a669"
+  },
+  "src/theme.js": {
+    "mtime": 1792433602.866982,
+    "seen": 1792434179.1729364,
+    "ast_hash": "3070cffad99153a8bfe7842999544105",
+    "semantic_hash": "3070cffad99153a8bfe7842999544105"
+  },
+  "src/utils/format.js": {
+    "mtime": 1792433602.866982,
+    "seen": 1792434179.1729379,
+    "ast_hash": "28e562d3880da4411be9a152fd986aa8",
+    "semantic_hash": "28e562d3880da4411be9a152fd986aa8"
+  },
+  "src/utils/vehiculo.js": {
+    "mtime": 1792433602.8674483,
+    "seen": 1792434179.1729395,
+    "ast_hash": "68430c26b21360b6c5114e6dfefe6a35",
+    "semantic_hash": "68430c26b21360b6c5114e6dfefe6a35"
+  },
+  "CLAUDE.md": {
+    "mtime": 1792433913.3122811,
+    "seen": 1792434179.172941,
+    "ast_hash": "013e588b3393a710ecec3f7d6b34725d",
+    "semantic_hash": "013e588b3393a710ecec3f7d6b34725d"
+  },
+  "PLAN_DESARROLLO.md": {
+    "mtime": 1792433602.8208187,
+    "seen": 1792434179.1729426,
+    "ast_hash": "d33cf6709bc18c233e14b6321735576f",
+    "semantic_hash": "d33cf6709bc18c233e14b6321735576f"
+  },
+  "PROGRESO.md": {
+    "mtime": 1792433931.301723,
+    "seen": 1792434179.1729445,
+    "ast_hash": "4083894f32adf9ef7c9b082ed3a1b0d2",
+    "semantic_hash": "4083894f32adf9ef7c9b082ed3a1b0d2"
+  },
+  "UXUI.md": {
+    "mtime": 1792433602.8208187,
+    "seen": 1792434179.1729465,
+    "ast_hash": "52bb89b551a1c3fa50e9d23d49da2fa5",
+    "semantic_hash": "52bb89b551a1c3fa50e9d23d49da2fa5"
+  },
+  "api.md": {
+    "mtime": 1792433602.8208187,
+    "seen": 1792434179.172948,
+    "ast_hash": "c5d3a3a64a654ac1a032cc54ae366356",
+    "semantic_hash": "c5d3a3a64a654ac1a032cc54ae366356"
+  }
+}

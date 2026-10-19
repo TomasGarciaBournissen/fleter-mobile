@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-19  
-> Branch: master | Commits totales: 38
+> Branch: master | Commits totales: 39
 
 ---
 
@@ -53,6 +53,7 @@
 | `7eb2f65` | 16 Sep 2026 | Feat — implementación completa del sistema v2: theme.js con paletas claro/oscuro, ThemeContext con persistencia y selector Apariencia en los 3 perfiles, tipografías de marca con expo-font, migración de 32 pantallas a estilos dinámicos, contraste tinta-sobre-naranja, Movix→Fleter, SVGs del logo en assets/logo/ |
 | `c565311` | 17 Sep 2026 | Fix — mapa en blanco en iOS: `MapViewWrapper` ya no fuerza `PROVIDER_GOOGLE` en iOS (usa Apple Maps, que no necesita API key); Android sigue con Google Maps. Revertir cuando llegue la key nueva con "Maps SDK for iOS" habilitado |
 | (este commit) | 19 Oct 2026 | Chore — tooling de Claude Code en `.claude/`: skills/agents/commands de everything-claude-code (sin sus hooks), skills de ui-ux-pro-max, skill frontend-design de Anthropic, y graphify (skill + hooks + sección en CLAUDE.md; requiere `pip install graphifyy` en cada sesión) |
+| (este commit) | 19 Oct 2026 | Chore — knowledge graph de graphify en `graphify-out/` (567 nodos, 1547 aristas, 23 comunidades; código + docs, sin `.claude/`). Actualizar con `graphify update .` |
 | (pendiente) | 17 Sep 2026 | Feat — mapa real en `DetalleViajeScreen` (pantalla de aceptar viaje del conductor): reemplaza el placeholder "Mapa disponible en Fase 4" por MapView con pins de origen/paradas/destino, `ruta_planeada` si viene (si no, línea recta entre paradas) y encuadre automático del recorrido. Build Release apuntando al backend de producción |
 
 ---
