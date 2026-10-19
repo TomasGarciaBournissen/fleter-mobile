@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-19  
-> Branch: master | Commits totales: 39
+> Branch: master | Commits totales: 40
 
 ---
 
@@ -54,6 +54,7 @@
 | `c565311` | 17 Sep 2026 | Fix — mapa en blanco en iOS: `MapViewWrapper` ya no fuerza `PROVIDER_GOOGLE` en iOS (usa Apple Maps, que no necesita API key); Android sigue con Google Maps. Revertir cuando llegue la key nueva con "Maps SDK for iOS" habilitado |
 | (este commit) | 19 Oct 2026 | Chore — tooling de Claude Code en `.claude/`: skills/agents/commands de everything-claude-code (sin sus hooks), skills de ui-ux-pro-max, skill frontend-design de Anthropic, y graphify (skill + hooks + sección en CLAUDE.md; requiere `pip install graphifyy` en cada sesión) |
 | (este commit) | 19 Oct 2026 | Chore — knowledge graph de graphify en `graphify-out/` (567 nodos, 1547 aristas, 23 comunidades; código + docs, sin `.claude/`). Actualizar con `graphify update .` |
+| (este commit) | 19 Oct 2026 | Docs — `ISSUES.md`: desvincular cancela viajes en curso (con propuesta), aviso antes de `VENCIDO`, y reglas a tener en cuenta (reconexión WS, radio 50 m, remito con foto) |
 | (pendiente) | 17 Sep 2026 | Feat — mapa real en `DetalleViajeScreen` (pantalla de aceptar viaje del conductor): reemplaza el placeholder "Mapa disponible en Fase 4" por MapView con pins de origen/paradas/destino, `ruta_planeada` si viene (si no, línea recta entre paradas) y encuadre automático del recorrido. Build Release apuntando al backend de producción |
 
 ---
