@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-19  
-> Branch: staging | Commits totales: 58
+> Branch: staging | Commits totales: 59
 
 ---
 
@@ -74,19 +74,33 @@
 | (este commit) | 19 Oct 2026 | Prototipo — correcciones de la revisión: «empresa» en vez de «PyME» en todo texto visible (PyME queda interno), pantalla sin empresa reescrita como pregunta («¿Tu empresa ya usa Fleter?» → «No, la registro yo» / «Sí, tengo un código»). Se mantienen el login con Google y el paso de licencia del conductor |
 | (este commit) | 19 Oct 2026 | Chore — skill `mobile-app-ui-design` (ceorkm/mobile-app-ui-design) en `.claude/skills/`. Donde contradice a `UXUI.md` (sombras, glow, radios grandes, emojis) manda `UXUI.md` |
 | (este commit) | 19 Oct 2026 | Prototipo — `prototype/comparacion-estilos.html`: login, tipo de cuenta, empresa registrada e inicio de la empresa hechos dos veces (skill mobile-app-ui-design vs. sistema Fleter) para elegir dirección visual |
+| (este commit) | 19 Oct 2026 | Feat — fase 0 + fase 1 del rediseño: kit `src/components/ui/`, servicios de organizaciones/invitaciones/vehículos, Google login, AuthContext con perfil `/me`, `altaEnCurso` y `rolEnAlta`, RootNavigator con splash animado y `OnboardingEmpresaStack`, 13 pantallas nuevas de entrada y alta en claro y oscuro. Se descarta el estilo de la skill (regla en CLAUDE.md) y se borra la comparación |
 
 ---
 
 ## Estado Actual por Pantalla
 
-### Auth
+### Auth (rediseño fase 1 — branch `staging`)
+Modelo empresa + conductores. Componentes base en `src/components/ui/`. Todas en claro y oscuro (verificado con capturas en Expo web, 390×844).
 | Pantalla | Estado | Notas |
 |----------|--------|-------|
-| `LoginScreen` | ✅ Funcional | Firebase Auth real. Funciona en mobile, **falla en web** (SDK diferente) |
-| `RegisterClienteScreen` | ✅ Funcional | POST /api/auth/registro-cliente |
-| `RegisterFleteroScreen` | ⚠️ Incompleto | Falta sección de **vehículo y condiciones** — solo pide datos personales + licencia |
-| `RegisterGerenteScreen` | ✅ Funcional | POST /api/auth/registro-gerente (crea gerente + primera empresa), sin pantalla de revisión (acceso inmediato) |
-| `CuentaPendienteScreen` | ✅ Funcional | Pantalla post-registro conductor, muestra estado de revisión |
+| `SplashScreen` | ✅ | Naranja, el isotipo se estiba caja por caja (`IsotipoAnimado`, respeta «reducir movimiento»). Queda hasta que termina la animación y se resolvió la sesión |
+| `LoginScreen` | ✅ | Email + contraseña (Firebase) y **Entrar con Google** (`expo-auth-session`; necesita los client IDs de Google en `.env`, sin ellos avisa que no está disponible). Errores pegados al campo. Muestra `errorSesion` (cuenta de Google sin registro → 404) |
+| `RecuperarContrasenaScreen` | ✅ | `sendPasswordResetEmail`; estado «Revisá tu email» con reenvío a los 60 s |
+| `TipoCuentaScreen` | ✅ | Empresa / Conductor; el botón dice qué cuenta crea. Setea `rolEnAlta` para que el alta del conductor arranque en oscuro |
+| `RegistroEmpresaScreen` | ✅ | Paso 1 de 2. POST /api/auth/registro-cliente sin campos legacy (CUIT/empresa van en la organización) |
+| `RegistroConductorScreen` → `LicenciaConductorScreen` → `VehiculoConductorScreen` | ✅ | 3 pasos. Licencia con `HojaCalendario` propia. El vehículo (tipo, patente, marca, modelo, año, color, condiciones) se da de alta junto con la cuenta — resuelve «el registro no carga vehículo». Se puede saltear. `altaEnCurso` mantiene el AuthStack montado durante el alta |
+| `CodigoConductorScreen` | ✅ | Opcional, después de crear la cuenta (el canje necesita sesión). POST /api/invitaciones/canjear |
+| `ConductorListoScreen` | ✅ | Empresa + vehículo, o aviso si no cargó vehículo |
+| `_marketplace/*` | 📦 Archivadas | Login/Register cliente-fletero-gerente y CuentaPendiente del modelo anterior, sin montar |
+
+### Alta de empresa (`OnboardingEmpresaStack`, cuenta CLIENTE con `organizacion: null`)
+| Pantalla | Estado | Notas |
+|----------|--------|-------|
+| `SinEmpresaScreen` | ✅ | «¿Tu empresa ya usa Fleter?» → «No, la registro yo» / «Sí, tengo un código». Se ve en cada entrada hasta resolverlo |
+| `CrearEmpresaScreen` | ✅ | POST /api/organizaciones (nombre, CUIT con formato, razón social y dirección opcionales). Dirección como texto libre por ahora |
+| `CodigoMiembroScreen` | ✅ | Canje de código de MIEMBRO → refresca perfil → stack de la empresa |
+| `EmpresaRegistradaScreen` | ✅ | Isotipo animado + 3 próximos pasos. «Invitar conductores» lleva al inicio hasta que exista Conductores → Invitar (fase 3) |
 
 ### Cliente
 | Pantalla | Estado | Notas |
@@ -188,6 +202,9 @@
 | Problema | Causa | Estado |
 |----------|-------|--------|
 | Login web no funciona | Firebase web SDK vs React Native Firebase SDK se comportan diferente | ❌ Sin resolver |
+| Entrar con Google sin configurar | Faltan `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` / `_IOS_` / `_ANDROID_` en `.env` y habilitar Google en Firebase Auth. Además el backend no tiene alta con Google: una cuenta de Google nueva da 404 en /login y la app le pide crear la cuenta primero | ⚠️ Pendiente de config |
+| `tipo_vehiculo` | Es texto libre en el backend; el mobile nuevo manda `utilitario` / `camion_chico` / `camion_grande`. Confirmar con backend si hay que normalizar | ⚠️ A confirmar |
+| Web sin mapas | `react-native-maps` rompe el bundle web; `MapViewWrapper.web.js` muestra un placeholder (solo afecta a Expo web) | ✅ Resuelto |
 | Retomar viaje activo | Fletero cierra y vuelve a abrir la app — `DisponiblesScreen` detecta viaje activo y navega automáticamente | ✅ Resuelto |
 | Conductor no ve viajes con requisitos | `RegisterFleteroScreen` no registra vehículo ni condiciones → backend filtra por elegibilidad | ❌ Pendiente Fase 1 completa |
 | `viaje:ya_asignado` + `viaje:conductor_asignado` doble alert | Conductor que pierde en `DetalleViajeScreen` puede recibir dos alerts | ⚠️ Menor, sin resolver |

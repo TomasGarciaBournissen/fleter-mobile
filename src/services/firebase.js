@@ -1,10 +1,12 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { initializeAuth, inMemoryPersistence } from 'firebase/auth';
+import { DEV_MODE } from '../config';
 
 // Configuración del proyecto Firebase — completar con los valores del backend
 // Pedile a Persona 1 (backend) las credenciales del proyecto Firebase dev
 const firebaseConfig = {
-  apiKey:            process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  // En modo desarrollo sin .env, Firebase no se usa pero igual exige una key para inicializar
+  apiKey:            process.env.EXPO_PUBLIC_FIREBASE_API_KEY || (DEV_MODE ? 'dev-sin-firebase' : undefined),
   authDomain:        process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId:         process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket:     process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,

@@ -13,15 +13,15 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { fontSize, spacing, radius } from '../../theme';
-import { useTheme, useThemedStyles } from '../../context/ThemeContext';
-import { useAuth, DEV_MODE } from '../../context/AuthContext';
+import { fontSize, spacing, radius } from '../../../theme';
+import { useTheme, useThemedStyles } from '../../../context/ThemeContext';
+import { useAuth, DEV_MODE } from '../../../context/AuthContext';
 
 let colors;
 let styles;
 let fieldStyles;
 
-export default function RegisterGerenteScreen({ navigation }) {
+export default function RegisterClienteScreen({ navigation }) {
   colors = useTheme().colors;
   styles = useThemedStyles(createStyles);
   fieldStyles = useThemedStyles(createFieldStyles);
@@ -33,19 +33,18 @@ export default function RegisterGerenteScreen({ navigation }) {
     email: '',
     contrasena: '',
     telefono: '',
-    cuit_empresa: '',
     nombre_empresa: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const apellidoRef  = useRef();
-  const dniRef        = useRef();
-  const telefonoRef    = useRef();
-  const emailRef        = useRef();
-  const contrasenaRef    = useRef();
-  const cuitRef            = useRef();
-  const nombreEmpresaRef    = useRef();
+  // Refs para avanzar entre campos con "next" del teclado
+  const apellidoRef = useRef();
+  const dniRef = useRef();
+  const emailRef = useRef();
+  const contrasenaRef = useRef();
+  const telefonoRef = useRef();
+  const empresaRef = useRef();
 
   const set = (field) => (value) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -55,8 +54,6 @@ export default function RegisterGerenteScreen({ navigation }) {
     if (!/^\d{7,9}$/.test(form.dni.trim())) return 'El DNI debe tener entre 7 y 9 dígitos.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return 'El email no es válido.';
     if (form.contrasena.length < 6) return 'La contraseña debe tener al menos 6 caracteres.';
-    if (!/^\d{11,13}$/.test(form.cuit_empresa.trim())) return 'El CUIT debe tener entre 11 y 13 dígitos.';
-    if (!form.nombre_empresa.trim()) return 'El nombre de la empresa es requerido.';
     return null;
   };
 
@@ -64,7 +61,8 @@ export default function RegisterGerenteScreen({ navigation }) {
     setError('');
 
     if (DEV_MODE) {
-      mockLogin('GERENTE');
+      // En dev: simula registro exitoso directo sin backend
+      mockLogin('CLIENTE');
       return;
     }
 
@@ -76,19 +74,18 @@ export default function RegisterGerenteScreen({ navigation }) {
 
     setLoading(true);
     try {
-      const { registroGerente } = await import('../../services/auth');
+      const { registroCliente } = await import('../../../services/auth');
       const datos = {
         nombre: form.nombre.trim(),
         apellido: form.apellido.trim(),
         dni: form.dni.trim(),
         email: form.email.trim().toLowerCase(),
         contrasena: form.contrasena,
-        cuit_empresa: form.cuit_empresa.trim(),
-        nombre_empresa: form.nombre_empresa.trim(),
         ...(form.telefono.trim() && { telefono: form.telefono.trim() }),
+        ...(form.nombre_empresa.trim() && { nombre_empresa: form.nombre_empresa.trim() }),
       };
-      await registroGerente(datos);
-      // useAuth detecta el cambio en onAuthStateChanged → navega a GerenteStack automáticamente
+      await registroCliente(datos);
+      // useAuth detecta el cambio en onAuthStateChanged → navega a ClienteStack automáticamente
     } catch (err) {
       setError(mapApiError(err));
     } finally {
@@ -114,8 +111,8 @@ export default function RegisterGerenteScreen({ navigation }) {
               <Ionicons name="arrow-back" size={20} color={colors.primary} />
               <Text style={styles.backText}>Volver</Text>
             </TouchableOpacity>
-            <Text style={styles.title}>Registrar mi empresa</Text>
-            <Text style={styles.subtitle}>Gestioná tu flota, tus conductores y los viajes de tu empresa</Text>
+            <Text style={styles.title}>Crear cuenta</Text>
+            <Text style={styles.subtitle}>Registrate como cliente para solicitar fletes</Text>
           </View>
 
           {/* Formulario */}
@@ -125,7 +122,7 @@ export default function RegisterGerenteScreen({ navigation }) {
             <Field label="Nombre *">
               <TextInput
                 style={styles.input}
-                placeholder="Laura"
+                placeholder="Juan"
                 placeholderTextColor={colors.textHint}
                 value={form.nombre}
                 onChangeText={set('nombre')}
@@ -139,7 +136,7 @@ export default function RegisterGerenteScreen({ navigation }) {
               <TextInput
                 ref={apellidoRef}
                 style={styles.input}
-                placeholder="Gómez"
+                placeholder="Pérez"
                 placeholderTextColor={colors.textHint}
                 value={form.apellido}
                 onChangeText={set('apellido')}
@@ -160,7 +157,7 @@ export default function RegisterGerenteScreen({ navigation }) {
                 keyboardType="number-pad"
                 maxLength={9}
                 returnKeyType="next"
-                onSubmitEditing={() => telefonoRef.current?.focus()}
+                onSubmitEditing={() => emailRef.current?.focus()}
               />
             </Field>
 
@@ -174,33 +171,15 @@ export default function RegisterGerenteScreen({ navigation }) {
                 onChangeText={set('telefono')}
                 keyboardType="phone-pad"
                 returnKeyType="next"
-                onSubmitEditing={() => cuitRef.current?.focus()}
+                onSubmitEditing={() => empresaRef.current?.focus()}
               />
             </Field>
 
-            <View style={styles.divider} />
-            <Text style={styles.sectionLabel}>Tu empresa</Text>
-
-            <Field label="CUIT de la empresa *">
+            <Field label="Empresa (opcional)">
               <TextInput
-                ref={cuitRef}
+                ref={empresaRef}
                 style={styles.input}
-                placeholder="30712345678"
-                placeholderTextColor={colors.textHint}
-                value={form.cuit_empresa}
-                onChangeText={set('cuit_empresa')}
-                keyboardType="number-pad"
-                maxLength={13}
-                returnKeyType="next"
-                onSubmitEditing={() => nombreEmpresaRef.current?.focus()}
-              />
-            </Field>
-
-            <Field label="Nombre de la empresa *">
-              <TextInput
-                ref={nombreEmpresaRef}
-                style={styles.input}
-                placeholder="Fletes del Sur"
+                placeholder="Mi Empresa S.A."
                 placeholderTextColor={colors.textHint}
                 value={form.nombre_empresa}
                 onChangeText={set('nombre_empresa')}
@@ -217,7 +196,7 @@ export default function RegisterGerenteScreen({ navigation }) {
               <TextInput
                 ref={emailRef}
                 style={styles.input}
-                placeholder="laura@empresa.com"
+                placeholder="juan@empresa.com"
                 placeholderTextColor={colors.textHint}
                 value={form.email}
                 onChangeText={set('email')}
@@ -253,7 +232,7 @@ export default function RegisterGerenteScreen({ navigation }) {
             >
               {loading
                 ? <ActivityIndicator color={colors.onAccent} />
-                : <Text style={styles.btnPrimaryText}>Crear empresa</Text>
+                : <Text style={styles.btnPrimaryText}>Crear cuenta</Text>
               }
             </TouchableOpacity>
           </View>
@@ -265,6 +244,7 @@ export default function RegisterGerenteScreen({ navigation }) {
   );
 }
 
+// Componente auxiliar para cada campo con su label
 function Field({ label, children }) {
   return (
     <View style={{ marginBottom: spacing.md }}>
@@ -291,38 +271,93 @@ function mapApiError(err) {
   if (msg.includes('DNI ya esta registrado')) return 'Este DNI ya está registrado.';
   if (err?.code === 'auth/network-request-failed') return 'Sin conexión. Verificá tu internet.';
   if (err?.response?.status === 400) return msg || 'Revisá los datos ingresados.';
-  if (err?.response?.status === 409) return msg || 'Ya existe una empresa con ese CUIT.';
   return 'Ocurrió un error. Intentá de nuevo.';
 }
 
 const createStyles = (colors) => StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  scroll: { flexGrow: 1, paddingHorizontal: spacing.lg, paddingBottom: spacing.xl },
-  header: { paddingTop: spacing.lg, paddingBottom: spacing.md },
-  backBtn: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.md },
-  backText: { color: colors.primary, fontSize: fontSize.body, fontWeight: '600' },
-  title: { fontSize: fontSize.h1, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.xs },
-  subtitle: { fontSize: fontSize.body, color: colors.textSecondary },
+  safe: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scroll: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+  header: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
+  },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  backText: {
+    color: colors.primary,
+    fontSize: fontSize.body,
+    fontWeight: '600',
+  },
+  title: {
+    fontSize: fontSize.h1,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  subtitle: {
+    fontSize: fontSize.body,
+    color: colors.textSecondary,
+  },
   form: {
-    backgroundColor: colors.surface1, borderRadius: radius.lg,
-    padding: spacing.lg, borderWidth: 1, borderColor: colors.surface3,
+    backgroundColor: colors.surface1,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.surface3,
   },
   sectionLabel: {
-    fontSize: fontSize.caption, fontWeight: '700', color: colors.primary,
-    textTransform: 'uppercase', letterSpacing: 1, marginBottom: spacing.md,
+    fontSize: fontSize.caption,
+    fontWeight: '700',
+    color: colors.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: spacing.md,
   },
-  divider: { height: 1, backgroundColor: colors.surface3, marginVertical: spacing.lg },
+  divider: {
+    height: 1,
+    backgroundColor: colors.surface3,
+    marginVertical: spacing.lg,
+  },
   input: {
-    backgroundColor: colors.surface2, borderRadius: radius.sm,
-    borderWidth: 1, borderColor: colors.surface3,
-    paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 4,
-    fontSize: fontSize.body, color: colors.textPrimary,
+    backgroundColor: colors.surface2,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.surface3,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 4,
+    fontSize: fontSize.body,
+    color: colors.textPrimary,
   },
-  errorText: { color: colors.error, fontSize: fontSize.caption, marginBottom: spacing.md, textAlign: 'center' },
+  errorText: {
+    color: colors.error,
+    fontSize: fontSize.caption,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
   btnPrimary: {
-    backgroundColor: colors.primary, borderRadius: radius.sm,
-    paddingVertical: spacing.md, alignItems: 'center', marginTop: spacing.sm,
+    backgroundColor: colors.primary,
+    borderRadius: radius.sm,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    marginTop: spacing.sm,
   },
-  btnDisabled: { opacity: 0.6 },
-  btnPrimaryText: { color: colors.onAccent, fontSize: fontSize.h3, fontWeight: '700' },
+  btnDisabled: {
+    opacity: 0.6,
+  },
+  btnPrimaryText: {
+    color: colors.onAccent,
+    fontSize: fontSize.h3,
+    fontWeight: '700',
+  },
 });

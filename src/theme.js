@@ -46,6 +46,7 @@ const light = {
   infoSoft:      '#D8E4F2',
 
   // Sistema
+  scrim:         'rgba(27,26,23,0.45)',  // fondo detrás de hojas y modales
   barStyle:      'dark-content',
 };
 
@@ -84,6 +85,7 @@ const dark = {
   infoInk:       '#8DB8EC',
   infoSoft:      '#14243A',
 
+  scrim:         'rgba(0,0,0,0.6)',
   barStyle:      'light-content',
 };
 

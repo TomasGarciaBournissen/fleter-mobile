@@ -11,21 +11,22 @@ import {
   ActivityIndicator,
   StatusBar,
   SafeAreaView,
+  Modal,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
-import { fontSize, spacing, radius } from '../../theme';
-import { useTheme, useThemedStyles } from '../../context/ThemeContext';
-import { useAuth, DEV_MODE } from '../../context/AuthContext';
+import { fontSize, spacing, radius } from '../../../theme';
+import { useTheme, useThemedStyles } from '../../../context/ThemeContext';
+import { DEV_MODE } from '../../../context/AuthContext';
 
 let colors;
 let styles;
 let fieldStyles;
 
-export default function RegisterClienteScreen({ navigation }) {
+export default function RegisterFleteroScreen({ navigation }) {
   colors = useTheme().colors;
   styles = useThemedStyles(createStyles);
   fieldStyles = useThemedStyles(createFieldStyles);
-  const { mockLogin } = useAuth();
   const [form, setForm] = useState({
     nombre: '',
     apellido: '',
@@ -33,18 +34,19 @@ export default function RegisterClienteScreen({ navigation }) {
     email: '',
     contrasena: '',
     telefono: '',
-    nombre_empresa: '',
+    nro_licencia: '',
   });
+  const [licenciaVenc, setLicenciaVenc] = useState(null); // Date object
+  const [mostrarPicker, setMostrarPicker] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Refs para avanzar entre campos con "next" del teclado
-  const apellidoRef = useRef();
-  const dniRef = useRef();
-  const emailRef = useRef();
+  const apellidoRef   = useRef();
+  const dniRef        = useRef();
+  const telefonoRef   = useRef();
+  const emailRef      = useRef();
   const contrasenaRef = useRef();
-  const telefonoRef = useRef();
-  const empresaRef = useRef();
+  const licenciaRef   = useRef();
 
   const set = (field) => (value) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -54,6 +56,9 @@ export default function RegisterClienteScreen({ navigation }) {
     if (!/^\d{7,9}$/.test(form.dni.trim())) return 'El DNI debe tener entre 7 y 9 dígitos.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return 'El email no es válido.';
     if (form.contrasena.length < 6) return 'La contraseña debe tener al menos 6 caracteres.';
+    if (!form.nro_licencia.trim()) return 'El número de licencia es requerido.';
+    if (!licenciaVenc) return 'La fecha de vencimiento de licencia es requerida.';
+    if (licenciaVenc <= new Date()) return 'La licencia debe estar vigente.';
     return null;
   };
 
@@ -61,8 +66,8 @@ export default function RegisterClienteScreen({ navigation }) {
     setError('');
 
     if (DEV_MODE) {
-      // En dev: simula registro exitoso directo sin backend
-      mockLogin('CLIENTE');
+      // En dev: simula registro exitoso → muestra pantalla de cuenta pendiente
+      navigation.replace('CuentaPendiente');
       return;
     }
 
@@ -74,18 +79,20 @@ export default function RegisterClienteScreen({ navigation }) {
 
     setLoading(true);
     try {
-      const { registroCliente } = await import('../../services/auth');
+      const { registroConductor } = await import('../../../services/auth');
       const datos = {
         nombre: form.nombre.trim(),
         apellido: form.apellido.trim(),
         dni: form.dni.trim(),
         email: form.email.trim().toLowerCase(),
         contrasena: form.contrasena,
+        nro_licencia: form.nro_licencia.trim(),
+        licencia_vencimiento: licenciaVenc.toISOString(),
         ...(form.telefono.trim() && { telefono: form.telefono.trim() }),
-        ...(form.nombre_empresa.trim() && { nombre_empresa: form.nombre_empresa.trim() }),
       };
-      await registroCliente(datos);
-      // useAuth detecta el cambio en onAuthStateChanged → navega a ClienteStack automáticamente
+      await registroConductor(datos);
+      // Registro exitoso → ir a pantalla de cuenta pendiente
+      navigation.replace('CuentaPendiente');
     } catch (err) {
       setError(mapApiError(err));
     } finally {
@@ -111,8 +118,16 @@ export default function RegisterClienteScreen({ navigation }) {
               <Ionicons name="arrow-back" size={20} color={colors.primary} />
               <Text style={styles.backText}>Volver</Text>
             </TouchableOpacity>
-            <Text style={styles.title}>Crear cuenta</Text>
-            <Text style={styles.subtitle}>Registrate como cliente para solicitar fletes</Text>
+            <Text style={styles.title}>Ser conductor</Text>
+            <Text style={styles.subtitle}>Registrate para recibir viajes y generar ingresos</Text>
+          </View>
+
+          {/* Banner informativo */}
+          <View style={styles.infoBanner}>
+            <Ionicons name="time-outline" size={18} color={colors.warning} />
+            <Text style={styles.infoText}>
+              Tu cuenta será revisada por el equipo de Fleter antes de que puedas recibir viajes.
+            </Text>
           </View>
 
           {/* Formulario */}
@@ -122,7 +137,7 @@ export default function RegisterClienteScreen({ navigation }) {
             <Field label="Nombre *">
               <TextInput
                 style={styles.input}
-                placeholder="Juan"
+                placeholder="Carlos"
                 placeholderTextColor={colors.textHint}
                 value={form.nombre}
                 onChangeText={set('nombre')}
@@ -136,7 +151,7 @@ export default function RegisterClienteScreen({ navigation }) {
               <TextInput
                 ref={apellidoRef}
                 style={styles.input}
-                placeholder="Pérez"
+                placeholder="Martínez"
                 placeholderTextColor={colors.textHint}
                 value={form.apellido}
                 onChangeText={set('apellido')}
@@ -157,7 +172,7 @@ export default function RegisterClienteScreen({ navigation }) {
                 keyboardType="number-pad"
                 maxLength={9}
                 returnKeyType="next"
-                onSubmitEditing={() => emailRef.current?.focus()}
+                onSubmitEditing={() => telefonoRef.current?.focus()}
               />
             </Field>
 
@@ -171,23 +186,80 @@ export default function RegisterClienteScreen({ navigation }) {
                 onChangeText={set('telefono')}
                 keyboardType="phone-pad"
                 returnKeyType="next"
-                onSubmitEditing={() => empresaRef.current?.focus()}
-              />
-            </Field>
-
-            <Field label="Empresa (opcional)">
-              <TextInput
-                ref={empresaRef}
-                style={styles.input}
-                placeholder="Mi Empresa S.A."
-                placeholderTextColor={colors.textHint}
-                value={form.nombre_empresa}
-                onChangeText={set('nombre_empresa')}
-                autoCapitalize="words"
-                returnKeyType="next"
                 onSubmitEditing={() => emailRef.current?.focus()}
               />
             </Field>
+
+            <View style={styles.divider} />
+            <Text style={styles.sectionLabel}>Licencia de conducir</Text>
+
+            <Field label="Número de licencia *">
+              <TextInput
+                ref={licenciaRef}
+                style={styles.input}
+                placeholder="B123456"
+                placeholderTextColor={colors.textHint}
+                value={form.nro_licencia}
+                onChangeText={set('nro_licencia')}
+                autoCapitalize="characters"
+                returnKeyType="next"
+                onSubmitEditing={() => vencimientoRef.current?.focus()}
+              />
+            </Field>
+
+            <Field label="Vencimiento de licencia *">
+              <TouchableOpacity
+                style={styles.dateBtn}
+                onPress={() => setMostrarPicker(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={licenciaVenc ? styles.dateBtnValor : styles.dateBtnPlaceholder}>
+                  {licenciaVenc
+                    ? licenciaVenc.toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })
+                    : 'Seleccioná la fecha'}
+                </Text>
+                <Ionicons name="calendar-outline" size={18} color={colors.textHint} />
+              </TouchableOpacity>
+            </Field>
+
+            {/* DateTimePicker Android */}
+            {mostrarPicker && Platform.OS === 'android' && (
+              <DateTimePicker
+                value={licenciaVenc ?? new Date()}
+                mode="date"
+                display="default"
+                minimumDate={new Date()}
+                onChange={(e, selected) => {
+                  setMostrarPicker(false);
+                  if (e.type !== 'dismissed' && selected) setLicenciaVenc(selected);
+                }}
+              />
+            )}
+
+            {/* DateTimePicker iOS — modal spinner */}
+            {Platform.OS === 'ios' && (
+              <Modal visible={mostrarPicker} transparent animationType="slide">
+                <View style={styles.pickerOverlay}>
+                  <View style={styles.pickerSheet}>
+                    <View style={styles.pickerHeader}>
+                      <TouchableOpacity onPress={() => setMostrarPicker(false)}>
+                        <Text style={styles.pickerListo}>Listo</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={licenciaVenc ?? new Date()}
+                      mode="date"
+                      display="spinner"
+                      minimumDate={new Date()}
+                      onChange={(_, selected) => { if (selected) setLicenciaVenc(selected); }}
+                      locale="es-AR"
+                      textColor={colors.textPrimary}
+                      style={{ width: '100%', backgroundColor: colors.background }}
+                    />
+                  </View>
+                </View>
+              </Modal>
+            )}
 
             <View style={styles.divider} />
             <Text style={styles.sectionLabel}>Acceso a la cuenta</Text>
@@ -196,7 +268,7 @@ export default function RegisterClienteScreen({ navigation }) {
               <TextInput
                 ref={emailRef}
                 style={styles.input}
-                placeholder="juan@empresa.com"
+                placeholder="carlos@email.com"
                 placeholderTextColor={colors.textHint}
                 value={form.email}
                 onChangeText={set('email')}
@@ -232,7 +304,7 @@ export default function RegisterClienteScreen({ navigation }) {
             >
               {loading
                 ? <ActivityIndicator color={colors.onAccent} />
-                : <Text style={styles.btnPrimaryText}>Crear cuenta</Text>
+                : <Text style={styles.btnPrimaryText}>Enviar solicitud</Text>
               }
             </TouchableOpacity>
           </View>
@@ -244,7 +316,6 @@ export default function RegisterClienteScreen({ navigation }) {
   );
 }
 
-// Componente auxiliar para cada campo con su label
 function Field({ label, children }) {
   return (
     <View style={{ marginBottom: spacing.md }}>
@@ -286,7 +357,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   header: {
     paddingTop: spacing.lg,
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.md,
   },
   backBtn: {
     flexDirection: 'row',
@@ -308,6 +379,26 @@ const createStyles = (colors) => StyleSheet.create({
   subtitle: {
     fontSize: fontSize.body,
     color: colors.textSecondary,
+  },
+  infoBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: colors.surface1,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.warning,
+    borderRadius: radius.sm,
+    padding: spacing.md,
+    marginVertical: spacing.md,
+    gap: spacing.sm,
+  },
+  infoIcon: {
+    fontSize: 18,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: fontSize.caption,
+    color: colors.textSecondary,
+    lineHeight: 18,
   },
   form: {
     backgroundColor: colors.surface1,
@@ -339,6 +430,36 @@ const createStyles = (colors) => StyleSheet.create({
     fontSize: fontSize.body,
     color: colors.textPrimary,
   },
+  dateBtn: {
+    backgroundColor: colors.surface2,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.surface3,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateBtnValor: { fontSize: fontSize.body, color: colors.textPrimary, fontWeight: '600' },
+  dateBtnPlaceholder: { fontSize: fontSize.body, color: colors.textHint },
+  dateBtnIcon: { fontSize: 16 },
+  pickerOverlay: {
+    flex: 1, justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  pickerSheet: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingBottom: spacing.xl,
+  },
+  pickerHeader: {
+    flexDirection: 'row', justifyContent: 'flex-end',
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
+    borderBottomWidth: 1, borderBottomColor: colors.surface3,
+  },
+  pickerListo: { fontSize: fontSize.body, fontWeight: '700', color: colors.primary },
   errorText: {
     color: colors.error,
     fontSize: fontSize.caption,

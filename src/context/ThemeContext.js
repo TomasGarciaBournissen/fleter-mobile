@@ -13,7 +13,7 @@ const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
   const sistemaOscuro = useColorScheme() === 'dark';
-  const { user } = useAuth();
+  const { user, rolEnAlta } = useAuth();
   const [mode, setModeState] = useState(null); // null = todavía no cargó la preferencia
 
   useEffect(() => {
@@ -28,7 +28,8 @@ export function ThemeProvider({ children }) {
   }, []);
 
   // '' = sin preferencia guardada → default por rol
-  const modeEfectivo = mode || (user?.rol === 'CONDUCTOR' ? 'dark' : 'light');
+  const rol = user?.rol ?? rolEnAlta;
+  const modeEfectivo = mode || (rol === 'CONDUCTOR' ? 'dark' : 'light');
   const isDark = modeEfectivo === 'dark' || (modeEfectivo === 'system' && sistemaOscuro);
 
   const value = useMemo(() => ({

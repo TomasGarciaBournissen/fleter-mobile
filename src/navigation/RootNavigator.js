@@ -1,10 +1,12 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { fontSize, spacing, radius } from '../theme';
+import SplashScreen from '../screens/auth/SplashScreen';
 import AuthStack from './AuthStack';
+import OnboardingEmpresaStack from './OnboardingEmpresaStack';
 import ClienteStack from './ClienteStack';
 import FleteroStack from './FleteroStack';
 import GerenteStack from './GerenteStack';
@@ -29,9 +31,22 @@ function RolNoSoportado({ onLogout }) {
   );
 }
 
+// Elige el stack según la sesión:
+// sin sesión (o con un alta en curso) → entrada y alta
+// cuenta de empresa sin empresa → registrar la empresa o sumarse con código
+// empresa / conductor → su app (ClienteStack y FleteroStack hasta las fases 2 y 3)
+function Stacks({ user, altaEnCurso }) {
+  if (!user || altaEnCurso) return <AuthStack />;
+  if (user.rol === 'CLIENTE') return user.organizacion === null ? <OnboardingEmpresaStack /> : <ClienteStack />;
+  if (user.rol === 'CONDUCTOR' || user.rol === 'FLETERO') return <FleteroStack />;
+  if (user.rol === 'GERENTE') return <GerenteStack />; // marketplace, dormido
+  return null;
+}
+
 export default function RootNavigator() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, altaEnCurso } = useAuth();
   const { colors, isDark } = useTheme();
+  const [splashListo, setSplashListo] = useState(false);
 
   // Tema de React Navigation derivado de la paleta activa (evita flashes blancos)
   const base = isDark ? DarkTheme : DefaultTheme;
@@ -47,25 +62,19 @@ export default function RootNavigator() {
     },
   };
 
-  if (loading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+  // El splash se queda hasta que termina su animación y se resolvió la sesión
+  if (loading || !splashListo) {
+    return <SplashScreen onTerminar={() => setSplashListo(true)} />;
   }
 
-  const rolNoSoportado = user && !['CLIENTE', 'CONDUCTOR', 'FLETERO', 'GERENTE'].includes(user.rol);
+  const rolNoSoportado = user && !altaEnCurso && !['CLIENTE', 'CONDUCTOR', 'FLETERO', 'GERENTE'].includes(user.rol);
   if (rolNoSoportado) {
     return <RolNoSoportado onLogout={logout} />;
   }
 
   return (
     <NavigationContainer theme={navTheme}>
-      {!user && <AuthStack />}
-      {user?.rol === 'CLIENTE' && <ClienteStack />}
-      {(user?.rol === 'CONDUCTOR' || user?.rol === 'FLETERO') && <FleteroStack />}
-      {user?.rol === 'GERENTE' && <GerenteStack />}
+      <Stacks user={user} altaEnCurso={altaEnCurso} />
     </NavigationContainer>
   );
 }

@@ -8,9 +8,9 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { fontSize, spacing, radius } from '../../theme';
-import { useTheme, useThemedStyles } from '../../context/ThemeContext';
-import { useAuth } from '../../context/AuthContext';
+import { fontSize, spacing, radius } from '../../../theme';
+import { useTheme, useThemedStyles } from '../../../context/ThemeContext';
+import { useAuth } from '../../../context/AuthContext';
 
 let colors;
 let styles;

@@ -1,348 +1,115 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  ScrollView,
-  Platform,
-  ActivityIndicator,
-  StatusBar,
-  SafeAreaView,
-} from 'react-native';
-import { fontSize, spacing, radius, fonts } from '../../theme';
-import { useTheme, useThemedStyles } from '../../context/ThemeContext';
-import Isotipo from '../../components/Isotipo';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
-import { DEV_MODE } from '../../context/AuthContext';
-
-let colors;
-let styles;
+import { useThemedStyles } from '../../context/ThemeContext';
+import { DEV_MODE } from '../../config';
+import { fonts } from '../../theme';
+import { loginEmail } from '../../services/auth';
+import { useGoogleLogin, GOOGLE_CONFIGURADO } from '../../services/google';
+import { mensajeDeError } from '../../utils/errores';
+import { emailValido } from '../../utils/formularios';
+import { Pantalla, Marca, Titulo, Campo, Boton, Separador, Enlace, Nota } from '../../components/ui';
+import GoogleLogo from '../../components/GoogleLogo';
 
 export default function LoginScreen({ navigation }) {
-  colors = useTheme().colors;
-  styles = useThemedStyles(createStyles);
-  const { mockLogin } = useAuth();
+  const s = useThemedStyles(createStyles);
+  const { mockLogin, errorSesion, setErrorSesion } = useAuth();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [contrasena, setContrasena] = useState('');
+  const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+  const refContrasena = useRef(null);
 
-  const handleLogin = async () => {
-    setError('');
+  const google = useGoogleLogin({ onError: (e) => setError(mensajeDeError(e)) });
+  const errorVisible = error || errorSesion;
 
+  const entrar = async () => {
+    setError(''); setErrorSesion('');
     if (DEV_MODE) {
-      // En dev: simulamos login directo sin Firebase ni backend
-      mockLogin('CLIENTE');
+      // Sin Firebase: un email con «conductor» o «martin» entra como conductor
+      mockLogin(/conductor|martin/i.test(email) ? 'CONDUCTOR' : 'CLIENTE');
       return;
     }
-
-    if (!email.trim() || !password.trim()) {
-      setError('Completá todos los campos.');
+    if (!emailValido(email) || !contrasena) {
+      setError('Completá tu email y tu contraseña.');
       return;
     }
-
-    setLoading(true);
+    setCargando(true);
     try {
-      const { loginEmail } = await import('../../services/auth');
-      await loginEmail(email.trim().toLowerCase(), password);
-      // useAuth detecta el cambio en onAuthStateChanged y navega automáticamente
+      await loginEmail(email.trim().toLowerCase(), contrasena);
+      // AuthContext detecta la sesión y RootNavigator cambia de stack
     } catch (err) {
-      setError(mapFirebaseError(err?.code));
+      setError(mensajeDeError(err));
     } finally {
-      setLoading(false);
+      setCargando(false);
     }
   };
 
+  const entrarConGoogle = () => {
+    setError(''); setErrorSesion('');
+    if (!GOOGLE_CONFIGURADO) {
+      setError('Entrar con Google todavía no está disponible en esta versión. Entrá con tu email.');
+      return;
+    }
+    google.entrar();
+  };
+
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle={colors.barStyle} backgroundColor={colors.background} />
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Logo / Marca */}
-          <View style={styles.header}>
-            <Isotipo size={52} />
-            <Text style={styles.logo}>
-              Fleter<Text style={styles.logoDot}>.</Text>
-            </Text>
-            <Text style={styles.tagline}>Tu logística, de punta a punta.</Text>
-          </View>
+    <Pantalla
+      pie={
+        <>
+          <Boton titulo="Entrar" onPress={entrar} cargando={cargando} />
+          <Separador />
+          <Boton
+            titulo="Entrar con Google"
+            variante="borde"
+            icono={<GoogleLogo size={20} />}
+            cargando={google.cargando}
+            onPress={entrarConGoogle}
+          />
+          <Text style={s.crear}>
+            ¿Todavía no tenés cuenta? <Enlace onPress={() => navigation.navigate('TipoCuenta')}>Creala</Enlace>
+          </Text>
+        </>
+      }
+    >
+      <Marca style={{ marginTop: 20 }} />
+      <Titulo style={{ marginTop: 40 }}>Entrá a tu cuenta</Titulo>
 
-          {/* Formulario */}
-          <View style={styles.form}>
-            <Text style={styles.formTitle}>Iniciar sesión</Text>
-
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="tu@empresa.com"
-                placeholderTextColor={colors.textHint}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="next"
-              />
-            </View>
-
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Contraseña</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="••••••••"
-                placeholderTextColor={colors.textHint}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-              />
-            </View>
-
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-            <TouchableOpacity
-              style={[styles.btnPrimary, loading && styles.btnDisabled]}
-              onPress={handleLogin}
-              disabled={loading}
-              activeOpacity={0.8}
-            >
-              {loading
-                ? <ActivityIndicator color={colors.onAccent} />
-                : <Text style={styles.btnPrimaryText}>Entrar</Text>
-              }
-            </TouchableOpacity>
-          </View>
-
-          {/* Registro */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>¿No tenés cuenta?</Text>
-
-            <TouchableOpacity
-              style={styles.btnSecondary}
-              onPress={() => navigation.navigate('RegisterCliente')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.btnSecondaryText}>Registrarme como cliente</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.btnSecondary, { marginTop: spacing.sm }]}
-              onPress={() => navigation.navigate('RegisterFletero')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.btnSecondaryText}>Registrarme como conductor</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.btnSecondary, { marginTop: spacing.sm }]}
-              onPress={() => navigation.navigate('RegisterGerente')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.btnSecondaryText}>Registrar mi empresa</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* ── PANEL DEV ── solo visible con DEV_MODE = true */}
-          {DEV_MODE && (
-            <View style={styles.devPanel}>
-              <Text style={styles.devTitle}>🛠 DEV MODE</Text>
-              <TouchableOpacity
-                style={styles.devBtn}
-                onPress={() => mockLogin('CLIENTE')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.devBtnText}>Entrar como CLIENTE →</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.devBtn, { marginTop: spacing.xs }]}
-                onPress={() => mockLogin('CONDUCTOR')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.devBtnText}>Entrar como CONDUCTOR →</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.devBtn, { marginTop: spacing.xs }]}
-                onPress={() => mockLogin('GERENTE')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.devBtnText}>Entrar como GERENTE →</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      <Campo
+        label="Email"
+        value={email}
+        onChangeText={(t) => { setEmail(t); setError(''); }}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
+        autoComplete="email"
+        textContentType="emailAddress"
+        returnKeyType="next"
+        onSubmitEditing={() => refContrasena.current?.focus()}
+        error={!!errorVisible}
+      />
+      <Campo
+        ref={refContrasena}
+        label="Contraseña"
+        value={contrasena}
+        onChangeText={(t) => { setContrasena(t); setError(''); }}
+        secreto
+        autoComplete="current-password"
+        textContentType="password"
+        returnKeyType="done"
+        onSubmitEditing={entrar}
+        error={errorVisible}
+      />
+      <View style={s.olvide}>
+        <Enlace style={{ fontSize: 13 }} onPress={() => navigation.navigate('RecuperarContrasena', { email })}>Olvidé mi contraseña</Enlace>
+      </View>
+      {DEV_MODE ? <Nota tipo="info">Modo desarrollo: entrás sin contraseña. Con «conductor» en el email entrás como conductor.</Nota> : null}
+    </Pantalla>
   );
 }
 
-// Traduce los códigos de error de Firebase a mensajes amigables en español
-function mapFirebaseError(code) {
-  switch (code) {
-    case 'auth/user-not-found':
-    case 'auth/wrong-password':
-    case 'auth/invalid-credential':
-      return 'Email o contraseña incorrectos.';
-    case 'auth/invalid-email':
-      return 'El email no es válido.';
-    case 'auth/too-many-requests':
-      return 'Demasiados intentos. Esperá unos minutos e intentá de nuevo.';
-    case 'auth/network-request-failed':
-      return 'Sin conexión. Verificá tu internet.';
-    default:
-      return 'Ocurrió un error. Intentá de nuevo.';
-  }
-}
-
-const createStyles = (colors) => StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-  },
-  header: {
-    alignItems: 'center',
-    paddingTop: spacing.xl * 2,
-    paddingBottom: spacing.xl,
-  },
-  logo: {
-    fontFamily: fonts.display,
-    fontSize: 40,
-    color: colors.textPrimary,
-    letterSpacing: -0.8,
-    marginTop: spacing.md,
-  },
-  logoDot: {
-    color: colors.primary,
-  },
-  tagline: {
-    fontFamily: fonts.accent,
-    fontSize: fontSize.caption,
-    color: colors.textHint,
-    marginTop: spacing.sm,
-    letterSpacing: 1.4,
-    textTransform: 'uppercase',
-  },
-  form: {
-    backgroundColor: colors.surface1,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.surface3,
-  },
-  formTitle: {
-    fontSize: fontSize.h2,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: spacing.lg,
-  },
-  fieldGroup: {
-    marginBottom: spacing.md,
-  },
-  label: {
-    fontSize: fontSize.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  input: {
-    backgroundColor: colors.surface2,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.surface3,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    fontSize: fontSize.body,
-    color: colors.textPrimary,
-  },
-  errorText: {
-    color: colors.error,
-    fontSize: fontSize.caption,
-    marginBottom: spacing.md,
-    textAlign: 'center',
-  },
-  btnPrimary: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.sm,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    marginTop: spacing.sm,
-  },
-  btnDisabled: {
-    opacity: 0.6,
-  },
-  btnPrimaryText: {
-    color: colors.onAccent,
-    fontSize: fontSize.h3,
-    fontWeight: '700',
-  },
-  footer: {
-    marginTop: spacing.xl,
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: fontSize.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.md,
-  },
-  btnSecondary: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: colors.surface3,
-    borderRadius: radius.sm,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
-  btnSecondaryText: {
-    color: colors.textPrimary,
-    fontSize: fontSize.body,
-    fontWeight: '600',
-  },
-  // ── Dev panel ──────────────────────────────────────────────
-  devPanel: {
-    marginTop: spacing.xl,
-    padding: spacing.md,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.warning,
-    backgroundColor: 'rgba(229,151,0,0.08)',
-    alignItems: 'center',
-  },
-  devTitle: {
-    color: colors.warning,
-    fontSize: fontSize.caption,
-    fontWeight: '700',
-    letterSpacing: 1,
-    marginBottom: spacing.sm,
-  },
-  devBtn: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: colors.warning,
-    borderRadius: radius.sm,
-    paddingVertical: spacing.sm + 2,
-    alignItems: 'center',
-  },
-  devBtnText: {
-    color: colors.warning,
-    fontSize: fontSize.body,
-    fontWeight: '600',
-  },
+const createStyles = (c) => StyleSheet.create({
+  olvide: { alignItems: 'flex-end', marginTop: 12 },
+  crear:  { textAlign: 'center', fontFamily: fonts.ui, fontSize: 14, color: c.ink2, marginTop: 6 },
 });

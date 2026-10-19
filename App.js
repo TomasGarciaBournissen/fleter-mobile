@@ -10,6 +10,7 @@ import {
 } from '@expo-google-fonts/manrope';
 import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 import { JosefinSans_600SemiBold } from '@expo-google-fonts/josefin-sans';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/context/AuthContext';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { SocketProvider } from './src/context/SocketContext';
@@ -34,12 +35,14 @@ export default function App() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <SocketProvider>
-          <RootNavigator />
-        </SocketProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <SocketProvider>
+            <RootNavigator />
+          </SocketProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

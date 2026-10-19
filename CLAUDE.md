@@ -31,6 +31,12 @@ src/
   theme.js             � sistema de dise�o completo
 
 ## Sistema de diseño (RESPETAR SIEMPRE)
+**Decisiones del dueño del producto (no negociables):**
+- Se usa **solo el sistema Fleter** de abajo. **Nunca** el estilo de la skill `mobile-app-ui-design` (sombras suaves, glow, radios grandes, emojis, una sola tipografía): se comparó y quedó descartado. La skill sirve, como mucho, para revisar UX (zona del pulgar, estados vacíos/error), nunca para el estilo visual.
+- **Toda pantalla tiene modo claro y modo oscuro.** Ningún color fijo: todo sale de los tokens de `src/theme.js` vía `useTheme()` / `useThemedStyles()`. Antes de dar una pantalla por terminada, verla en los dos modos.
+- En el texto visible se dice **«empresa»**, no «PyME» (PyME queda como término interno y de la API). Para el que maneja se dice **«conductor»** (chofer solo donde lo impone la API).
+- Componentes base en `src/components/ui/` (Pantalla, Boton, Campo, CampoCodigo, Opcion, Chip, Nota, Pasos, HojaCalendario, IsotipoAnimado…): usarlos antes de crear estilos nuevos.
+
 Sistema v2 "Fleter" — la referencia completa vive en `UXUI.md` (leerla antes de tocar UI).
 Todo color sale de tokens en `src/theme.js`; ningún hexadecimal suelto en pantallas.
 Resumen mínimo:
