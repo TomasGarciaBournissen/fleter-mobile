@@ -74,7 +74,7 @@
 | (este commit) | 19 Oct 2026 | Prototipo — correcciones de la revisión: «empresa» en vez de «PyME» en todo texto visible (PyME queda interno), pantalla sin empresa reescrita como pregunta («¿Tu empresa ya usa Fleter?» → «No, la registro yo» / «Sí, tengo un código»). Se mantienen el login con Google y el paso de licencia del conductor |
 | (este commit) | 19 Oct 2026 | Chore — skill `mobile-app-ui-design` (ceorkm/mobile-app-ui-design) en `.claude/skills/`. Donde contradice a `UXUI.md` (sombras, glow, radios grandes, emojis) manda `UXUI.md` |
 | (este commit) | 19 Oct 2026 | Prototipo — `prototype/comparacion-estilos.html`: login, tipo de cuenta, empresa registrada e inicio de la empresa hechos dos veces (skill mobile-app-ui-design vs. sistema Fleter) para elegir dirección visual |
-| (este commit) | 19 Oct 2026 | Feat — fase 0 + fase 1 del rediseño: kit `src/components/ui/`, servicios de organizaciones/invitaciones/vehículos, Google login, AuthContext con perfil `/me`, `altaEnCurso` y `rolEnAlta`, RootNavigator con splash animado y `OnboardingEmpresaStack`, 13 pantallas nuevas de entrada y alta en claro y oscuro. Se descarta el estilo de la skill (regla en CLAUDE.md) y se borra la comparación |
+| `7df9b87` | 19 Oct 2026 | Feat — fase 0 + fase 1 del rediseño: kit `src/components/ui/`, servicios de organizaciones/invitaciones/vehículos, Google login, AuthContext con perfil `/me`, `altaEnCurso` y `rolEnAlta`, RootNavigator con splash animado y `OnboardingEmpresaStack`, 13 pantallas nuevas de entrada y alta en claro y oscuro. Se descarta el estilo de la skill (regla en CLAUDE.md) y se borra la comparación |
 
 ---
 
