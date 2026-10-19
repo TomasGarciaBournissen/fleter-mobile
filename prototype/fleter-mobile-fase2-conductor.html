@@ -215,7 +215,6 @@ figcaption button{margin-top:6px;border:1px solid var(--frame);background:transp
 .sec small{font-family:var(--f-ui);font-size:12px;font-weight:500;color:var(--ink3);letter-spacing:0}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
 .card+.card{margin-top:10px}
-.card.atn{border-color:var(--warn);box-shadow:inset 3px 0 0 var(--warn)}
 .top-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .badge{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
 .badge i{width:6px;height:6px;border-radius:50%;background:currentColor}
@@ -394,7 +393,7 @@ figcaption button{margin-top:6px;border:1px solid var(--frame);background:transp
             <div class="hdr"><h1 class="h1">Viajes</h1></div>
 
             <p class="sec">Para confirmar <small>1</small></p>
-            <div class="card atn">
+            <div class="card">
               <div class="top-row"><span class="badge b-warn">Sin confirmar</span><span class="id">VJ-2420</span></div>
               <div class="when"><span><b>Mañana, 08:00</b><span class="emp">Distribuidora Norte</span></span></div>
               <ul class="route">
@@ -414,7 +413,7 @@ figcaption button{margin-top:6px;border:1px solid var(--frame);background:transp
           </div>
           <nav class="tabbar"><a class="on" href="#"><span class="dot"><svg><use href="#list"/></svg></span>Viajes</a><a href="#"><svg><use href="#clock"/></svg>Historial</a><a href="#"><svg><use href="#user"/></svg>Perfil</a></nav>
         </div></div>
-        <figcaption><b>Viajes</b><span>Lo que espera al conductor va primero, con borde ámbar y el límite para confirmar (cierra la ventana de inicio). Los demás, compactos pero con todos los datos.</span></figcaption>
+        <figcaption><b>Viajes</b><span>Lo que espera al conductor va primero, con el límite para confirmar (cierra la ventana de inicio). Los demás, compactos pero con todos los datos.</span></figcaption>
       </figure>
 
       <figure>
@@ -450,11 +449,10 @@ figcaption button{margin-top:6px;border:1px solid var(--frame);background:transp
               <h3>Todavía no tenés viajes</h3>
               <p>Cuando Distribuidora Norte te asigne uno, te aparece acá para que lo confirmes.</p>
             </div>
-            <div class="note plain" style="margin-top:22px"><svg><use href="#info"/></svg><span>¿Trabajás con otra empresa? Pedile su código y sumala desde tu perfil.</span></div>
           </div>
           <nav class="tabbar"><a class="on" href="#"><svg><use href="#list"/></svg>Viajes</a><a href="#"><svg><use href="#clock"/></svg>Historial</a><a href="#"><svg><use href="#user"/></svg>Perfil</a></nav>
         </div></div>
-        <figcaption><b>Sin viajes</b><span>Estado vacío con la siguiente acción posible, no un mensaje triste. Las cajas punteadas son la carga que todavía no llegó.</span></figcaption>
+        <figcaption><b>Sin viajes</b><span>Estado vacío que dice qué va a aparecer. Las cajas punteadas son la carga que todavía no llegó.</span></figcaption>
       </figure>
     </div>
   </section>

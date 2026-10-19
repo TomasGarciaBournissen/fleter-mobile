@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-19  
-> Branch: staging | Commits totales: 62
+> Branch: staging | Commits totales: 63
 
 ---
 
@@ -77,6 +77,7 @@
 | `7df9b87` | 19 Oct 2026 | Feat — fase 0 + fase 1 del rediseño: kit `src/components/ui/`, servicios de organizaciones/invitaciones/vehículos, Google login, AuthContext con perfil `/me`, `altaEnCurso` y `rolEnAlta`, RootNavigator con splash animado y `OnboardingEmpresaStack`, 13 pantallas nuevas de entrada y alta en claro y oscuro. Se descarta el estilo de la skill (regla en CLAUDE.md) y se borra la comparación |
 | (este commit) | 19 Oct 2026 | Prototipo — fase 2 (conductor): `prototype/fleter-mobile-fase2-conductor.html` con 14 pantallas: viajes (con viaje en curso y vacío), detalle con confirmar/rechazar, hoja de vehículo, permiso de ubicación, viaje activo (antes de iniciar, cargando, en ruta con desvío, última parada), viaje terminado con estimado vs. real, historial y perfil. Oscuro por default, conmutable a claro |
 | (este commit) | 19 Oct 2026 | Fix — revisión del dueño: «Volver a enviar» en vez de «Volver a entrar» al recuperar la contraseña, se saca la nota de las dos cuentas en Tipo de cuenta, notas informativas en gris (no azul), el conductor no ve precios (prototipo fase 2 sin precios). Fase 2 aprobada |
+| (este commit) | 19 Oct 2026 | Prototipo — fase 2: sin borde ámbar en la card «Sin confirmar» y sin la nota de sumar otra empresa en el estado vacío |
 
 ---
 
