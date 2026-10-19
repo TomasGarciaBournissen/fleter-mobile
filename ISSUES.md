@@ -8,6 +8,7 @@
 |---|---|---|---|---|
 | 1 | Desvincular a un conductor cancela viajes en curso | Alta | Backend + mobile | Abierto |
 | 2 | Avisar antes de que un viaje pase a `VENCIDO` | Media | Backend (push) + mobile | Abierto |
+| 3 | El conductor no recibe ETA, desvíos ni la ventana de inicio | Media | Backend | Abierto |
 
 ---
 
@@ -71,6 +72,26 @@ haber visto la asignación.
   que cierre la ventana y el viaje sigue en `ASIGNADO` o `CONFIRMADO`, con acceso directo a reasignar.
 - **Al vencer:** push a los dos lados con el motivo (no confirmado / no iniciado).
 - Depende de integrar FCM en el backend y de `expo-notifications` en mobile.
+
+---
+
+## 3. El conductor no recibe ETA, desvíos ni la ventana de inicio
+
+### Qué pasa hoy
+- `eta:actualizar`, `alerta:desvio`, `alerta:parada` y `ruta:recalculada` van **solo a la empresa**
+  (tabla de eventos del viaje interno en API.md). El conductor, que es quien maneja, no se entera de
+  un desvío ni ve una ETA actualizada.
+- Los viajes no traen los bordes de la ventana de inicio. El mobile los muestra como referencia con
+  los defaults del backend (−60 / +90 min, `src/utils/ventana.js`); si el backend cambia esos valores,
+  la app muestra una ventana equivocada (igual el que decide es el backend al tocar «Iniciar»).
+
+### Qué hace la app mientras tanto
+- En ruta muestra la **llegada estimada** que ya trae cada parada (`llegada_estimada`), sin calcular nada.
+- El aviso de desvío del prototipo de la fase 2 queda fuera hasta que el backend lo mande.
+
+### Pedido al backend
+- Emitir también al conductor (`usuario:{id}`) `eta:actualizar`, `alerta:desvio` y `ruta:recalculada`.
+- Agregar al viaje `ventana_inicio_desde` y `ventana_inicio_hasta`.
 
 ---
 

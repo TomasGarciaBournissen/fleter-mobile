@@ -7,3 +7,4 @@ export { default as HojaCalendario } from './HojaCalendario';
 export { default as IsotipoAnimado } from './IsotipoAnimado';
 export { Titulo, Bajada, Meta, Etiqueta, Eslogan, Enlace } from './Texto';
 export { Marca, Pasos, Nota, Chip, Separador, ProximosPasos, Pastilla } from './Varios';
+export { default as HojaInferior } from './HojaInferior';

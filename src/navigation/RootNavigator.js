@@ -9,6 +9,7 @@ import AuthStack from './AuthStack';
 import OnboardingEmpresaStack from './OnboardingEmpresaStack';
 import ClienteStack from './ClienteStack';
 import FleteroStack from './FleteroStack';
+import ConductorStack from './ConductorStack';
 import GerenteStack from './GerenteStack';
 
 function RolNoSoportado({ onLogout }) {
@@ -34,11 +35,12 @@ function RolNoSoportado({ onLogout }) {
 // Elige el stack según la sesión:
 // sin sesión (o con un alta en curso) → entrada y alta
 // cuenta de empresa sin empresa → registrar la empresa o sumarse con código
-// empresa / conductor → su app (ClienteStack y FleteroStack hasta las fases 2 y 3)
+// conductor → ConductorStack · empresa → ClienteStack hasta la fase 3
 function Stacks({ user, altaEnCurso }) {
   if (!user || altaEnCurso) return <AuthStack />;
   if (user.rol === 'CLIENTE') return user.organizacion === null ? <OnboardingEmpresaStack /> : <ClienteStack />;
-  if (user.rol === 'CONDUCTOR' || user.rol === 'FLETERO') return <FleteroStack />;
+  if (user.rol === 'CONDUCTOR') return <ConductorStack />;
+  if (user.rol === 'FLETERO') return <FleteroStack />; // marketplace, dormido
   if (user.rol === 'GERENTE') return <GerenteStack />; // marketplace, dormido
   return null;
 }

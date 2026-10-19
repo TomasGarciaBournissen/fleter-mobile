@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-19  
-> Branch: staging | Commits totales: 63
+> Branch: staging | Commits totales: 64
 
 ---
 
@@ -78,6 +78,7 @@
 | (este commit) | 19 Oct 2026 | Prototipo — fase 2 (conductor): `prototype/fleter-mobile-fase2-conductor.html` con 14 pantallas: viajes (con viaje en curso y vacío), detalle con confirmar/rechazar, hoja de vehículo, permiso de ubicación, viaje activo (antes de iniciar, cargando, en ruta con desvío, última parada), viaje terminado con estimado vs. real, historial y perfil. Oscuro por default, conmutable a claro |
 | (este commit) | 19 Oct 2026 | Fix — revisión del dueño: «Volver a enviar» en vez de «Volver a entrar» al recuperar la contraseña, se saca la nota de las dos cuentas en Tipo de cuenta, notas informativas en gris (no azul), el conductor no ve precios (prototipo fase 2 sin precios). Fase 2 aprobada |
 | (este commit) | 19 Oct 2026 | Prototipo — fase 2: sin borde ámbar en la card «Sin confirmar» y sin la nota de sumar otra empresa en el estado vacío |
+| (este commit) | 19 Oct 2026 | Feat — fase 2 del rediseño (conductor): `ConductorStack` con Viajes / Historial / Perfil, detalle con confirmar (hoja de vehículos) y rechazar, viaje activo parada por parada con GPS en 2º plano, viaje terminado con estimado vs. real, perfil con empresas y vehículos. Servicio `viajesConductor`, hooks `useEnVivo` (refetch al reconectar) y `useGpsViaje`, componentes de viaje (ChipEstado, Recorrido, DatosViaje, TarjetaViaje, MapaRecorrido, HojaInferior). ISSUES.md #3: el conductor no recibe ETA ni desvíos |
 
 ---
 
@@ -104,6 +105,18 @@ Modelo empresa + conductores. Componentes base en `src/components/ui/`. Todas en
 | `CrearEmpresaScreen` | ✅ | POST /api/organizaciones (nombre, CUIT con formato, razón social y dirección opcionales). Dirección como texto libre por ahora |
 | `CodigoMiembroScreen` | ✅ | Canje de código de MIEMBRO → refresca perfil → stack de la empresa |
 | `EmpresaRegistradaScreen` | ✅ | Isotipo animado + 3 próximos pasos. «Invitar conductores» lleva al inicio hasta que exista Conductores → Invitar (fase 3) |
+
+### Conductor (rediseño fase 2 — `ConductorStack`, branch `staging`)
+Viaje interno (API.md de develop, Pasos 2 a 4). Oscuro por default, verificado en claro y oscuro con capturas (Expo web, modo desarrollo con datos de ejemplo en `services/viajesConductor.js`). El conductor nunca ve precios.
+| Pantalla | Estado | Notas |
+|----------|--------|-------|
+| `ViajesScreen` | ✅ | `GET /choferes/viajes`: card fija del viaje en curso, «Para confirmar» (card completa), Hoy y Próximos (compactas), estado vacío. Refresca con `viaje:asignado`, `serie:asignada`, `viaje:editado`, `viaje:desasignado`, `viaje:cancelado`, `viaje:vencido`, al reconectar y al volver a primer plano (`useEnVivo`) |
+| `DetalleViajeScreen` | ✅ | Recorrido con horas estimadas, mapa, datos sin precio, ventana de inicio. Confirmar: hoja con vehículos (los que no cumplen, apagados y con el motivo; con uno solo se salta). Rechazar con confirmación |
+| `ViajeActivoScreen` | ✅ | Una pantalla por momento: permiso de ubicación explicado → antes de iniciar (Iniciar / Cancelar / Cómo llegar) → en parada (reloj de peón, «Salir de la parada» / «Salir y terminar el viaje») → en ruta («Llegué a la parada»). GPS en 2º plano y `conductor:ubicacion` solo después del 200 de `/iniciar` (`useGpsViaje`). Errores del backend tal cual |
+| `ViajeTerminadoScreen` | ✅ | Estimado vs. real (manejo, carga y descarga, distancia, total) y «Ver remito» |
+| `HistorialScreen` | ✅ | Agrupado por mes, filtros Todos / Entregados / Cancelados / Vencidos, motivo en la fila |
+| `PerfilScreen` + `EmpresaConductorScreen` + `SumarEmpresaScreen` + `NuevoVehiculoScreen` | ✅ | Empresas (sumar con código, desvincularse con aviso de ISSUES.md #1), vehículos (form compartido `FormVehiculo`), Apariencia, cerrar sesión |
+| `FleteroStack` (fletero/*) | 📦 Dormido | Pantallas del marketplace; solo para el rol legacy FLETERO |
 
 ### Cliente
 | Pantalla | Estado | Notas |

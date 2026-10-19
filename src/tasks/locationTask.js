@@ -1,5 +1,6 @@
 import * as TaskManager from 'expo-task-manager';
 import * as Location from 'expo-location';
+import { palettes } from '../theme';
 
 export const LOCATION_TASK = 'conductor-ubicacion';
 
@@ -22,9 +23,9 @@ export async function startLocationTracking() {
     timeInterval: 15000,
     distanceInterval: 0,
     foregroundService: {
-      notificationTitle: 'Fleter — Viaje activo',
-      notificationBody: 'GPS activo para el viaje en curso',
-      notificationColor: '#F4711A',
+      notificationTitle: 'Fleter: viaje en curso',
+      notificationBody: 'Compartiendo tu ubicación con la empresa',
+      notificationColor: palettes.light.accent,
     },
     pausesUpdatesAutomatically: false,
     showsBackgroundLocationIndicator: true,

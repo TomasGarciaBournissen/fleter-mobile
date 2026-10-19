@@ -108,15 +108,15 @@
     "semantic_hash": "9f32effb3a6f8e9cff34f958a925458e"
   },
   "src/navigation/RootNavigator.js": {
-    "mtime": 1792437921.578495,
-    "seen": 1792438528.5489824,
-    "ast_hash": "978e8f6c0e076e8ef930cdee9a1f284a",
+    "mtime": 1792439942.1499155,
+    "seen": 1792440160.470157,
+    "ast_hash": "e6606712ce1584ce3372ad40985c6d27",
     "semantic_hash": ""
   },
   "src/screens/auth/LoginScreen.js": {
-    "mtime": 1792437735.2047727,
-    "seen": 1792438528.5489888,
-    "ast_hash": "dda524af7b65dacf0637257581aec0b3",
+    "mtime": 1792438929.5220068,
+    "seen": 1792440160.470167,
+    "ast_hash": "084a2e70452c9a24c57611cd02f19231",
     "semantic_hash": ""
   },
   "src/screens/cliente/BuscandoFleteroScreen.js": {
@@ -300,10 +300,10 @@
     "semantic_hash": "70c68abb2833b1ce41c976d5901126fc"
   },
   "src/tasks/locationTask.js": {
-    "mtime": 1792433602.866982,
-    "seen": 1792434179.1729348,
-    "ast_hash": "6cbdc12e6366cf14df0b441205f0a669",
-    "semantic_hash": "6cbdc12e6366cf14df0b441205f0a669"
+    "mtime": 1792439633.598452,
+    "seen": 1792440160.4702756,
+    "ast_hash": "729634025dfbfefb4ed1d5c88a0551a5",
+    "semantic_hash": ""
   },
   "src/theme.js": {
     "mtime": 1792437636.5464826,
@@ -324,9 +324,9 @@
     "semantic_hash": "68430c26b21360b6c5114e6dfefe6a35"
   },
   "CLAUDE.md": {
-    "mtime": 1792438511.2832327,
-    "seen": 1792438528.549221,
-    "ast_hash": "a92323a45d5c00e7b980053e176c685a",
+    "mtime": 1792439183.7627754,
+    "seen": 1792440160.4705136,
+    "ast_hash": "2eeb05e0ff7a9de573af653e7131c06f",
     "semantic_hash": ""
   },
   "PLAN_DESARROLLO.md": {
@@ -336,9 +336,9 @@
     "semantic_hash": "d33cf6709bc18c233e14b6321735576f"
   },
   "PROGRESO.md": {
-    "mtime": 1792438511.2850595,
-    "seen": 1792438528.5492249,
-    "ast_hash": "ebd1d2ef44e071c0234e752a71fff719",
+    "mtime": 1792440154.9040196,
+    "seen": 1792440160.470547,
+    "ast_hash": "504eb471d2f0ff6ad89529c864920dce",
     "semantic_hash": ""
   },
   "UXUI.md": {
@@ -834,9 +834,9 @@
     "semantic_hash": ""
   },
   "src/components/ui/Pantalla.js": {
-    "mtime": 1792437501.6784701,
-    "seen": 1792438528.5489562,
-    "ast_hash": "e8ec556bb29927e817586832cd3d9aec",
+    "mtime": 1792439668.778298,
+    "seen": 1792440160.4701068,
+    "ast_hash": "60d3115fc8b4e88355b23fce7aba3560",
     "semantic_hash": ""
   },
   "src/components/ui/Texto.js": {
@@ -852,9 +852,9 @@
     "semantic_hash": ""
   },
   "src/components/ui/index.js": {
-    "mtime": 1792437817.9651392,
-    "seen": 1792438528.5489593,
-    "ast_hash": "7fe4105d5ae82db14b1754d83a2331cc",
+    "mtime": 1792439633.5978904,
+    "seen": 1792440160.470112,
+    "ast_hash": "b5de1a734dc08636eda3c053cc51582b",
     "semantic_hash": ""
   },
   "src/config.js": {
@@ -876,9 +876,9 @@
     "semantic_hash": ""
   },
   "src/screens/auth/CodigoConductorScreen.js": {
-    "mtime": 1792437830.8624897,
-    "seen": 1792438528.5489845,
-    "ast_hash": "0d29309b70a688197ecbb5cef7acdd66",
+    "mtime": 1792438929.5177865,
+    "seen": 1792440160.4701605,
+    "ast_hash": "cdba8459616bab069709d426d2705dc5",
     "semantic_hash": ""
   },
   "src/screens/auth/ConductorListoScreen.js": {
@@ -894,9 +894,9 @@
     "semantic_hash": ""
   },
   "src/screens/auth/RecuperarContrasenaScreen.js": {
-    "mtime": 1792437735.294484,
-    "seen": 1792438528.5489902,
-    "ast_hash": "2188ad9603a42b44b44dda358e478e30",
+    "mtime": 1792438929.5132804,
+    "seen": 1792440160.4701695,
+    "ast_hash": "2bfc2c963e8861701ce3f28201318863",
     "semantic_hash": ""
   },
   "src/screens/auth/RegistroConductorScreen.js": {
@@ -918,15 +918,15 @@
     "semantic_hash": ""
   },
   "src/screens/auth/TipoCuentaScreen.js": {
-    "mtime": 1792437921.4893122,
-    "seen": 1792438528.548994,
-    "ast_hash": "8f0f9909687cb0a6d09c8cf8b7102c4e",
+    "mtime": 1792438929.5144427,
+    "seen": 1792440160.4701786,
+    "ast_hash": "c428ea01941fc4f82a3ec19e8fbfe74f",
     "semantic_hash": ""
   },
   "src/screens/auth/VehiculoConductorScreen.js": {
-    "mtime": 1792438308.7024043,
-    "seen": 1792438528.548995,
-    "ast_hash": "de812effc98d6028bb0e9beafa69beb0",
+    "mtime": 1792439711.1946015,
+    "seen": 1792440160.4701812,
+    "ast_hash": "e8bac5f9fee877cb7b7b4e3c222c0fc0",
     "semantic_hash": ""
   },
   "src/screens/auth/_marketplace/CuentaPendienteScreen.js": {
@@ -1794,9 +1794,9 @@
     "semantic_hash": ""
   },
   "ISSUES.md": {
-    "mtime": 1792434806.3888903,
-    "seen": 1792438528.5492222,
-    "ast_hash": "75514f929aad310c10011cbbaf7d2382",
+    "mtime": 1792440154.902318,
+    "seen": 1792440160.4705162,
+    "ast_hash": "1bcb71e713fffb8de29901057051b732",
     "semantic_hash": ""
   },
   "docs/CAMBIO_DE_ENFOQUE.md": {
@@ -1824,9 +1824,9 @@
     "semantic_hash": ""
   },
   "prototype/fleter-mobile-fase1-auth.html": {
-    "mtime": 1792436963.7047389,
-    "seen": 1792438528.5492332,
-    "ast_hash": "d0cd5db9cfe76b0a243311ceb0e7e55b",
+    "mtime": 1792438929.5360134,
+    "seen": 1792440160.4705672,
+    "ast_hash": "2266316f7113ca43b3c1761b65dd026f",
     "semantic_hash": ""
   },
   "scripts/api-tests/README.md": {
@@ -1893,6 +1893,150 @@
     "mtime": 1792433602.8368187,
     "seen": 1792438528.5492437,
     "ast_hash": "97dae5a0e62ad8551d8a31897b425e63",
+    "semantic_hash": ""
+  },
+  "src/components/FormVehiculo.js": {
+    "mtime": 1792439686.9786,
+    "seen": 1792440160.4700816,
+    "ast_hash": "2d2d937ea59e290909b0ac967655d461",
+    "semantic_hash": ""
+  },
+  "src/components/ui/HojaInferior.js": {
+    "mtime": 1792439633.3185968,
+    "seen": 1792440160.4701016,
+    "ast_hash": "01e60b5bb4a0173cfa1cbc33ae702f34",
+    "semantic_hash": ""
+  },
+  "src/components/viaje/ChipEstado.js": {
+    "mtime": 1792439571.3233824,
+    "seen": 1792440160.4701135,
+    "ast_hash": "850d19846222d17d899796541f1d2259",
+    "semantic_hash": ""
+  },
+  "src/components/viaje/DatosViaje.js": {
+    "mtime": 1792439590.3705943,
+    "seen": 1792440160.4701152,
+    "ast_hash": "911b8c9472c1b2282b487c0940448cb7",
+    "semantic_hash": ""
+  },
+  "src/components/viaje/MapaRecorrido.js": {
+    "mtime": 1792439633.3465967,
+    "seen": 1792440160.4701169,
+    "ast_hash": "92f360f2c2613410279320da3010e621",
+    "semantic_hash": ""
+  },
+  "src/components/viaje/Recorrido.js": {
+    "mtime": 1792439633.2509027,
+    "seen": 1792440160.4701195,
+    "ast_hash": "5f7439769f04fc9a9b437ae6ca03108e",
+    "semantic_hash": ""
+  },
+  "src/components/viaje/TarjetaViaje.js": {
+    "mtime": 1792439602.802595,
+    "seen": 1792440160.4701214,
+    "ast_hash": "7a91344b8bf507bf396001e170108ee4",
+    "semantic_hash": ""
+  },
+  "src/hooks/useEnVivo.js": {
+    "mtime": 1792439549.258592,
+    "seen": 1792440160.4701319,
+    "ast_hash": "c79a59c66c99ea5d8ac1ce3715bfea09",
+    "semantic_hash": ""
+  },
+  "src/hooks/useGpsViaje.js": {
+    "mtime": 1792439559.1825924,
+    "seen": 1792440160.4701335,
+    "ast_hash": "b4f923afee35705cb068ae5871d393cf",
+    "semantic_hash": ""
+  },
+  "src/navigation/ConductorStack.js": {
+    "mtime": 1792439942.1466153,
+    "seen": 1792440160.4701478,
+    "ast_hash": "5c07c1e0000660d8e39bf2b6b51c1ea5",
+    "semantic_hash": ""
+  },
+  "src/screens/conductor/DetalleViajeScreen.js": {
+    "mtime": 1792439780.3306055,
+    "seen": 1792440160.470213,
+    "ast_hash": "b2b3574753e3ba163b892628915cac69",
+    "semantic_hash": ""
+  },
+  "src/screens/conductor/EmpresaConductorScreen.js": {
+    "mtime": 1792439899.3266127,
+    "seen": 1792440160.470215,
+    "ast_hash": "2ca43a4f7df19428f8e1a6de507265f3",
+    "semantic_hash": ""
+  },
+  "src/screens/conductor/HistorialScreen.js": {
+    "mtime": 1792439866.7186108,
+    "seen": 1792440160.470217,
+    "ast_hash": "2bc2393c9cc50e35c5765b4dfba73f5e",
+    "semantic_hash": ""
+  },
+  "src/screens/conductor/NuevoVehiculoScreen.js": {
+    "mtime": 1792439909.5226133,
+    "seen": 1792440160.4702184,
+    "ast_hash": "a6e1f84a8bc6067871389cb3ae4d989a",
+    "semantic_hash": ""
+  },
+  "src/screens/conductor/PerfilScreen.js": {
+    "mtime": 1792439927.8779228,
+    "seen": 1792440160.47022,
+    "ast_hash": "694d1f0800194149e50983d031ca9b16",
+    "semantic_hash": ""
+  },
+  "src/screens/conductor/SumarEmpresaScreen.js": {
+    "mtime": 1792439905.934613,
+    "seen": 1792440160.4702213,
+    "ast_hash": "03d1704200be4fac8de0b6b4c9d3221e",
+    "semantic_hash": ""
+  },
+  "src/screens/conductor/ViajeActivoScreen.js": {
+    "mtime": 1792439832.0786085,
+    "seen": 1792440160.4702232,
+    "ast_hash": "cdea9b23b1627a6f42e2da3b1a226937",
+    "semantic_hash": ""
+  },
+  "src/screens/conductor/ViajeTerminadoScreen.js": {
+    "mtime": 1792440029.6791632,
+    "seen": 1792440160.4702249,
+    "ast_hash": "cd82d7c4efb48efc18e531a96d4ed3f1",
+    "semantic_hash": ""
+  },
+  "src/screens/conductor/ViajesScreen.js": {
+    "mtime": 1792439745.8546035,
+    "seen": 1792440160.4702268,
+    "ast_hash": "841a6b3e978274097a01e3d6f82bf8bf",
+    "semantic_hash": ""
+  },
+  "src/services/viajesConductor.js": {
+    "mtime": 1792439536.478591,
+    "seen": 1792440160.4702737,
+    "ast_hash": "413c4050d84368d7471c4a238a37fa98",
+    "semantic_hash": ""
+  },
+  "src/utils/estados.js": {
+    "mtime": 1792439481.5025878,
+    "seen": 1792440160.4702797,
+    "ast_hash": "5b89c2c1a5b18f8ec8c64f74f8cf5492",
+    "semantic_hash": ""
+  },
+  "src/utils/fechas.js": {
+    "mtime": 1792439492.6665885,
+    "seen": 1792440160.470281,
+    "ast_hash": "d55d2a5d6d92fe570e613cb9014df417",
+    "semantic_hash": ""
+  },
+  "src/utils/ventana.js": {
+    "mtime": 1792439633.2556338,
+    "seen": 1792440160.4702864,
+    "ast_hash": "50f0b96c695c0ed32ae849eec46da4f6",
+    "semantic_hash": ""
+  },
+  "prototype/fleter-mobile-fase2-conductor.html": {
+    "mtime": 1792439366.2972362,
+    "seen": 1792440160.4705694,
+    "ast_hash": "33b9019449956faf2cb58f8ba16a44e9",
     "semantic_hash": ""
   }
 }
