@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-19  
-> Branch: staging | Commits totales: 56
+> Branch: staging | Commits totales: 57
 
 ---
 
@@ -72,6 +72,7 @@
 | (pendiente) | 19 Oct 2026 | Docs — `docs/CAMBIO_DE_ENFOQUE.md`: constancia del cambio de marketplace a herramienta de gestión para PyMEs (motivos, decisiones, ciclo del viaje, estado de backend y mobile, fase 2) |
 | (este commit) | 19 Oct 2026 | Prototipo — fase 1 del rediseño (branch `staging`): `prototype/fleter-mobile-fase1-auth.html` con 16 pantallas de entrada y alta (splash, login, error, recuperar contraseña, tipo de cuenta, registro PyME, PyME sin organización, crear PyME, sumarse con código, PyME creada, registro de conductor en 3 pasos con licencia y vehículo, vincularse con código, conductor listo). Solo diseño; la lógica se conecta al aprobarlo |
 | (este commit) | 19 Oct 2026 | Prototipo — correcciones de la revisión: «empresa» en vez de «PyME» en todo texto visible (PyME queda interno), pantalla sin empresa reescrita como pregunta («¿Tu empresa ya usa Fleter?» → «No, la registro yo» / «Sí, tengo un código»). Se mantienen el login con Google y el paso de licencia del conductor |
+| (este commit) | 19 Oct 2026 | Chore — skill `mobile-app-ui-design` (ceorkm/mobile-app-ui-design) en `.claude/skills/`. Donde contradice a `UXUI.md` (sombras, glow, radios grandes, emojis) manda `UXUI.md` |
 
 ---
 
