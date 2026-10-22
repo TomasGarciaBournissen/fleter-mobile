@@ -1,15 +1,1 @@
-{
-  "3": "GPS y viaje activo",
-  "4": "Arranque de la app",
-  "6": "Dependencias npm",
-  "7": "Config Expo",
-  "8": "Disponibles fletero",
-  "10": "Endpoints de viajes",
-  "11": "Registro de pantallas",
-  "12": "Eventos socket de alertas",
-  "13": "Sistema de diseño v2",
-  "14": "Endpoints de empresas",
-  "16": "Endpoints de auth",
-  "20": "Firebase Auth nativo",
-  "22": "Mock Firebase"
-}
+{"0": "Reglas del conductor", "1": "Alta y onboarding (fase 1)", "2": "Contrato API y staging", "3": "Firebase y config", "4": "GPS y mapas", "5": "Stacks del marketplace", "6": "Dependencias Expo", "7": "Pruebas de viajes", "8": "Kit UI base", "9": "Config Expo app.json", "10": "Mapa wrapper y legacy", "11": "Tema y apariencia", "12": "Pantallas cliente legacy", "13": "Cambio de enfoque", "14": "Stack fletero legacy", "15": "Endpoints viajes legacy", "16": "Eventos socket", "17": "package.json", "18": "Pruebas de identidad", "19": "Sistema de diseño", "20": "Plan de fases original", "21": "Navegación por rol", "22": "Ciclo del viaje interno", "23": "Auth y afiliaciones API", "24": "Endpoints empresas legacy", "25": "Plan mobile empresa", "26": "Historial cliente", "27": "Historial fletero", "28": "Arranque de la app", "29": "Historial empresa legacy", "30": "Producto y roles", "31": "Selector de ubicación", "32": "Socket cliente", "33": "Disponibles gerente", "34": "Endpoints admin", "35": "Vehículos API", "36": "Login con Google", "37": "Vencimientos y avisos", "38": "Rol empresa legacy", "39": "Mocks web", "40": "Scripts npm", "41": "Reglas de inicio y cierre", "42": "Seguridad de tokens", "43": "Firebase auth nativo", "44": "Mock Firebase app"}
