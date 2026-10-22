@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-19  
-> Branch: staging | Commits totales: 64
+> Branch: staging | Commits totales: 66
 
 ---
 
@@ -79,6 +79,7 @@
 | (este commit) | 19 Oct 2026 | Fix — revisión del dueño: «Volver a enviar» en vez de «Volver a entrar» al recuperar la contraseña, se saca la nota de las dos cuentas en Tipo de cuenta, notas informativas en gris (no azul), el conductor no ve precios (prototipo fase 2 sin precios). Fase 2 aprobada |
 | (este commit) | 19 Oct 2026 | Prototipo — fase 2: sin borde ámbar en la card «Sin confirmar» y sin la nota de sumar otra empresa en el estado vacío |
 | (este commit) | 19 Oct 2026 | Feat — fase 2 del rediseño (conductor): `ConductorStack` con Viajes / Historial / Perfil, detalle con confirmar (hoja de vehículos) y rechazar, viaje activo parada por parada con GPS en 2º plano, viaje terminado con estimado vs. real, perfil con empresas y vehículos. Servicio `viajesConductor`, hooks `useEnVivo` (refetch al reconectar) y `useGpsViaje`, componentes de viaje (ChipEstado, Recorrido, DatosViaje, TarjetaViaje, MapaRecorrido, HojaInferior). ISSUES.md #3: el conductor no recibe ETA ni desvíos |
+| (este commit) | 22 Oct 2026 | Docs — `docs/disenos-implementados.html`: alcance de la app (entrada, conductor, empresa), qué queda para la web (dashboard, facturación y suscripción, admin; calendario y reportes como propuesta), qué no hace ninguna de las dos, y las 34 pantallas implementadas en claro y oscuro |
 
 ---
 
