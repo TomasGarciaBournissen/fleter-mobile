@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-22  
-> Branch: staging | Commits totales: 69
+> Branch: staging | Commits totales: 70
 
 ---
 
@@ -82,6 +82,7 @@
 | (este commit) | 22 Oct 2026 | Docs — `docs/disenos-implementados.html`: alcance de la app (entrada, conductor, empresa), qué queda para la web (dashboard, facturación y suscripción, admin; calendario y reportes como propuesta), qué no hace ninguna de las dos, y las 34 pantallas implementadas en claro y oscuro |
 | (este commit) | 22 Oct 2026 | Chore — knowledge graph de graphify reconstruido con las fases 1 y 2: 954 nodos, 3231 aristas, 45 comunidades (código + 11 docs; sin `.claude/`, imágenes ni prototipos HTML). Se forzó la escritura: los nodos viejos de pantallas del marketplace que PROGRESO.md ya no describe salen del grafo |
 | `9876520` | 22 Oct 2026 | Docs — `docs/disenos-implementados.pdf`: el HTML de diseños pasado a PDF A4 (12 páginas): alcance de la app, qué queda para la web y las 34 pantallas de las fases 1 y 2, primero en claro y después en oscuro, 4 por fila |
+| (este commit) | 22 Oct 2026 | Prototipo — fase 3 (empresa): `prototype/fleter-mobile-fase3-empresa.html` con 16 pantallas: inicio (rechazado en rojo, sin confirmar en ámbar, números del día, viaje en curso), viajes por día con filtros, nuevo viaje en pasos (recorrido con lugares guardados, hoja de agregar parada, cuándo y repetición, conductor con los no aptos apagados, revisar con precio de `estimar-costo`), seguimiento en vivo con desvío y llegada estimada, rechazado con reasignar, cancelar en curso, terminado con precio y remito, conductores con invitaciones, invitar con código, Más, viajes repetidos y equipo. Claro y oscuro. Sumado al artifact del prototipo. Pendiente de aprobación |
 
 ---
 
