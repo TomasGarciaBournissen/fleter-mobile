@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-10-19  
-> Branch: staging | Commits totales: 67
+> Última actualización: 2026-10-22  
+> Branch: staging | Commits totales: 69
 
 ---
 
@@ -81,6 +81,7 @@
 | (este commit) | 19 Oct 2026 | Feat — fase 2 del rediseño (conductor): `ConductorStack` con Viajes / Historial / Perfil, detalle con confirmar (hoja de vehículos) y rechazar, viaje activo parada por parada con GPS en 2º plano, viaje terminado con estimado vs. real, perfil con empresas y vehículos. Servicio `viajesConductor`, hooks `useEnVivo` (refetch al reconectar) y `useGpsViaje`, componentes de viaje (ChipEstado, Recorrido, DatosViaje, TarjetaViaje, MapaRecorrido, HojaInferior). ISSUES.md #3: el conductor no recibe ETA ni desvíos |
 | (este commit) | 22 Oct 2026 | Docs — `docs/disenos-implementados.html`: alcance de la app (entrada, conductor, empresa), qué queda para la web (dashboard, facturación y suscripción, admin; calendario y reportes como propuesta), qué no hace ninguna de las dos, y las 34 pantallas implementadas en claro y oscuro |
 | (este commit) | 22 Oct 2026 | Chore — knowledge graph de graphify reconstruido con las fases 1 y 2: 954 nodos, 3231 aristas, 45 comunidades (código + 11 docs; sin `.claude/`, imágenes ni prototipos HTML). Se forzó la escritura: los nodos viejos de pantallas del marketplace que PROGRESO.md ya no describe salen del grafo |
+| `9876520` | 22 Oct 2026 | Docs — `docs/disenos-implementados.pdf`: el HTML de diseños pasado a PDF A4 (12 páginas): alcance de la app, qué queda para la web y las 34 pantallas de las fases 1 y 2, primero en claro y después en oscuro, 4 por fila |
 
 ---
 
