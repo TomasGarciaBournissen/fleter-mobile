@@ -2,13 +2,14 @@
 
 > Problemas de producto y de contrato detectados al revisar el cambio de enfoque
 > (`docs/CAMBIO_DE_ENFOQUE.md`, branch `claude/freight-marketplace-pivot-l08445`).
-> Última actualización: 2026-10-19
+> Última actualización: 2026-10-22
 
 | # | Issue | Prioridad | Dónde se resuelve | Estado |
 |---|---|---|---|---|
 | 1 | Desvincular a un conductor cancela viajes en curso | Alta | Backend + mobile | Abierto |
 | 2 | Avisar antes de que un viaje pase a `VENCIDO` | Media | Backend (push) + mobile | Abierto |
 | 3 | El conductor no recibe ETA, desvíos ni la ventana de inicio | Media | Backend | Abierto |
+| 4 | No hay historial de alertas para la pestaña Alertas de la empresa | Media | Backend + mobile | Abierto |
 
 ---
 
@@ -92,6 +93,28 @@ haber visto la asignación.
 ### Pedido al backend
 - Emitir también al conductor (`usuario:{id}`) `eta:actualizar`, `alerta:desvio` y `ruta:recalculada`.
 - Agregar al viaje `ventana_inicio_desde` y `ventana_inicio_hasta`.
+
+---
+
+## 4. No hay historial de alertas para la pestaña Alertas de la empresa
+
+### Qué pasa hoy
+- La app de la empresa tiene una pestaña **Alertas** (prototipo de la fase 3): arriba lo que hay que
+  resolver (viajes rechazados, sin confirmar cerca de vencer) y abajo lo que pasó en el día (desvíos,
+  paradas largas, salidas tarde, entregas, confirmaciones).
+- Los cambios de estado se pueden armar desde los viajes y su historial de estados (REST).
+- `alerta:desvio` y `alerta:parada` **solo existen como evento de WebSocket** y no se guardan: si la
+  app estaba cerrada o sin señal cuando pasaron, la empresa nunca se entera.
+- No hay forma de marcar una alerta como vista entre dispositivos ni entre miembros del equipo.
+
+### Qué hace la app mientras tanto
+- «Para resolver» y los cambios de estado salen de `GET /organizaciones/:id/viajes` (sin pérdida).
+- Desvíos y paradas largas se muestran solo si llegaron con la app abierta, guardados en el teléfono.
+
+### Pedido al backend
+- Persistir las alertas por organización (tipo, viaje, mensaje, fecha) y exponer
+  `GET /api/organizaciones/:id/alertas?desde=` con paginado, más un `PATCH …/vistas` por usuario.
+- Que el push (ISSUES #2) use esas mismas alertas.
 
 ---
 
