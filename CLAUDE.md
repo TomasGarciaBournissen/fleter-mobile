@@ -104,6 +104,18 @@ El archivo `PROGRESO.md` en la raíz del proyecto documenta el estado actual de 
 
 **El commit de PROGRESO.md va siempre incluido junto con los cambios de código, o inmediatamente después.**
 
+## Documentación del código — docs/ARQUITECTURA.md
+`docs/ARQUITECTURA.md` es el documento vivo del código: qué hace cada archivo relevante, cómo se conectan, los flujos de punta a punta, los endpoints y eventos que usa la app y las reglas para escribir código nuevo.
+
+**OBLIGATORIO — actualizarlo en el mismo commit que el cambio de código** cada vez que se:
+- agrega, borra, mueve o renombra un archivo de `src/` (o cambia lo que hace)
+- agrega o cambia un endpoint, un evento de WebSocket o un servicio
+- agrega una pantalla, un stack o cambia un flujo de navegación
+- agrega un componente al kit, un hook o una utilidad
+- borra código heredado del marketplace
+
+Actualizar también «Última actualización» y sumar una fila en «Registro de cambios de este documento». Si el cambio contradice algo del documento, se corrige el documento, no se deja desactualizado.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.

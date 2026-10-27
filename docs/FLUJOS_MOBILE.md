@@ -3,6 +3,7 @@
 > Rama `staging`. Estado al 27 oct 2026: fases 0, 1 y 2 programadas; la fase 3 (empresa) está
 > diseñada en `prototype/fleter-mobile-fase3-empresa.html` y todavía no tiene código.
 > Contrato: `API.md` de la rama `develop` del backend.
+> Detalle archivo por archivo (documento vivo): [`docs/ARQUITECTURA.md`](ARQUITECTURA.md).
 
 ## 1. Cómo arranca la app
 

@@ -45,7 +45,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Fleter necesita tu ubicación para mostrar tu posición al cliente durante el viaje.",
+          "locationAlwaysAndWhenInUsePermission": "Fleter necesita tu ubicación para que la empresa vea dónde va el viaje mientras lo hacés.",
           "isIosBackgroundLocationEnabled": true
         }
       ],

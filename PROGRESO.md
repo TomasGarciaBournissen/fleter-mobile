@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-27  
-> Branch: staging | Commits totales: 72
+> Branch: staging | Commits totales: 73
 
 ---
 
@@ -84,7 +84,8 @@
 | `9876520` | 22 Oct 2026 | Docs — `docs/disenos-implementados.pdf`: el HTML de diseños pasado a PDF A4 (12 páginas): alcance de la app, qué queda para la web y las 34 pantallas de las fases 1 y 2, primero en claro y después en oscuro, 4 por fila |
 | `aa8e483` | 22 Oct 2026 | Prototipo — fase 3 (empresa): `prototype/fleter-mobile-fase3-empresa.html` con 16 pantallas: inicio (rechazado en rojo, sin confirmar en ámbar, números del día, viaje en curso), viajes por día con filtros, nuevo viaje en pasos (recorrido con lugares guardados, hoja de agregar parada, cuándo y repetición, conductor con los no aptos apagados, revisar con precio de `estimar-costo`), seguimiento en vivo con desvío y llegada estimada, rechazado con reasignar, cancelar en curso, terminado con precio y remito, conductores con invitaciones, invitar con código, Más, viajes repetidos y equipo. Claro y oscuro. Sumado al artifact del prototipo. Pendiente de aprobación |
 | `b659c60` | 22 Oct 2026 | Prototipo — fase 3, revisión del dueño: las alertas salen del Inicio y pasan a una pestaña **Alertas** con contador (para resolver con la acción a un toque + lo que pasó en el día, y estado vacío). El viaje en curso del Inicio pasa a tabla de paradas (estimado / real; variante B elegida entre dos). Barra: Inicio, Viajes, Nuevo, Alertas, Más; Conductores entra desde Más. ISSUES #4: no hay historial de alertas en el backend |
-| (este commit) | 27 Oct 2026 | Docs — `docs/FLUJOS_MOBILE.md`: guía para el review de código: arranque, router por sesión, sesión y tokens, alta de empresa y de conductor, ciclo del viaje del conductor, GPS, tiempo real, piezas compartidas y riesgos a discutir (DEV_MODE prendido por defecto, sesión en memoria, token del socket, GPS con la app cerrada) |
+| `da062b1` | 27 Oct 2026 | Docs — `docs/FLUJOS_MOBILE.md`: guía para el review de código: arranque, router por sesión, sesión y tokens, alta de empresa y de conductor, ciclo del viaje del conductor, GPS, tiempo real, piezas compartidas y riesgos a discutir (DEV_MODE prendido por defecto, sesión en memoria, token del socket, GPS con la app cerrada) |
+| (este commit) | 27 Oct 2026 | Docs — `docs/ARQUITECTURA.md`: documento vivo del código (mapa de carpetas, cómo se conectan las piezas, cada archivo relevante, flujos, endpoints y eventos, reglas, código heredado). Regla en CLAUDE.md: se actualiza en el mismo commit que el código. Fix de texto: el permiso de ubicación dice «la empresa» en vez de «el cliente» (`app.json`) |
 
 ---
 
