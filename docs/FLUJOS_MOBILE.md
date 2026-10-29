@@ -27,7 +27,7 @@ App.js
 |---|---|
 | Sin usuario, o un alta en curso (`altaEnCurso`) | `AuthStack` |
 | `CLIENTE` con `organizacion === null` | `OnboardingEmpresaStack` |
-| `CLIENTE` con empresa | `ClienteStack` (viejo, del marketplace) **hasta la fase 3** |
+| `CLIENTE` con empresa | `PymeStack` (fase 3; ver `docs/ARQUITECTURA.md` §4.14) |
 | `CONDUCTOR` | `ConductorStack` |
 | `FLETERO` / `GERENTE` | stacks del marketplace, dormidos |
 | Otro rol | pantalla «Acceso no disponible» |
@@ -170,13 +170,13 @@ Riesgos reales, de mayor a menor:
    tarea (o reconectar ahí). Probar en un teléfono real.
 5. **Ventana de inicio fija** en el mobile (−60 / +90 min, [`ventana.js`](../src/utils/ventana.js)). Es solo para
    mostrar; decide el backend. Pedido abierto: ISSUES.md #3.
-6. **La empresa todavía usa el `ClienteStack` del marketplace**: se reemplaza con la fase 3.
+6. **La empresa ya usa `PymeStack`** (fase 3); el `ClienteStack` del marketplace quedó sin uso.
 7. **Filtrado de vehículos aptos en el mobile** ([`DetalleViajeScreen.js:58`](../src/screens/conductor/DetalleViajeScreen.js#L58)):
    compara condiciones para ofrecer solo los que sirven. El backend igual valida al confirmar.
 8. **Sin tests automáticos**. Lo probado: recorridos completos en Expo web con datos de ejemplo, en los dos
    temas. Falta contra el backend de staging y en un teléfono.
 9. **Código del marketplace archivado** (`screens/cliente`, `fletero`, `gerente`, `auth/_marketplace`): no está en
-   uso salvo `ClienteStack`; se puede borrar cuando entre la fase 3.
+   uso (desde la fase 3 tampoco `ClienteStack`); borrarlo es decisión del dueño.
 
 Issues de producto y de contrato ya anotados: [`ISSUES.md`](../ISSUES.md) (#1 desvincular cancela viajes en curso,
 #2 aviso antes de vencer, #3 eventos que no le llegan al conductor, #4 historial de alertas).

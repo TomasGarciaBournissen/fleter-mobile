@@ -38,6 +38,7 @@ export function cuandoLargo(v, ahora = new Date()) {
   const n = diasEntre(ahora, d);
   if (n === 0) return `Hoy, ${diaCorto(d)}, ${hora(d)}`;
   if (n === 1) return `Mañana, ${diaCorto(d)}, ${hora(d)}`;
+  if (n === -1) return `Ayer, ${diaCorto(d)}, ${hora(d)}`;
   return cuando(d, ahora);
 }
 

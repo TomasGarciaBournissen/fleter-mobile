@@ -62,3 +62,14 @@ export function contarViajes({ frecuencia, dias_semana = [], dia_semana, dia_mes
   }
   return n;
 }
+
+// Marca corta para las cards de viaje: «Diario» · «L, M y V» · «Semanal» · «Mensual»
+export function etiquetaFrecuencia(s) {
+  switch (s?.frecuencia) {
+    case 'DIARIA': return 'Diario';
+    case 'DIAS_SEMANA': return enumerar([...(s.dias_semana ?? [])].sort().map((n) => LETRAS_DIAS[n - 1]));
+    case 'SEMANAL': return 'Semanal';
+    case 'MENSUAL': return 'Mensual';
+    default: return '';
+  }
+}

@@ -100,11 +100,15 @@ export function ProximosPasos({ pasos }) {
   );
 }
 
-// Pastilla de estado chica (Período de prueba, etc.)
+// Pastilla de estado chica (Período de prueba, rol, estado de una serie…).
+// tipo: aviso | info | ok | error | neutra
 export function Pastilla({ texto, tipo = 'aviso' }) {
   const { colors } = useTheme();
   const s = useThemedStyles(createStyles);
-  const [bg, fg] = { aviso: [colors.warningSoft, colors.warningInk], info: [colors.infoSoft, colors.infoInk], ok: [colors.successSoft, colors.successInk] }[tipo];
+  const [bg, fg] = {
+    aviso: [colors.warningSoft, colors.warningInk], info: [colors.infoSoft, colors.infoInk], ok: [colors.successSoft, colors.successInk],
+    error: [colors.errorSoft, colors.errorInk], neutra: [colors.surface2, colors.ink2],
+  }[tipo];
   return <View style={[s.pastilla, { backgroundColor: bg }]}><Text style={[s.pastillaTexto, { color: fg }]}>{texto}</Text></View>;
 }
 
@@ -135,6 +139,6 @@ const createStyles = (c) => StyleSheet.create({
   numTextoActual: { color: c.onAccent },
   pasoTitulo: { fontFamily: fonts.uiBold, fontSize: 14, color: c.ink },
   pasoDesc:   { fontFamily: fonts.ui, fontSize: 13, lineHeight: 18, color: c.ink3, marginTop: 1 },
-  pastilla:   { height: 24, paddingHorizontal: 10, borderRadius: 999, justifyContent: 'center' },
+  pastilla:   { height: 24, paddingHorizontal: 10, borderRadius: 999, justifyContent: 'center', alignSelf: 'flex-start' },
   pastillaTexto: { fontFamily: fonts.uiBold, fontSize: 11 },
 });

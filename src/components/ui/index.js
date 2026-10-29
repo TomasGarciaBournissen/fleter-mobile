@@ -8,3 +8,5 @@ export { default as IsotipoAnimado } from './IsotipoAnimado';
 export { Titulo, Bajada, Meta, Etiqueta, Eslogan, Enlace } from './Texto';
 export { Marca, Pasos, Nota, Chip, Separador, ProximosPasos, Pastilla } from './Varios';
 export { default as HojaInferior } from './HojaInferior';
+export { Lista, Fila, Avatar, Seccion, Vacio, Filtros, iniciales } from './Listas';
+export { default as HojaHora } from './HojaHora';

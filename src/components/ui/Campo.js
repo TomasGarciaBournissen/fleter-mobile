@@ -19,9 +19,11 @@ const Campo = forwardRef(function Campo(
   const [foco, setFoco] = useState(false);
   const [visible, setVisible] = useState(false);
 
-  const caja = [styles.caja, foco && styles.cajaFoco, error && styles.cajaError];
+  // editable={false}: se ve como dato fijo, no como campo para escribir
+  const fijo = inputProps.editable === false;
+  const caja = [styles.caja, fijo && styles.cajaFija, foco && styles.cajaFoco, error && styles.cajaError];
   // Mono solo para el dato cargado: el placeholder va en la fuente de UI
-  const texto = [styles.input, mono && !!value && styles.mono];
+  const texto = [styles.input, mono && !!value && styles.mono, fijo && { color: colors.ink2 }];
 
   return (
     <View style={[styles.wrap, style]}>
@@ -85,6 +87,7 @@ const createStyles = (c) => StyleSheet.create({
   haloFoco: { backgroundColor: c.accentSoft },
   caja:     { height: 44, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, borderRadius: 6, borderWidth: 1, borderColor: c.line, backgroundColor: c.surface },
   cajaFoco: { borderColor: c.accent },
+  cajaFija: { backgroundColor: c.surface2 },
   cajaError:{ borderColor: c.error },
   input:    { flex: 1, minWidth: 0, height: '100%', fontFamily: fonts.ui, fontSize: 15, color: c.ink, paddingVertical: 0, ...(Platform.OS === 'web' ? { outlineStyle: 'none' } : null) },
   valor:    { flex: 1, fontFamily: fonts.ui, fontSize: 15, color: c.ink },

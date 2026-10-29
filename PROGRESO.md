@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-10-29  
-> Branch: staging | Commits totales: 74
+> Branch: staging | Commits totales: 92
 
 ---
 
@@ -85,8 +85,9 @@
 | `aa8e483` | 22 Oct 2026 | Prototipo — fase 3 (empresa): `prototype/fleter-mobile-fase3-empresa.html` con 16 pantallas: inicio (rechazado en rojo, sin confirmar en ámbar, números del día, viaje en curso), viajes por día con filtros, nuevo viaje en pasos (recorrido con lugares guardados, hoja de agregar parada, cuándo y repetición, conductor con los no aptos apagados, revisar con precio de `estimar-costo`), seguimiento en vivo con desvío y llegada estimada, rechazado con reasignar, cancelar en curso, terminado con precio y remito, conductores con invitaciones, invitar con código, Más, viajes repetidos y equipo. Claro y oscuro. Sumado al artifact del prototipo. Pendiente de aprobación |
 | `b659c60` | 22 Oct 2026 | Prototipo — fase 3, revisión del dueño: las alertas salen del Inicio y pasan a una pestaña **Alertas** con contador (para resolver con la acción a un toque + lo que pasó en el día, y estado vacío). El viaje en curso del Inicio pasa a tabla de paradas (estimado / real; variante B elegida entre dos). Barra: Inicio, Viajes, Nuevo, Alertas, Más; Conductores entra desde Más. ISSUES #4: no hay historial de alertas en el backend |
 | `da062b1` | 27 Oct 2026 | Docs — `docs/FLUJOS_MOBILE.md`: guía para el review de código: arranque, router por sesión, sesión y tokens, alta de empresa y de conductor, ciclo del viaje del conductor, GPS, tiempo real, piezas compartidas y riesgos a discutir (DEV_MODE prendido por defecto, sesión en memoria, token del socket, GPS con la app cerrada) |
-| (este commit) | 27 Oct 2026 | Docs — `docs/ARQUITECTURA.md`: documento vivo del código (mapa de carpetas, cómo se conectan las piezas, cada archivo relevante, flujos, endpoints y eventos, reglas, código heredado). Regla en CLAUDE.md: se actualiza en el mismo commit que el código. Fix de texto: el permiso de ubicación dice «la empresa» en vez de «el cliente» (`app.json`) |
-| (este commit) | 29 Oct 2026 | Fase 3 (en curso) — `src/utils/dinero.js` (precios es-AR, solo empresa) y `src/utils/series.js` (textos y conteo previo de viajes repetidos). Falta: servicios de empresa, alertas, `PymeStack` y pantallas |
+| `bb02cea` | 27 Oct 2026 | Docs — `docs/ARQUITECTURA.md`: documento vivo del código (mapa de carpetas, cómo se conectan las piezas, cada archivo relevante, flujos, endpoints y eventos, reglas, código heredado). Regla en CLAUDE.md: se actualiza en el mismo commit que el código. Fix de texto: el permiso de ubicación dice «la empresa» en vez de «el cliente» (`app.json`) |
+| `e1ec944` | 29 Oct 2026 | Fase 3 (en curso) — `src/utils/dinero.js` (precios es-AR, solo empresa) y `src/utils/series.js` (textos y conteo previo de viajes repetidos). Falta: servicios de empresa, alertas, `PymeStack` y pantallas |
+| (este commit) | 29 Oct 2026 | Feat — fase 3 del rediseño (empresa): `PymeStack` con Inicio / Viajes / Nuevo / Alertas / Más y `EmpresaContext` (alertas «para resolver» desde REST + «hoy» desde el socket, contador en la pestaña). 16 pantallas en `src/screens/empresa/`: inicio con tabla de paradas estimado/real, alertas con la acción a un toque, viajes por día con filtros, nuevo viaje en 4 pasos con lugares guardados, repetición (series) y precio de `estimar-costo`, detalle por estado (en vivo con mapa, llegada y desvío; programado con editar/reasignar/cancelar; rechazado con asignar a otro; terminado con estimado vs. real, precio y remito; finalizar a mano de la Tarea 5), conductores con invitar y desvincular con vista previa, lugares, viajes repetidos, equipo y roles, datos de la empresa y mis datos. Servicios `viajesEmpresa`, `empresa`, `direcciones` y mock DEV `mockEmpresa`; componentes `components/empresa/` y `Listas`/`HojaHora` en el kit. Verificado en Expo web, claro y oscuro, sin errores de consola. `RootNavigator` manda a la empresa a `PymeStack` (`ClienteStack` queda sin uso). Docs: `ARQUITECTURA.md` §9 con cómo se cumple el plan fase por fase y archivo por archivo, y estado en `PLAN_MOBILE_PYME.md` |
 
 ---
 
@@ -126,7 +127,25 @@ Viaje interno (API.md de develop, Pasos 2 a 4). Oscuro por default, verificado e
 | `PerfilScreen` + `EmpresaConductorScreen` + `SumarEmpresaScreen` + `NuevoVehiculoScreen` | ✅ | Empresas (sumar con código, desvincularse con aviso de ISSUES.md #1), vehículos (form compartido `FormVehiculo`), Apariencia, cerrar sesión |
 | `FleteroStack` (fletero/*) | 📦 Dormido | Pantallas del marketplace; solo para el rol legacy FLETERO |
 
+### Empresa (rediseño fase 3 — `PymeStack`, branch `staging`)
+Viaje interno del lado de la empresa (API.md de develop: Pasos 2 a 4 y Tarea 5). Claro por default, verificado en claro y oscuro con capturas (Expo web 390×844, modo desarrollo con datos de ejemplo en `services/mockEmpresa.js`). La empresa sí ve precios.
+| Pantalla | Estado | Notas |
+|----------|--------|-------|
+| `InicioScreen` | ✅ | Números del día (viajes, en curso, estimado), «En curso» con tabla de paradas estimado/real y llegada de `eta:actualizar`, próximos y terminados de hoy, estado vacío |
+| `AlertasScreen` | ✅ | «Para resolver» (rechazado → asignar a otro; por vencer → llamar / reasignar; cierre habilitado → finalizar) y «Hoy» (desvíos, salidas tarde, entregas, confirmaciones) con punto de no visto; contador en la pestaña. Sin historial en el backend (ISSUES.md #4) |
+| `ViajesScreen` | ✅ | Por día, filtros Activos / En curso / Terminados, marca de la serie |
+| `NuevoViajeScreen` | ✅ | 4 pasos (recorrido con lugares guardados y Places, cuándo + repetición, carga, conductor apto) + revisión con precio y horas de `estimar-costo`. Crea viaje o serie. También edita (`params.editar`) y copia (`params.copiar`) |
+| `ViajeScreen` | ✅ | Según estado: en vivo (mapa, desvío, llegada, llamar, cancelar, finalizar), programado (editar, reasignar, cancelar), rechazado (asignar a otro), terminado (estimado vs. real con precio, puntualidad, remito) |
+| `MasScreen` | ✅ | Empresa, accesos con contadores, Apariencia, cerrar sesión |
+| `ConductoresScreen` + `ConductorScreen` + `InvitarScreen` | ✅ | Lista con vehículo y estado; invitaciones pendientes con revocar; código de un solo uso mostrado una vez con copiar y compartir; desvincular con vista previa de lo que cancela (ISSUES.md #1) |
+| `LugaresScreen` + `LugarScreen` | ✅ | CRUD con nombre único y dirección con `HojaParada` |
+| `SeriesScreen` + `SerieScreen` | ✅ | Frecuencia, recorrido, conductor, viajes que quedan; detalle con sus viajes y cancelar la serie |
+| `EquipoScreen` | ✅ | Roles, invitar miembro (solo responsable), sacar, irse; el 409 del último responsable explicado |
+| `DatosEmpresaScreen` + `MisDatosScreen` | ✅ | `PUT /organizaciones/:id` (solo responsable) y `PUT /auth/perfil` |
+| Contra staging | ⏳ | Mismos endpoints que pasan `scripts/api-tests/`; falta recorrer las pantallas con `EXPO_PUBLIC_DEV_MODE=false` |
+
 ### Cliente
+> 📦 Heredado del marketplace: desde la fase 3 la empresa entra a `PymeStack` y `ClienteStack` ya no se monta.
 | Pantalla | Estado | Notas |
 |----------|--------|-------|
 | `HomeScreen` | ✅ Funcional | Últimos 3 viajes reales vía GET /api/viajes/mis-viajes, pull-to-refresh, FAB nuevo viaje |
@@ -188,7 +207,8 @@ Viaje interno (API.md de develop, Pasos 2 a 4). Oscuro por default, verificado e
 | Stack | Estado | Pantallas |
 |-------|--------|-----------|
 | `AuthStack` | ✅ | Login → RegisterCliente / RegisterFletero / RegisterGerente → CuentaPendiente |
-| `ClienteStack` | ✅ | Bottom tabs: Inicio, Crear, Historial, Perfil + modales de viaje activo |
+| `PymeStack` | ✅ (fase 3) | Bottom tabs: Inicio, Viajes, Nuevo (abre el alta), Alertas (con contador), Más + Viaje, NuevoViaje, Conductores, Conductor, Invitar, Lugares, Lugar, Series, Serie, Equipo, DatosEmpresa, MisDatos |
+| `ClienteStack` | 📦 Sin uso | Bottom tabs del marketplace: Inicio, Crear, Historial, Perfil. Reemplazado por `PymeStack` |
 | `FleteroStack` | ✅ | Bottom tabs: Disponibles, **Asignados** (nueva), Historial, Perfil + DetalleViaje, ViajeActivo |
 | `GerenteStack` | ✅ (nueva) | Bottom tabs: Disponibles, Empresa, Historial, Perfil — stacks anidados para reservar/asignar y flota/conductores |
 | `RootNavigator` | ✅ | Detecta rol (CLIENTE/CONDUCTOR/FLETERO/GERENTE) y redirige al stack correcto; ADMIN sigue en placeholder "Acceso no disponible" (decisión: panel admin no va en mobile) |
@@ -218,6 +238,8 @@ Viaje interno (API.md de develop, Pasos 2 a 4). Oscuro por default, verificado e
 | `eta:actualizar` | servidor → room | `ViajeActivoScreen`, `ViajeActivoFleteroScreen` | ✅ Muestra "Llega en ~X min" / "Próxima parada en ~X min" |
 | `ruta:recalculada` | servidor → room | `ViajeActivoScreen`, `ViajeActivoFleteroScreen` | ✅ Actualiza Polyline en mapa + banner "Ruta recalculada" |
 | `viaje:finalizado` | servidor → room | `ViajeActivoScreen`, `ViajeActivoFleteroScreen` | ✅ Cliente → CalificacionScreen, Fletero → CobroScreen |
+| Eventos del viaje interno (`viaje:asignado` … `viaje:cierre_habilitado`, `serie:asignada`) | servidor → sala `organizacion:{id}` | `EmpresaContext`, `ViajesScreen` y `ViajeScreen` de la empresa | ✅ Fase 3: refetch por REST + alertas |
+| `mapa:actualizar`, `eta:actualizar`, `alerta:desvio`, `alerta:parada`, `ruta:recalculada`, `parada:salida_detectada` | servidor → empresa | `ViajeScreen`, `InicioScreen`, `EmpresaContext` (empresa) | ✅ Fase 3: posición, llegada, desvío y «Hoy» en Alertas |
 
 ---
 
@@ -269,6 +291,17 @@ Viaje interno (API.md de develop, Pasos 2 a 4). Oscuro por default, verificado e
 - [ ] Aplicar Manrope al resto de los textos (hoy usan la fuente del sistema) y Archivo Black/Mono a precios, IDs y patentes pantalla por pantalla
 - [ ] Ícono nativo de la app (assets/icon.png) regenerado desde app-icon.svg
 - [ ] Layout v2 de las cards de viaje (regla de los 9 datos, cards sin sombra) pantalla por pantalla
+
+### Rediseño — fase 3, empresa (completo)
+- [x] `PymeStack` + `EmpresaContext` (organización, rol, alertas y contador)
+- [x] Inicio, Alertas, Viajes, Nuevo viaje (con series), detalle por estado, Más, Conductores, Invitar, Lugares, Viajes repetidos, Equipo, Datos de la empresa, Mis datos — claro y oscuro
+- [x] Documentación de evaluación: `docs/ARQUITECTURA.md` §9 (cómo se cumple cada fase, archivo por archivo) y estado en `docs/PLAN_MOBILE_PYME.md`
+- [ ] Recorrer las pantallas de la empresa contra staging (`EXPO_PUBLIC_DEV_MODE=false`)
+
+### Rediseño — fase 4, cierre (pendiente)
+- [ ] Push (FCM, ISSUES.md #2), historial de alertas (ISSUES.md #4), remito con foto, vista previa de desvincular en el backend (ISSUES.md #1)
+- [ ] Pruebas en dispositivo físico (GPS en 2º plano, mapas, Places) y accesibilidad
+- [ ] Decisiones del dueño: borrar el código del marketplace y apagar `DEV_MODE` por defecto
 
 ### Fase 1 (incompleto)
 - [ ] Agregar sección de vehículo + condiciones a `RegisterFleteroScreen`

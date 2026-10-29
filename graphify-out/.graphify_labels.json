@@ -18,17 +18,11 @@
   "22": "Ciclo del viaje interno",
   "23": "Auth y afiliaciones API",
   "24": "Endpoints empresas legacy",
-  "26": "Historial cliente",
-  "27": "Historial fletero",
-  "28": "Arranque de la app",
-  "32": "Socket cliente",
   "33": "Disponibles gerente",
   "34": "Endpoints admin",
   "35": "Vehículos API",
-  "37": "Vencimientos y avisos",
   "39": "Mocks web",
   "40": "Scripts npm",
-  "41": "Reglas de inicio y cierre",
   "42": "Seguridad de tokens",
   "44": "Mock Firebase app"
 }

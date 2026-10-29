@@ -1,7 +1,33 @@
 # Fleter Mobile — Plan de desarrollo (modelo PyME + conductores)
 
-> Propuesta para aprobar. Fecha: 2026-10-19.
-> Contrato: `API.md` del backend, branch `develop` (staging). Diseño: `UXUI.md` + `src/theme.js`.
+> Propuesta aprobada el 2026-10-19. Contrato: `API.md` del backend, branch `develop` (staging).
+> Diseño: `UXUI.md` + `src/theme.js`.
+
+## Estado (29 oct 2026)
+
+| Fase | Estado | Dónde se ve |
+|---|---|---|
+| 0 — Base | ✅ con dos desvíos (ver abajo) | kit `src/components/ui/` y `components/viaje/`, `src/services/`, `useEnVivo`, `RootNavigator` |
+| 1 — Entrada y alta | ✅ | `src/screens/auth/`, `src/screens/onboarding/` (commit `7df9b87`) |
+| 2 — Conductor | ✅ | `ConductorStack`, `src/screens/conductor/` (commit `9d3c39b`) |
+| 3 — Empresa | ✅ | `PymeStack`, `EmpresaContext`, `src/screens/empresa/` (16 pantallas) |
+| 4 — Cierre | ⏳ depende del backend y de decisiones del dueño | `ISSUES.md` #1 a #4 |
+
+**La explicación de cómo se cumple cada ítem, archivo por archivo, está en `docs/ARQUITECTURA.md` §9.**
+Cada fase se diseñó primero como prototipo HTML (`prototype/fleter-mobile-fase{1,2,3}-*.html`), se aprobó y se
+programó; se verificó en Expo web en claro y oscuro, y el contrato se probó contra staging con `scripts/api-tests/`.
+
+Desvíos respecto de este plan, todos acordados o explicados:
+- **Flags del marketplace:** no se agregaron `MARKETPLACE_HABILITADO` ni `CALIFICACIONES_HABILITADAS`; el código viejo no
+  se monta (el router no lo alcanza) y sigue en sus carpetas hasta que el dueño decida borrarlo.
+- **`PLAN_DESARROLLO.md`** no se reescribió: lo reemplazan este documento y `docs/CAMBIO_DE_ENFOQUE.md`. `CLAUDE.md` sí.
+- **Fase 2, Mis viajes:** en vez de agrupar por empresa, cada card dice de qué empresa es; los vencidos están en Historial.
+  ETA y desvíos no llegan al conductor porque el backend se los manda solo a la empresa (ISSUES.md #3).
+- **Fase 3, pestañas:** quedaron Inicio, Viajes, Nuevo, **Alertas**, Más (elegido en la revisión del prototipo);
+  Conductores entra desde Más.
+- **Fase 3, rechazados:** el backend no reasigna un viaje rechazado; «Asignar a otro» crea uno nuevo con los mismos datos.
+- **Fase 3, series:** sus viajes se editan, reasignan y cancelan uno por uno (así lo define el contrato); la serie
+  entera solo se cancela.
 
 ## Principios
 - **Dos tipos de cuenta:** `CLIENTE` (usuario de PyME, `RESPONSABLE` o `MIEMBRO`) y `CONDUCTOR`.
@@ -44,7 +70,7 @@
 | 2.5 | Historial | `GET /choferes/viajes?…` |
 | 2.6 | Perfil: datos, vehículos, **Mis PyMEs** (canjear / desvincularme con confirmación), apariencia | `/choferes/mis-organizaciones`, `/conductores/mis-vehiculos` |
 
-## Fase 3 — PyME (bottom tabs: Inicio, Viajes, Nuevo, Conductores, Más)
+## Fase 3 — PyME (bottom tabs: Inicio, Viajes, Nuevo, Conductores, Más → quedó Inicio, Viajes, Nuevo, Alertas, Más)
 | # | Pantalla | Endpoints principales |
 |---|---|---|
 | 3.1 | **Inicio**: en curso ahora, próximos de hoy, sin confirmar / por vencer, alertas | `GET /organizaciones/:id/viajes`, sockets |

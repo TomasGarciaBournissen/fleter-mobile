@@ -47,3 +47,19 @@ export function motivoFinal(viaje) {
   }
   return '';
 }
+
+// Lo mismo, contado a la empresa
+export function motivoFinalEmpresa(viaje) {
+  const quien = viaje.conductor?.nombre ?? 'El conductor';
+  if (viaje.estado === 'VENCIDO') return 'Nadie lo inició a tiempo.';
+  if (viaje.estado === 'RECHAZADO') return `${quien} lo rechazó.`;
+  if (viaje.estado === 'CANCELADO') {
+    return {
+      CHOFER: `${quien} lo canceló.`,
+      ORGANIZACION: 'Lo cancelaron desde la empresa.',
+      ADMIN: 'Lo canceló Fleter.',
+      DESVINCULACION: `Se canceló al desvincular a ${quien}.`,
+    }[viaje.causa_cancelacion] ?? 'Se canceló.';
+  }
+  return '';
+}
