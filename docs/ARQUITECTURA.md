@@ -2,7 +2,7 @@
 
 > **Documento vivo.** Se actualiza en el mismo commit que cualquier cambio de código que agregue, borre o
 > cambie la responsabilidad de un archivo, un endpoint, un evento o un flujo (regla en `CLAUDE.md`).
-> Última actualización: 27 oct 2026 · rama `staging` · fases 0, 1 y 2 programadas; fase 3 diseñada.
+> Última actualización: 29 oct 2026 · rama `staging` · fases 0, 1 y 2 programadas; fase 3 en implementación.
 >
 > Otros documentos: `PROGRESO.md` (estado y commits), `ISSUES.md` (problemas abiertos con el backend),
 > `docs/FLUJOS_MOBILE.md` (resumen para el review), `UXUI.md` (sistema de diseño), `API.md` del backend
@@ -231,6 +231,8 @@ y no emite (pendiente).
 | `formularios.js` | Formato al tipear y limpieza para la API: DNI, CUIT, código de invitación (XXXXX-XXXXX), patente (AE 421 KL), email, fecha corta. El backend vuelve a validar. |
 | `errores.js` | `mensajeDeError(err, porDefecto)`: traduce códigos de Firebase y mensajes del backend a texto en voseo; los 400 del backend se muestran tal cual. Ninguna pantalla muestra códigos técnicos. |
 | `ventana.js` | Ventana de inicio de referencia (−60 / +90 min de `fecha_programada`). Solo para mostrar (ISSUES #3). |
+| `dinero.js` | `pesos(v)`: precio es-AR ($12.500, sin decimales). Solo del lado de la empresa (fase 3); el conductor nunca ve precios. |
+| `series.js` | Viajes repetidos (fase 3): `FRECUENCIAS`, `LETRAS_DIAS`, `textoFrecuencia(serie)` («Lun, mié y vie a las 07:00»), `contarViajes(...)` (aviso previo; el número real lo da el backend), `fechaIso`/`desdeIso`, `diaSemanaIso` (1 = lunes). |
 | `format.js`, `vehiculo.js` | Heredados del marketplace; sin uso en las fases nuevas. |
 
 ### 4.8 Kit de UI (`src/components/ui/`)
@@ -403,3 +405,4 @@ flujos nuevos y se borra cuando entre la fase 3:
 | Fecha | Cambio |
 |---|---|
 | 27 oct 2026 | Versión inicial: fases 0, 1 y 2 completas, archivo por archivo. |
+| 29 oct 2026 | Fase 3 (en curso): utilidades `dinero.js` y `series.js`. |

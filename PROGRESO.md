@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-10-27  
-> Branch: staging | Commits totales: 73
+> Última actualización: 2026-10-29  
+> Branch: staging | Commits totales: 74
 
 ---
 
@@ -86,6 +86,7 @@
 | `b659c60` | 22 Oct 2026 | Prototipo — fase 3, revisión del dueño: las alertas salen del Inicio y pasan a una pestaña **Alertas** con contador (para resolver con la acción a un toque + lo que pasó en el día, y estado vacío). El viaje en curso del Inicio pasa a tabla de paradas (estimado / real; variante B elegida entre dos). Barra: Inicio, Viajes, Nuevo, Alertas, Más; Conductores entra desde Más. ISSUES #4: no hay historial de alertas en el backend |
 | `da062b1` | 27 Oct 2026 | Docs — `docs/FLUJOS_MOBILE.md`: guía para el review de código: arranque, router por sesión, sesión y tokens, alta de empresa y de conductor, ciclo del viaje del conductor, GPS, tiempo real, piezas compartidas y riesgos a discutir (DEV_MODE prendido por defecto, sesión en memoria, token del socket, GPS con la app cerrada) |
 | (este commit) | 27 Oct 2026 | Docs — `docs/ARQUITECTURA.md`: documento vivo del código (mapa de carpetas, cómo se conectan las piezas, cada archivo relevante, flujos, endpoints y eventos, reglas, código heredado). Regla en CLAUDE.md: se actualiza en el mismo commit que el código. Fix de texto: el permiso de ubicación dice «la empresa» en vez de «el cliente» (`app.json`) |
+| (este commit) | 29 Oct 2026 | Fase 3 (en curso) — `src/utils/dinero.js` (precios es-AR, solo empresa) y `src/utils/series.js` (textos y conteo previo de viajes repetidos). Falta: servicios de empresa, alertas, `PymeStack` y pantallas |
 
 ---
 
