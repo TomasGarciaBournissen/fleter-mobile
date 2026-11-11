@@ -69,11 +69,11 @@ const L = (id) => { const l = lugares.find((x) => x.id_lugar === id); return { d
 
 function viaje(id, fecha, estado, idConductor, paradas, extra = {}) {
   return {
-    id_viaje: id, id_organizacion: 1, id_serie: null, estado, fecha_programada: fecha, descripcion: null,
+    id_viaje: id, id_organizacion: 1, id_serie: null, estado, fecha_programada: fecha, motivo: null, descripcion: null,
     organizacion: { id_organizacion: 1, nombre: ORG.nombre, cuit: ORG.cuit },
     creador: { id_usuario: 1, nombre: 'Ana', apellido: 'Ferreyra' },
     conductor: conductorDe(idConductor), id_conductor: idConductor, vehiculo: null,
-    condiciones_requeridas: [], paradas, estimado: null, real: null, precio_estimado: null, precio_real: null,
+    paradas, estimado: null, real: null, precio_estimado: null, precio_real: null,
     fecha_inicio: null, fecha_confirmacion: null, fecha_rechazo: null, causa_cancelacion: null, motivo_cancelacion: null,
     puntualidad_inicio: null, vencido: estado === 'VENCIDO', remito_url: null, ruta_planeada: null, cierre: null,
     creado_en: masMin(fecha, -60 * 24), historial_estados: [],
@@ -88,7 +88,7 @@ const v2419 = viaje(2419, f2419, 'EN_RUTA', 4, [
   parada(2, dir('Av. Mitre 1450, Vicente López', -34.5266, -58.4728), masMin(f2419, 50), 15),
   parada(3, L(2), masMin(f2419, 95), 15),
 ], {
-  vehiculo: transit, condiciones_requeridas: ['FRAGIL'], precio_estimado: 68500, fecha_inicio: masMin(f2419, 1), fecha_confirmacion: masMin(f2419, -300),
+  vehiculo: transit, motivo: 'Reparto zona norte', descripcion: 'Cajas frágiles: no apilar más de tres. En Vicente López preguntar por Raúl.', precio_estimado: 68500, fecha_inicio: masMin(f2419, 1), fecha_confirmacion: masMin(f2419, -300),
   puntualidad_inicio: 'A_TIEMPO', estimado: { manejo_horas: 0.83, peon_horas: 0.5, total_horas: 1.33, distancia_km: 48 },
   cierre: { cerrado_por: null, incompleto: false, cierre_manual_desde: null, cierre_manual_habilitado: false, motivo_habilitacion: null, hora_prevista_fin: null, salida_detectada: null, cierre_automatico_en: null, fecha_corte_precio: null },
   _dev_vivo: { posicion: { latitude: -34.4950, longitude: -58.6200 }, minutos: 12, desvio: { fecha: masMin(f2419, 43), metros: 450 } },
@@ -102,36 +102,36 @@ let viajes = [
   viaje(2420, f2420, 'ASIGNADO', 5, [
     parada(1, L(4), f2420, 20),
     parada(2, dir('Av. Rivadavia 6800, Flores, CABA', -34.6294, -58.4633), masMin(f2420, 45), 20),
-  ], { condiciones_requeridas: ['REFRIGERADO'], precio_estimado: 39800, estimado: { manejo_horas: 0.42, peon_horas: 0.67, total_horas: 1.08, distancia_km: 21 } }),
+  ], { motivo: 'Reposición de lácteos, Flores', descripcion: 'Mercadería refrigerada: el local la recibe hasta las 11.', precio_estimado: 39800, estimado: { manejo_horas: 0.42, peon_horas: 0.67, total_horas: 1.08, distancia_km: 21 } }),
   viaje(2421, f2421, 'CONFIRMADO', 4, [
     parada(1, L(1), f2421, 20),
     parada(2, dir('Panamericana km 26, Don Torcuato', -34.4920, -58.6280), masMin(f2421, 30), 15),
     parada(3, dir('Av. Maipú 2100, Olivos', -34.5100, -58.4890), masMin(f2421, 70), 15),
-  ], { vehiculo: transit, condiciones_requeridas: ['VOLUMINOSO'], precio_estimado: 52700, fecha_confirmacion: masMin(ahoraIso(), -300), estimado: { manejo_horas: 0.6, peon_horas: 0.58, total_horas: 1.17, distancia_km: 41 } }),
+  ], { vehiculo: transit, motivo: 'Entrega de muebles a dos clientes', descripcion: 'Bultos grandes. En Olivos hay montacargas por la entrada de Maipú.', precio_estimado: 52700, fecha_confirmacion: masMin(ahoraIso(), -300), estimado: { manejo_horas: 0.6, peon_horas: 0.58, total_horas: 1.17, distancia_km: 41 } }),
   viaje(2422, f2422, 'RECHAZADO', 6, [
     parada(1, L(3), f2422, 15),
     parada(2, dir('Av. Cabildo 2040, Belgrano, CABA', -34.5610, -58.4560), masMin(f2422, 35), 15),
-  ], { precio_estimado: 27900, fecha_rechazo: masMin(ahoraIso(), -95), estimado: { manejo_horas: 0.33, peon_horas: 0.25, total_horas: 0.58, distancia_km: 9 } }),
+  ], { motivo: 'Pedido urgente Belgrano', descripcion: 'Portón negro, tocar timbre del local.', precio_estimado: 27900, fecha_rechazo: masMin(ahoraIso(), -95), estimado: { manejo_horas: 0.33, peon_horas: 0.25, total_horas: 0.58, distancia_km: 9 } }),
   viaje(2418, desdeAhora(-330), 'FINALIZADO', 6, (() => {
     const f = desdeAhora(-330);
     return [
       parada(1, L(3), f, 15, { llegada: masMin(f, -3), salida: masMin(f, 14) }),
       parada(2, dir('Av. del Libertador 5800, Belgrano, CABA', -34.5560, -58.4410), masMin(f, 40), 15, { llegada: masMin(f, 44), salida: masMin(f, 58) }),
     ];
-  })(), { vehiculo: fiorino, precio_estimado: 24300, precio_real: 25100, estimado: { manejo_horas: 0.42, peon_horas: 0.5, total_horas: 0.92, distancia_km: 11 }, real: { manejo_horas: 0.45, peon_horas: 0.52, total_horas: 0.97, distancia_km: 11.4, peon_completo: true }, remito_url: 'https://example.com/remito-2418.pdf', cierre: { cerrado_por: 'CHOFER', incompleto: false } }),
+  })(), { vehiculo: fiorino, motivo: 'Devolución de envases', descripcion: 'Retirar los cajones vacíos y firmar el remito.', precio_estimado: 24300, precio_real: 25100, estimado: { manejo_horas: 0.42, peon_horas: 0.5, total_horas: 0.92, distancia_km: 11 }, real: { manejo_horas: 0.45, peon_horas: 0.52, total_horas: 0.97, distancia_km: 11.4, peon_completo: true }, remito_url: 'https://example.com/remito-2418.pdf', cierre: { cerrado_por: 'CHOFER', incompleto: false } }),
   viaje(2416, en(-1, 9, 0), 'FINALIZADO', 4, [
     parada(1, L(1), en(-1, 9, 0), 15, { llegada: en(-1, 8, 58), salida: en(-1, 9, 14) }),
     parada(2, dir('Av. Mitre 1450, Vicente López', -34.5266, -58.4728), en(-1, 9, 45), 15, { llegada: en(-1, 9, 51), salida: en(-1, 10, 5) }),
     parada(3, L(2), en(-1, 10, 20), 15, { llegada: en(-1, 10, 29), salida: en(-1, 10, 44) }),
-  ], { vehiculo: transit, condiciones_requeridas: ['FRAGIL'], precio_estimado: 68500, precio_real: 71200, puntualidad_inicio: 'A_TIEMPO', estimado: { manejo_horas: 1.08, peon_horas: 0.5, total_horas: 1.58, distancia_km: 48 }, real: { manejo_horas: 1.2, peon_horas: 0.63, total_horas: 1.83, distancia_km: 51, peon_completo: true }, remito_url: 'https://example.com/remito-2416.pdf', cierre: { cerrado_por: 'CHOFER', incompleto: false } }),
+  ], { vehiculo: transit, motivo: 'Reparto zona norte', descripcion: 'Cajas frágiles: no apilar más de tres.', precio_estimado: 68500, precio_real: 71200, puntualidad_inicio: 'A_TIEMPO', estimado: { manejo_horas: 1.08, peon_horas: 0.5, total_horas: 1.58, distancia_km: 48 }, real: { manejo_horas: 1.2, peon_horas: 0.63, total_horas: 1.83, distancia_km: 51, peon_completo: true }, remito_url: 'https://example.com/remito-2416.pdf', cierre: { cerrado_por: 'CHOFER', incompleto: false } }),
   viaje(2410, en(-3, 15, 0), 'CANCELADO', 5, [
     parada(1, L(4), en(-3, 15, 0), 20),
     parada(2, dir('Av. Rivadavia 6800, Flores, CABA', -34.6294, -58.4633), en(-3, 15, 45), 20),
-  ], { condiciones_requeridas: ['REFRIGERADO'], precio_estimado: 39800, causa_cancelacion: 'CHOFER', estimado: { manejo_horas: 0.42, peon_horas: 0.67, total_horas: 1.08, distancia_km: 21 } }),
+  ], { precio_estimado: 39800, causa_cancelacion: 'CHOFER', estimado: { manejo_horas: 0.42, peon_horas: 0.67, total_horas: 1.08, distancia_km: 21 } }),
   viaje(2409, en(-4, 6, 30), 'VENCIDO', 5, [
     parada(1, L(4), en(-4, 6, 30), 20),
     parada(2, dir('Av. Rivadavia 6800, Flores, CABA', -34.6294, -58.4633), en(-4, 7, 15), 20),
-  ], { condiciones_requeridas: ['REFRIGERADO'], precio_estimado: 38100, estimado: { manejo_horas: 0.42, peon_horas: 0.67, total_horas: 1.08, distancia_km: 21 } }),
+  ], { precio_estimado: 38100, estimado: { manejo_horas: 0.42, peon_horas: 0.67, total_horas: 1.08, distancia_km: 21 } }),
 ];
 
 // ── Series (viajes repetidos)
@@ -186,22 +186,33 @@ function resolverParadas(lista) {
   });
 }
 
-function validarConductor(idConductor, condiciones = []) {
+// Como el backend desde el 20-10-2026: sin condiciones, alcanza un vehículo propio
+function validarConductor(idConductor) {
   const c = choferes.find((x) => x.id_conductor === Number(idConductor));
   if (!c) throw error(400, 'El chofer no esta vinculado a esta PyME');
-  const apto = c.vehiculos.some((veh) => condiciones.every((k) => veh.condiciones.includes(k)));
-  if (!apto) throw error(400, `El chofer no tiene un vehiculo propio que cumpla las condiciones del viaje: ${condiciones.join(', ')}`);
+  if (!c.vehiculos.length) throw error(400, 'El chofer no tiene vehiculos propios registrados');
 }
 
-function nuevoViaje({ id_conductor, fecha_programada, paradas, condiciones_requeridas = [], descripcion = null }, idSerieViaje = null) {
+// motivo (1 a 120) y descripcion (1 a 500), obligatorios al crear
+function validarTextos({ motivo, descripcion }, { parcial = false } = {}) {
+  [['motivo', motivo, 120, 'requerido', 'vacio'], ['descripcion', descripcion, 500, 'requerida', 'vacia']].forEach(([campo, valor, max, req, vac]) => {
+    if (valor === undefined && parcial) return;
+    if (valor === undefined) throw error(400, `${campo} es ${req}`);
+    if (typeof valor !== 'string' || !valor.trim()) throw error(400, `${campo} no puede estar ${vac}`);
+    if (valor.trim().length > max) throw error(400, `${campo} puede tener como máximo ${max} caracteres`);
+  });
+}
+
+function nuevoViaje({ id_conductor, fecha_programada, paradas, motivo, descripcion }, idSerieViaje = null) {
+  validarTextos({ motivo, descripcion });
   if (paradas.length > 10) throw error(400, 'Un viaje puede tener como máximo 10 paradas');
-  if (new Date(fecha_programada) < new Date(Date.now() + 30 * 60000)) throw error(400, 'La fecha programada tiene que ser con al menos 30 minutos de anticipación');
-  validarConductor(id_conductor, condiciones_requeridas);
+  if (new Date(fecha_programada) < new Date(Date.now() + 60 * 60000)) throw error(400, 'fecha_programada debe ser una fecha ISO futura (al menos 60 minutos desde ahora)');
+  validarConductor(id_conductor);
   const resueltas = resolverParadas(paradas);
   const est = estimarDev(resueltas, fecha_programada);
   const v = viaje(idViaje++, fecha_programada, 'ASIGNADO', Number(id_conductor),
     resueltas.map((p, i) => parada(i + 1, p, est.tramos[i].llegada_estimada, 15)),
-    { condiciones_requeridas, descripcion, precio_estimado: est.precio_estimado, estimado: { ...est.estimado }, id_serie: idSerieViaje, creado_en: ahoraIso() });
+    { motivo: motivo.trim(), descripcion: descripcion.trim(), precio_estimado: est.precio_estimado, estimado: { ...est.estimado }, id_serie: idSerieViaje, creado_en: ahoraIso() });
   delete v.estimado.inicio_estimado; delete v.estimado.fin_estimado;
   return v;
 }
@@ -224,7 +235,8 @@ function crearSerieDev(body, generar = true) {
   if (body.fecha_hasta && (desdeIso(body.fecha_hasta) - desdeIso(body.fecha_desde)) / 86400000 > 30) {
     throw error(400, 'fecha_hasta puede ser como maximo 30 dias despues de fecha_desde');
   }
-  validarConductor(body.id_conductor, body.condiciones_requeridas);
+  validarConductor(body.id_conductor);
+  validarTextos(body);
   const id = idSerie++;
   const [h, m] = body.hora.split(':').map(Number);
   const salteadas = [];
@@ -232,7 +244,7 @@ function crearSerieDev(body, generar = true) {
   if (generar) {
     fechasDeSerie(body).forEach((f) => {
       const d = desdeIso(f); d.setHours(h, m, 0, 0);
-      if (d < new Date(Date.now() + 30 * 60000)) { salteadas.push({ fecha: f, fecha_programada: d.toISOString(), motivo: d < new Date() ? 'PASADA' : 'SIN_ANTICIPACION' }); return; }
+      if (d < new Date(Date.now() + 60 * 60000)) { salteadas.push({ fecha: f, fecha_programada: d.toISOString(), motivo: d < new Date() ? 'PASADA' : 'SIN_ANTICIPACION' }); return; }
       const v = nuevoViaje({ ...body, fecha_programada: d.toISOString() }, id);
       viajes.push(v); creados.push(v);
     });
@@ -242,7 +254,7 @@ function crearSerieDev(body, generar = true) {
     id_serie: id, id_organizacion: 1, id_creador: 1, id_conductor: Number(body.id_conductor), conductor: conductorDe(body.id_conductor),
     frecuencia: body.frecuencia, dias_semana: body.dias_semana ?? [], dia_semana: body.dia_semana ?? null, dia_mes: body.dia_mes ?? null,
     hora: body.hora, zona_horaria: 'America/Argentina/Buenos_Aires', fecha_desde: body.fecha_desde, fecha_hasta: body.fecha_hasta,
-    paradas: paradasDeSerie(resolverParadas(body.paradas)), condiciones_requeridas: body.condiciones_requeridas ?? [], descripcion: body.descripcion ?? null,
+    paradas: paradasDeSerie(resolverParadas(body.paradas)), motivo: body.motivo.trim(), descripcion: body.descripcion.trim(),
     estado: 'ACTIVA', fecha_baja: null, creado_en: ahoraIso(), actualizado_en: ahoraIso(),
   };
   series.unshift(serie);
@@ -253,8 +265,8 @@ function crearSerieDev(body, generar = true) {
 (() => {
   const hoy = new Date();
   const hasta = new Date(); hasta.setDate(hoy.getDate() + 30);
-  crearSerieDev({ id_conductor: 4, frecuencia: 'DIAS_SEMANA', dias_semana: [1, 3, 5], hora: '07:00', fecha_desde: fechaIso(hoy), fecha_hasta: fechaIso(hasta), paradas: [{ id_lugar: 1 }, { direccion: 'Av. Mitre 1450, Vicente López', lat: -34.5266, lng: -58.4728 }, { id_lugar: 2 }], condiciones_requeridas: ['FRAGIL'] });
-  crearSerieDev({ id_conductor: 5, frecuencia: 'DIARIA', hora: '06:30', fecha_desde: fechaIso(hoy), fecha_hasta: fechaIso(new Date(hoy.getTime() + 24 * 86400000)), paradas: [{ id_lugar: 4 }, { direccion: 'Av. Rivadavia 6800, Flores, CABA', lat: -34.6294, lng: -58.4633 }], condiciones_requeridas: ['REFRIGERADO'] });
+  crearSerieDev({ id_conductor: 4, frecuencia: 'DIAS_SEMANA', dias_semana: [1, 3, 5], hora: '07:00', fecha_desde: fechaIso(hoy), fecha_hasta: fechaIso(hasta), paradas: [{ id_lugar: 1 }, { direccion: 'Av. Mitre 1450, Vicente López', lat: -34.5266, lng: -58.4728 }, { id_lugar: 2 }], motivo: 'Reparto zona norte', descripcion: 'Cajas frágiles: no apilar más de tres.' });
+  crearSerieDev({ id_conductor: 5, frecuencia: 'DIARIA', hora: '06:30', fecha_desde: fechaIso(hoy), fecha_hasta: fechaIso(new Date(hoy.getTime() + 24 * 86400000)), paradas: [{ id_lugar: 4 }, { direccion: 'Av. Rivadavia 6800, Flores, CABA', lat: -34.6294, lng: -58.4633 }], motivo: 'Reposición diaria Flores', descripcion: 'Mercadería refrigerada: el local la recibe hasta las 11.' });
   // La primera de cada serie, confirmada, para que se vean las dos cosas
   [7, 8].forEach((s) => { const v = viajes.find((x) => x.id_serie === s); if (v) Object.assign(v, { estado: 'CONFIRMADO', vehiculo: s === 7 ? transit : daily, fecha_confirmacion: ahoraIso() }); });
 })();
@@ -362,21 +374,22 @@ export const mock = {
   editar(id, body) {
     const v = buscar(id);
     if (!['ASIGNADO', 'CONFIRMADO'].includes(v.estado)) throw error(400, `No se puede editar un viaje en estado ${v.estado}`);
-    const cond = body.condiciones_requeridas ?? v.condiciones_requeridas;
-    validarConductor(v.id_conductor, cond);
+    validarTextos(body, { parcial: true });
+    if (!(body.motivo ?? v.motivo)) throw error(400, 'El viaje no tiene motivo: completalo para poder editarlo');
+    if (!(body.descripcion ?? v.descripcion)) throw error(400, 'El viaje no tiene descripcion: completala para poder editarlo');
     if (body.paradas || body.fecha_programada) {
       const fecha = body.fecha_programada ?? v.fecha_programada;
       const ps = body.paradas ? resolverParadas(body.paradas) : v.paradas.map((p) => ({ direccion: p.direccion, lat: p.latitud, lng: p.longitud, id_lugar: p.id_lugar }));
       const est = estimarDev(ps, fecha);
       Object.assign(v, { fecha_programada: fecha, paradas: ps.map((p, i) => parada(i + 1, p, est.tramos[i].llegada_estimada, 15)), precio_estimado: est.precio_estimado, estimado: { manejo_horas: est.estimado.manejo_horas, peon_horas: est.estimado.peon_horas, total_horas: est.estimado.total_horas, distancia_km: est.estimado.distancia_km } });
     }
-    Object.assign(v, { condiciones_requeridas: cond, descripcion: body.descripcion !== undefined ? body.descripcion : v.descripcion, estado: 'ASIGNADO', vehiculo: null, fecha_confirmacion: null });
+    Object.assign(v, { motivo: body.motivo?.trim() ?? v.motivo, descripcion: body.descripcion?.trim() ?? v.descripcion, estado: 'ASIGNADO', vehiculo: null, fecha_confirmacion: null });
     return copia(v);
   },
   reasignar(id, idConductor) {
     const v = buscar(id);
     if (!['ASIGNADO', 'CONFIRMADO'].includes(v.estado)) throw error(400, `No se puede reasignar un viaje en estado ${v.estado}`);
-    validarConductor(idConductor, v.condiciones_requeridas);
+    validarConductor(idConductor);
     Object.assign(v, { id_conductor: Number(idConductor), conductor: conductorDe(idConductor), estado: 'ASIGNADO', vehiculo: null, fecha_confirmacion: null });
     return copia(v);
   },

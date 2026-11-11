@@ -9,7 +9,7 @@ import { textoFrecuencia, desdeIso } from '../../utils/series';
 import { diaCorto } from '../../utils/fechas';
 import { mensajeDeError } from '../../utils/errores';
 import { Pantalla, Titulo, Seccion, Vacio, Nota, Boton, Pastilla } from '../../components/ui';
-import { textoCondiciones } from '../../components/viaje/DatosViaje';
+import { textoMotivo } from '../../components/viaje/DatosViaje';
 import { nombreConductor, textoParadas } from '../../components/empresa/TarjetaViajeEmpresa';
 import { tituloParada } from '../../components/empresa/TablaParadas';
 
@@ -25,7 +25,7 @@ export function porHacer(serie) {
 export function recorridoSerie(serie) {
   const ps = serie.paradas ?? [];
   const destino = ps[ps.length - 1];
-  return `${tituloParada(ps[0])[0]} → ${destino?.lugar?.nombre ?? destino?.direccion ?? 'A confirmar'}. ${textoParadas(ps)}. ${textoCondiciones(serie.condiciones_requeridas)}. ${nombreConductor(serie.conductor)}.`;
+  return `${tituloParada(ps[0])[0]} → ${destino?.lugar?.nombre ?? destino?.direccion ?? 'A confirmar'}. ${textoParadas(ps)}. ${textoMotivo(serie)}. ${nombreConductor(serie.conductor)}.`;
 }
 
 // Viajes repetidos (series): cada uno con su frecuencia, recorrido, conductor

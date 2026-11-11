@@ -2,7 +2,8 @@
 
 > Problemas de producto y de contrato detectados al revisar el cambio de enfoque
 > (`docs/CAMBIO_DE_ENFOQUE.md`, branch `claude/freight-marketplace-pivot-l08445`).
-> Última actualización: 2026-10-22
+> Última actualización: 2026-11-11 · Los pedidos concretos al backend, con propuesta de endpoints y prioridad,
+> están juntos en `docs/PEDIDOS_BACKEND.md`.
 
 | # | Issue | Prioridad | Dónde se resuelve | Estado |
 |---|---|---|---|---|

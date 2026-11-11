@@ -1,6 +1,5 @@
 {
   "0": "Reglas del conductor",
-  "1": "Alta y onboarding (fase 1)",
   "4": "GPS y mapas",
   "5": "Stacks del marketplace",
   "6": "Dependencias Expo",
@@ -15,10 +14,8 @@
   "18": "Pruebas de identidad",
   "19": "Sistema de diseño",
   "20": "Plan de fases original",
-  "22": "Ciclo del viaje interno",
   "23": "Auth y afiliaciones API",
   "24": "Endpoints empresas legacy",
-  "33": "Disponibles gerente",
   "34": "Endpoints admin",
   "35": "Vehículos API",
   "39": "Mocks web",

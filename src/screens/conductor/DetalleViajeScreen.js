@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { fonts } from '../../theme';
 import { obtenerViaje, misVehiculos, confirmarViaje, rechazarViaje } from '../../services/viajesConductor';
-import { TIPOS_VEHICULO, CONDICIONES } from '../../services/vehiculos';
+import { TIPOS_VEHICULO } from '../../services/vehiculos';
 import { EN_CURSO, FINALES, motivoFinal } from '../../utils/estados';
 import { cuandoLargo, hora } from '../../utils/fechas';
 import { formatearPatente } from '../../utils/formularios';
@@ -15,17 +15,15 @@ import useEnVivo from '../../hooks/useEnVivo';
 import { Pantalla, Boton, Nota, HojaInferior } from '../../components/ui';
 import ChipEstado from '../../components/viaje/ChipEstado';
 import Recorrido from '../../components/viaje/Recorrido';
-import DatosViaje, { datosBasicos, textoCondiciones } from '../../components/viaje/DatosViaje';
+import DatosViaje, { datosBasicos } from '../../components/viaje/DatosViaje';
 import MapaRecorrido from '../../components/viaje/MapaRecorrido';
 
 const EVENTOS = ['viaje:editado', 'viaje:desasignado', 'viaje:cancelado', 'viaje:vencido'];
 
 export const iniciales = (nombre = '') => nombre.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
-const condicionesDe = (veh) => (veh.condiciones ?? []).map((c) => c.condicion ?? c);
 const resumenVehiculo = (veh) => {
   const tipo = TIPOS_VEHICULO.find((t) => t.id === veh.tipo_vehiculo)?.titulo ?? veh.tipo_vehiculo;
-  const conds = condicionesDe(veh).map((id) => CONDICIONES.find((c) => c.id === id)?.titulo ?? id);
-  return `${tipo}. ${conds.length ? conds.join(', ') : 'Sin condiciones'}.`;
+  return `${tipo}${veh.color ? `, ${veh.color.toLowerCase()}` : ''}.`;
 };
 
 // Detalle de un viaje del conductor. Desde «Sin confirmar» se confirma
@@ -54,20 +52,17 @@ export default function DetalleViajeScreen({ navigation, route }) {
   useFocusEffect(useCallback(() => { cargar(); }, [cargar]));
   useEnVivo(EVENTOS, cargar, { filtro: (d) => Number(d?.id_viaje) === Number(id) });
 
-  // Confirmar: si un solo vehículo cumple las condiciones, sin hoja
+  // Confirmar: sirve cualquier vehículo propio (los viajes de PyME no tienen
+  // condiciones). Con uno solo, sin hoja.
   const empezarConfirmacion = async () => {
     setError('');
     setAccion('confirmar');
     try {
       const lista = await misVehiculos();
-      const req = v.condiciones_requeridas ?? [];
-      const conInfo = lista.map((veh) => ({ ...veh, faltan: req.filter((c) => !condicionesDe(veh).includes(c)) }));
-      const aptos = conInfo.filter((x) => !x.faltan.length);
       if (!lista.length) { setError('No tenés vehículos cargados. Agregá uno desde tu perfil para confirmar viajes.'); return; }
-      if (!aptos.length) { setError(`Ninguno de tus vehículos lleva ${textoCondiciones(req).toLowerCase()}. Agregá uno desde tu perfil.`); return; }
-      if (lista.length === 1) { await confirmar(aptos[0]); return; }
-      setVehiculos(conInfo);
-      setElegido(aptos[0]);
+      if (lista.length === 1) { await confirmar(lista[0]); return; }
+      setVehiculos(lista);
+      setElegido(lista[0]);
       setHoja('vehiculo');
     } catch (err) {
       setError(mensajeDeError(err));
@@ -140,6 +135,7 @@ export default function DetalleViajeScreen({ navigation, route }) {
         ...datosBasicos(v),
         { label: 'Vehículo', valor: v.vehiculo ? `${v.vehiculo.marca} ${v.vehiculo.modelo}` : (v.estado === 'ASIGNADO' ? 'Lo elegís al confirmar' : '') },
       ]} />
+      {v.descripcion ? <Nota>Indicaciones: {v.descripcion}</Nota> : null}
 
       {v.estado === 'ASIGNADO' || v.estado === 'CONFIRMADO' ? (
         <Nota>
@@ -153,29 +149,25 @@ export default function DetalleViajeScreen({ navigation, route }) {
       <HojaInferior
         visible={hoja === 'vehiculo'}
         titulo="¿Con qué vehículo lo hacés?"
-        bajada={v.condiciones_requeridas?.length ? `El viaje pide ${textoCondiciones(v.condiciones_requeridas).toLowerCase()}.` : 'El viaje no pide condiciones especiales.'}
+        bajada="Elegí con cuál vas. La empresa lo ve en el viaje y en el remito."
         onCerrar={() => setHoja(null)}
       >
         {vehiculos?.map((veh) => {
-          const apto = !veh.faltan.length;
           const sel = elegido?.id_vehiculo === veh.id_vehiculo;
           return (
             <Pressable
               key={veh.id_vehiculo}
-              disabled={!apto}
               onPress={() => setElegido(veh)}
               accessibilityRole="radio"
-              accessibilityState={{ checked: sel, disabled: !apto }}
-              style={[s.veh, sel && s.vehSel, !apto && s.vehNo]}
+              accessibilityState={{ checked: sel }}
+              style={[s.veh, sel && s.vehSel]}
             >
               <View style={s.vehGlifo}>
                 <MaterialCommunityIcons name={TIPOS_VEHICULO.find((t) => t.id === veh.tipo_vehiculo)?.icono ?? 'truck-outline'} size={20} color={colors.ink} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.vehTitulo}>{veh.marca} {veh.modelo} <Text style={s.patente}>{formatearPatente(veh.patente)}</Text></Text>
-                {apto
-                  ? <Text style={s.meta}>{resumenVehiculo(veh)}</Text>
-                  : <Text style={s.vehFalta}>No lleva {textoCondiciones(veh.faltan).toLowerCase()}</Text>}
+                <Text style={s.meta}>{resumenVehiculo(veh)}</Text>
               </View>
               {sel ? <View style={s.tick}><MaterialCommunityIcons name="check" size={14} color={colors.onAccent} /></View> : null}
             </Pressable>
@@ -212,10 +204,8 @@ const createStyles = (c) => StyleSheet.create({
   meta:          { fontFamily: fonts.ui, fontSize: 12, color: c.ink3, marginTop: 1 },
   veh:           { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: c.line, backgroundColor: c.surface },
   vehSel:        { borderWidth: 2, borderColor: c.accent, backgroundColor: c.accentSofter, padding: 11 },
-  vehNo:         { backgroundColor: c.surface2 },
   vehGlifo:      { width: 36, height: 36, borderRadius: 8, backgroundColor: c.surface2, alignItems: 'center', justifyContent: 'center' },
   vehTitulo:     { fontFamily: fonts.uiBold, fontSize: 14, color: c.ink },
   patente:       { fontFamily: fonts.monoMedium, letterSpacing: 1.1 },
-  vehFalta:      { fontFamily: fonts.uiSemiBold, fontSize: 12, color: c.errorInk, marginTop: 1 },
   tick:          { width: 22, height: 22, borderRadius: 11, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
 });

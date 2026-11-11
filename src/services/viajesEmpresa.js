@@ -33,23 +33,27 @@ export async function estimarViaje({ paradas, fecha_programada }) {
 // su nombre después); una dirección suelta, con coordenadas.
 export const paradaParaApi = (p) => (p.id_lugar ? { id_lugar: p.id_lugar } : { lat: p.lat, lng: p.lng, direccion: p.direccion });
 
-export async function crearViaje(idOrg, { id_conductor, fecha_programada, paradas, condiciones_requeridas, descripcion }) {
-  const body = { id_conductor, fecha_programada, paradas: paradas.map(paradaParaApi), condiciones_requeridas };
-  if (descripcion?.trim()) body.descripcion = descripcion.trim();
+// `motivo` (para qué es, 1 a 120) y `descripcion` (indicaciones, 1 a 500) son
+// obligatorios desde el pedido del 20-10-2026. Los viajes de PyME ya no tienen
+// condiciones especiales: el conductor confirma con cualquier vehículo propio.
+export async function crearViaje(idOrg, { id_conductor, fecha_programada, paradas, motivo, descripcion }) {
+  const body = { id_conductor, fecha_programada, paradas: paradas.map(paradaParaApi), motivo: motivo?.trim(), descripcion: descripcion?.trim() };
   if (DEV_MODE) return mock.crear(body);
   const { data } = await api.post(base(idOrg), body);
   return data;
 }
 
 // Un viaje RECHAZADO es final: `reasignar` no lo acepta. «Asignar a otro
-// conductor» crea un viaje nuevo con el mismo recorrido, hora, condiciones y nota.
+// conductor» crea un viaje nuevo con el mismo recorrido, hora, motivo e
+// indicaciones. Un viaje anterior al 20-10-2026 puede no tener motivo ni
+// indicaciones: se completan con un texto mínimo para que el backend lo acepte.
 export function asignarRechazadoA(idOrg, viaje, idConductor) {
   return crearViaje(idOrg, {
     id_conductor: idConductor,
     fecha_programada: viaje.fecha_programada,
     paradas: (viaje.paradas ?? []).map((p) => (p.lugar?.activo ? { id_lugar: p.id_lugar } : { lat: Number(p.latitud), lng: Number(p.longitud), direccion: p.direccion })),
-    condiciones_requeridas: viaje.condiciones_requeridas ?? [],
-    descripcion: viaje.descripcion,
+    motivo: viaje.motivo?.trim() || `Reemplazo de VJ-${viaje.id_viaje}`,
+    descripcion: viaje.descripcion?.trim() || 'Sin indicaciones.',
   });
 }
 
@@ -91,9 +95,9 @@ export async function obtenerRemito(idOrg, id) {
 // ─── Viajes repetidos (series) ─────────────────────────────────────────────
 const series = (idOrg) => `/api/organizaciones/${idOrg}/series`;
 
-export async function crearSerie(idOrg, { paradas, descripcion, ...resto }) {
-  const body = { ...resto, paradas: paradas.map(paradaParaApi) };
-  if (descripcion?.trim()) body.descripcion = descripcion.trim();
+// Mismas reglas que un viaje: `motivo` y `descripcion` obligatorios, se copian a cada viaje
+export async function crearSerie(idOrg, { paradas, motivo, descripcion, ...resto }) {
+  const body = { ...resto, paradas: paradas.map(paradaParaApi), motivo: motivo?.trim(), descripcion: descripcion?.trim() };
   if (DEV_MODE) return mock.crearSerie(body);
   const { data } = await api.post(series(idOrg), body);
   return data;

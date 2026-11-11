@@ -7,7 +7,7 @@ import { cuando, km } from '../../utils/fechas';
 import { pesos } from '../../utils/dinero';
 import { motivoFinalEmpresa } from '../../utils/estados';
 import ChipEstado from '../viaje/ChipEstado';
-import { textoCondiciones, distanciaDe, tiempoDe } from '../viaje/DatosViaje';
+import { textoMotivo, distanciaDe, tiempoDe } from '../viaje/DatosViaje';
 import TablaParadas, { tituloParada } from './TablaParadas';
 
 export const nombreConductor = (c) => (c ? [c.nombre, c.apellido].filter(Boolean).join(' ') : 'Sin conductor');
@@ -24,7 +24,7 @@ export function resumenViaje(v) {
   return [
     `${origen} → ${destino}.`,
     `${textoParadas(ps)}.`,
-    `${textoCondiciones(v.condiciones_requeridas)}.`,
+    `${textoMotivo(v)}.`,
     `${km(distanciaDe(v))}, ${tiempoDe(v)}.`,
     motivoFinalEmpresa(v),
   ].filter(Boolean).join(' ');
@@ -68,7 +68,7 @@ export default function TarjetaViajeEmpresa({ viaje: v, onPress, conTabla, eta, 
       {conTabla ? (
         <>
           <TablaParadas viaje={v} eta={eta} />
-          <Text style={s.resumen}>{textoCondiciones(v.condiciones_requeridas)}. {km(distanciaDe(v))}, {tiempoDe(v)}.</Text>
+          <Text style={s.resumen}>{textoMotivo(v)}. {km(distanciaDe(v))}, {tiempoDe(v)}.</Text>
         </>
       ) : (
         <Text style={s.resumen}>{resumenViaje(v)}</Text>

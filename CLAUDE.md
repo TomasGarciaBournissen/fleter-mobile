@@ -50,7 +50,7 @@ Resumen mínimo:
 - Estados del viaje: 5 familias (ámbar/azul/naranja/verde/rojo) × 3 valores (base/ink/soft) — tabla en UXUI.md.
 - Tipografías: Archivo Black (precios/títulos), Manrope (UI), Josefin Sans (solo eyebrows/eslogan), JetBrains Mono (IDs, patentes, horas).
 - Vocabulario: no se dice "fletes"; voseo rioplatense; formatos es-AR ($12.500, 14:30, AE 421 KL, VJ-2419).
-- Regla de los 9 datos: toda card/fila de viaje muestra fecha y hora, origen, paradas, destino, condiciones, distancia, tiempo, precio y estado; nada se trunca, lo que falta dice "A confirmar".
+- Regla de los 9 datos: toda card/fila de viaje muestra fecha y hora, origen, paradas, destino, motivo (antes «condiciones»: los viajes de empresa ya no tienen condiciones desde el 20-10-2026), distancia, tiempo, precio y estado; nada se trunca, lo que falta dice "A confirmar".
 
 ## Navegaci�n cliente (Bottom Tabs)
 - Inicio, Nuevo, Historial, Perfil

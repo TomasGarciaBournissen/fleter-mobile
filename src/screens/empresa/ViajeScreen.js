@@ -20,7 +20,7 @@ import useEnVivo from '../../hooks/useEnVivo';
 import { Pantalla, Boton, Nota, Campo, HojaInferior, Avatar, Seccion } from '../../components/ui';
 import ChipEstado from '../../components/viaje/ChipEstado';
 import MapaRecorrido from '../../components/viaje/MapaRecorrido';
-import DatosViaje, { textoCondiciones, distanciaDe, tiempoDe } from '../../components/viaje/DatosViaje';
+import DatosViaje, { textoMotivo, distanciaDe, tiempoDe } from '../../components/viaje/DatosViaje';
 import HojaConductor from '../../components/empresa/HojaConductor';
 import { tituloParada, paradaActual, MIN_TARDE, MIN_DEMORA } from '../../components/empresa/TablaParadas';
 import { nombreConductor } from '../../components/empresa/TarjetaViajeEmpresa';
@@ -211,13 +211,13 @@ export default function ViajeScreen({ navigation, route }) {
 
       {v.estado !== 'FINALIZADO' ? (
         <DatosViaje items={[
-          { label: 'Condiciones', valor: textoCondiciones(v.condiciones_requeridas) },
+          { label: 'Motivo', valor: textoMotivo(v) },
           { label: 'Distancia', valor: km(distanciaDe(v)) },
           { label: 'Tiempo', valor: tiempoDe(v) },
           { label: 'Precio estimado', valor: pesos(v.precio_estimado) },
         ]} />
       ) : null}
-      {v.descripcion ? <Nota>Nota para el conductor: {v.descripcion}</Nota> : null}
+      {v.descripcion ? <Nota>Indicaciones para el conductor: {v.descripcion}</Nota> : null}
       {error ? <Nota tipo="error">{error}</Nota> : null}
 
       <HojaInferior
@@ -243,7 +243,6 @@ export default function ViajeScreen({ navigation, route }) {
           ? 'Se crea un viaje nuevo con el mismo recorrido y horario. El conductor lo tiene que confirmar.'
           : `${nombre} deja de tenerlo y el nuevo lo tiene que confirmar.`}
         conductores={conductores}
-        condiciones={v.condiciones_requeridas}
         excluir={v.conductor?.id_conductor}
         cargando={accion === 'asignar'}
         onElegir={elegirConductor}

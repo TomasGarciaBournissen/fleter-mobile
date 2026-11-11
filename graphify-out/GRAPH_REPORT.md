@@ -1,25 +1,25 @@
-# Graph Report - fleter-mobile  (2026-10-29)
+# Graph Report - fleter-mobile  (2026-11-11)
 
 ## Corpus Check
-- 329 files · ~437,854 words
+- 331 files · ~442,978 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 110 file(s) not represented in the graph (top: .ttf 54, .csv 53, (none) 2)
 
 ## Summary
-- 4397 nodes · 9228 edges · 220 communities (184 shown, 36 thin omitted)
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 721 edges (avg confidence: 0.91)
+- 4431 nodes · 9274 edges · 233 communities (197 shown, 36 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 727 edges (avg confidence: 0.91)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e1ec9440`
+- Built from commit: `566af499`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - Reglas del conductor
-- Alta y onboarding (fase 1)
+- Campo
 - Problemas conocidos
-- AuthContext.js
+- App.js
 - GPS y mapas
 - Stacks del marketplace
 - Dependencias Expo
@@ -27,7 +27,7 @@
 - PymeStack.js
 - Config Expo app.json
 - mockEmpresa.js
-- spacing
+- api.js
 - Pantallas cliente legacy
 - Cambio de enfoque
 - Stack fletero legacy
@@ -38,29 +38,29 @@
 - Sistema de diseño
 - Plan de fases original
 - 4.4 Servicios (`src/services/`)
-- Ciclo del viaje interno
+- Issue #1: desvincular a un conductor cancela viajes en curso
 - Auth y afiliaciones API
 - Endpoints empresas legacy
 - ShadcnInstaller
-- formatPrecio
+- cliente/HistorialScreen.js
 - series.mjs
-- cip/generate.py
+- RootNavigator.js
 - validate_data.py
 - Plan mobile PyME + conductores por fases (0 a 4)
 - scripts/core.py
 - FleteroStack.js
-- Disponibles gerente
+- conductor/ViajesScreen.js
 - Endpoints admin
 - Vehículos API
-- pathlib
-- logo/core.py
+- csv
+- generate-slide.py
 - test_sync_brand_to_tokens.py
 - Mocks web
 - Scripts npm
 - ViajeActivoFleteroScreen.js
 - Seguridad de tokens
 - gray
-- argparse
+- pathlib
 - Security Checklist
 - test_icon_generate.py
 - Tailwind CSS Utility Reference
@@ -75,8 +75,8 @@
 - Canvas Design System
 - design_system.py
 - slide_search_core.py
-- ui/index.js
-- google.js
+- NuevoViajeScreen.js
+- auth.js
 - Form & Input Components
 - Tailwind CSS Responsive Design
 - ClickHouse Analytics Patterns
@@ -90,7 +90,7 @@
 - shadcn/ui Accessibility Patterns
 - architect.md
 - Documentation & Codemap Specialist
-- cip/core.py
+- BM25
 - icon/generate.py
 - Build Error Resolver
 - tdd-guide.md
@@ -137,6 +137,7 @@
 - Icon Design Reference
 - Copywriting Formulas
 - Copywriting Formulas
+- test_cip_generate.py
 - CatalogRefreshTest
 - Banner Design - Multi-Format Creative Banner System
 - Messaging Framework
@@ -163,6 +164,7 @@
 - embed-tokens.cjs
 - validate-tokens.cjs
 - card
+- mobile.mjs
 - planner.md
 - Core Visual Elements
 - inject-brand-context.cjs
@@ -177,8 +179,12 @@
 - button
 - duration
 - Slide Strategies
+- Fleter Mobile — Arquitectura y archivos
 - Plan Command
+- viajesEmpresa.js
 - BM25
+- Pedidos del mobile al backend
+- fontSize
 - code-reviewer.md
 - Checkpoint Command
 - Eval Command
@@ -191,9 +197,11 @@
 - Frontend Design
 - HTML Slide Template
 - Slides
+- viajesConductor.js
 - TestThresholdGate
 - RegisterFleteroScreen.js
-- CatalogSummaryLineEndingsTest
+- HistorialFleteroScreen.js
+- test_validate_tokens.py
 - TestTokenizer
 - Verification Command
 - Brand Guidelines Template
@@ -203,7 +211,7 @@
 - sm
 - TestBm25CoreBehavior
 - TestStackFlagWithDesignSystem
-- TestMetricMath
+- HistorialEmpresaScreen.js
 - padding-y
 - xl
 - none
@@ -229,6 +237,11 @@
 - slides-create.md
 - create.md
 - suggest-compact.sh
+- BM25
+- LocationPickerModal.js
+- socket.js
+- Ventana de inicio (-1 h / +1,5 h) y paso a VENCIDO
+- Iniciar viaje manual (POST /iniciar)
 
 ## God Nodes (most connected - your core abstractions)
 1. `useTheme()` - 170 edges
@@ -249,10 +262,10 @@
   docs/ARQUITECTURA.md → src/screens/conductor/ViajeTerminadoScreen.js
 - `Ciclo del viaje` --references--> `ViajeTerminadoScreen()`  [INFERRED]
   docs/FLUJOS_MOBILE.md → src/screens/conductor/ViajeTerminadoScreen.js
+- `4.4 Servicios (`src/services/`)` --references--> `registroGerente()`  [INFERRED]
+  docs/ARQUITECTURA.md → src/services/auth.js
 - `7. Reglas para escribir código nuevo` --references--> `pesos()`  [INFERRED]
   docs/ARQUITECTURA.md → src/utils/dinero.js
-- `Kit de componentes compartidos (fase 0)` --semantically_similar_to--> `Componentes base src/components/ui`  [INFERRED] [semantically similar]
-  docs/PLAN_MOBILE_PYME.md → CLAUDE.md
 
 ## Import Cycles
 - None detected.
@@ -262,67 +275,67 @@
 - **Propuesta para desvincular sin cancelar viajes en curso** — issues_desvincular_cancela_viajes, issues_409_viaje_en_curso, issues_vista_previa_desvinculacion, issues_series_liberar, issues_estado_interrumpido [EXTRACTED 1.00]
 - **Pruebas de contrato de los pasos 1 a 4 del backend contra staging** — scripts_api_tests_organizaciones, scripts_api_tests_viajes, scripts_api_tests_series, docs_cambio_de_enfoque_pasos_backend, claude_staging_backend [INFERRED 0.95]
 
-## Communities (220 total, 36 thin omitted)
+## Communities (233 total, 36 thin omitted)
 
 ### Community 0 - "Reglas del conductor"
 Cohesion: 0.08
-Nodes (75): 4.7 Utilidades (`src/utils/`), 4.9 Componentes del viaje (`src/components/viaje/`), 9.2 Fase 0 — Base, createStyles(), MIN_DEMORA, MIN_TARDE, paradaActual(), ChipEstado() (+67 more)
+Nodes (84): 4.7 Utilidades (`src/utils/`), 4.9 Componentes del viaje (`src/components/viaje/`), 9.2 Fase 0 — Base, 5. Piezas compartidas, createStyles(), MIN_DEMORA, MIN_TARDE, paradaActual() (+76 more)
 
-### Community 1 - "Alta y onboarding (fase 1)"
-Cohesion: 0.13
-Nodes (59): 4.11 Pantallas de entrada y alta (`src/screens/auth/`), 4.12 Pantallas de empresa sin empresa (`src/screens/onboarding/`), 5.3 Alta de empresa, 9.3 Fase 1 — Entrada y alta, 5. Piezas compartidas, OnboardingEmpresaStack, @react-navigation/native-stack, Boton() (+51 more)
+### Community 1 - "Campo"
+Cohesion: 0.12
+Nodes (35): 4.12 Pantallas de empresa sin empresa (`src/screens/onboarding/`), 9.3 Fase 1 — Entrada y alta, OnboardingEmpresaStack, Rediseño fase 0 + 1: entrada y alta, Campo, createStyles(), CampoCodigo(), createStyles() (+27 more)
 
 ### Community 2 - "Problemas conocidos"
 Cohesion: 0.14
 Nodes (13): services/socket.js socket.io client, Seguimiento en vivo de la PyME (mapa, ETA, alertas), useEventosEnVivo, Backend no procesa viaje:aceptar, DisponiblesScreen, fecha_programada minima desincronizada mobile/backend, Entrar con Google sin configurar, Login web falla (Firebase SDK) (+5 more)
 
-### Community 3 - "AuthContext.js"
-Cohesion: 0.12
-Nodes (26): App(), 5.1 Abrir la app, firebase, DEV_MODE, AuthContext, AuthProvider(), DEV_USERS, SocketContext (+18 more)
+### Community 3 - "App.js"
+Cohesion: 0.24
+Nodes (8): App(), expo, expo-font, @expo-google-fonts/archivo-black, @expo-google-fonts/jetbrains-mono, @expo-google-fonts/josefin-sans, @expo-google-fonts/manrope, ThemeProvider()
 
 ### Community 4 - "GPS y mapas"
-Cohesion: 0.14
-Nodes (26): react-native-maps, MapView, Marker(), Polyline(), PROVIDER_GOOGLE, s, createStyles(), ESTADO_BADGE_LABELS (+18 more)
+Cohesion: 0.15
+Nodes (25): MapView, Marker(), Polyline(), PROVIDER_GOOGLE, s, createStyles(), ESTADO_BADGE_LABELS, estadoIndex() (+17 more)
 
 ### Community 5 - "Stacks del marketplace"
 Cohesion: 0.09
-Nodes (38): @react-navigation/bottom-tabs, useMiEmpresa(), GerenteStack(), Stack, Tab, AsignarConductorScreen(), createStyles(), cumpleCondiciones() (+30 more)
+Nodes (36): @expo/vector-icons, SocketContext, useSocket(), useMiEmpresa(), Stack, Tab, BuscandoFleteroScreen(), createStyles() (+28 more)
 
 ### Community 6 - "Dependencias Expo"
 Cohesion: 0.06
 Nodes (35): dependencies, axios, expo, expo-auth-session, expo-camera, expo-clipboard, expo-crypto, expo-font (+27 more)
 
 ### Community 7 - "Pruebas de viajes"
-Cohesion: 0.13
+Cohesion: 0.14
 Nodes (30): api(), BASE, casi(), conectar(), crearPyme(), crearUsuario(), crearVehiculo(), cuitValido() (+22 more)
 
 ### Community 8 - "PymeStack.js"
-Cohesion: 0.08
-Nodes (69): 4.9 bis Componentes de la empresa (`src/components/empresa/`), @react-navigation/native, TablaParadas(), tituloParada(), createStyles(), nombreConductor(), resumenViaje(), TarjetaViajeEmpresa() (+61 more)
+Cohesion: 0.12
+Nodes (63): 4.8 Kit de UI (`src/components/ui/`), @react-navigation/native, Boton(), HojaInferior(), Avatar(), createStyles(), Fila(), Filtros() (+55 more)
 
 ### Community 9 - "Config Expo app.json"
 Cohesion: 0.07
 Nodes (28): backgroundColor, foregroundImage, adaptiveIcon, config, edgeToEdgeEnabled, googleMaps, googleMapsApiKey, expo (+20 more)
 
 ### Community 10 - "mockEmpresa.js"
-Cohesion: 0.06
-Nodes (45): 4.1 Entrada y configuración, ahoraIso(), buscar(), choferes, conductorDe(), crearSerieDev(), daily, desdeAhora() (+37 more)
+Cohesion: 0.08
+Nodes (36): 4.1 Entrada y configuración, ahoraIso(), buscar(), choferes, conductorDe(), crearSerieDev(), daily, desdeAhora() (+28 more)
 
-### Community 11 - "spacing"
-Cohesion: 0.15
-Nodes (19): createStyles(), OPCIONES, SelectorApariencia(), Stack, createStyles(), FilaPerfil(), PerfilScreen(), SeccionCard() (+11 more)
+### Community 11 - "api.js"
+Cohesion: 0.24
+Nodes (11): CampoTexto(), CONDICIONES, CondTag(), createStyles(), FORM_VACIO, PerfilFleteroScreen(), TIPOS_VEHICULO, VehiculoCard() (+3 more)
 
 ### Community 12 - "Pantallas cliente legacy"
-Cohesion: 0.15
-Nodes (22): @react-native-async-storage/async-storage, autocomplete(), createStyles(), fetchDetails(), guardarEnHistorial(), leerHistorial(), LocationPickerModal(), COND_COLORS() (+14 more)
+Cohesion: 0.18
+Nodes (20): @react-navigation/native-stack, Stack, CalificacionScreen(), createStyles(), COND_COLORS(), COND_LABELS, ConfirmacionViajeScreen(), createStyles() (+12 more)
 
 ### Community 13 - "Cambio de enfoque"
-Cohesion: 0.08
-Nodes (33): Código de invitación XXXXX-XXXXX (un uso, 72 h), Flag MARKETPLACE_HABILITADO=false, Lugares guardados, Marketplace fase 2: horas ociosas de choferes de confianza, Marketplace de fletes original (Uber para camiones), Organización PyME (RESPONSABLE / MIEMBRO), Pivot a herramienta B2B de gestión de viajes para PyMEs, Viajes recurrentes (series a 30 días) (+25 more)
+Cohesion: 0.09
+Nodes (28): Flag CALIFICACIONES_HABILITADAS=false, Flag MARKETPLACE_HABILITADO=false, Lugares guardados, Marketplace fase 2: horas ociosas de choferes de confianza, Marketplace de fletes original (Uber para camiones), Pivot a herramienta B2B de gestión de viajes para PyMEs, Precio único e informativo por viaje, Viajes recurrentes (series a 30 días) (+20 more)
 
 ### Community 14 - "Stack fletero legacy"
-Cohesion: 0.22
-Nodes (14): createStyles(), DisponiblesScreen(), ESTADOS_ACTIVOS, mapViaje(), TAG_COLORS(), TAG_LABELS, TagRequisito(), vehiculoPopupKey() (+6 more)
+Cohesion: 0.23
+Nodes (13): createStyles(), DisponiblesScreen(), ESTADOS_ACTIVOS, mapViaje(), TAG_COLORS(), TAG_LABELS, TagRequisito(), vehiculoPopupKey() (+5 more)
 
 ### Community 15 - "Endpoints viajes legacy"
 Cohesion: 0.10
@@ -333,28 +346,28 @@ Cohesion: 0.12
 Nodes (18): alerta:desvio, alerta:parada, conductor:ubicacion, viaje:aceptar, viaje:asignado, viaje:cancelado_por_admin, viaje:cancelado_sin_conductor, viaje:conductor_asignado (+10 more)
 
 ### Community 17 - "package.json"
-Cohesion: 0.09
-Nodes (21): main, name, private, version, axios, expo, expo-camera, expo-crypto (+13 more)
+Cohesion: 0.12
+Nodes (16): main, name, private, version, axios, expo-camera, expo-crypto, expo-status-bar (+8 more)
 
 ### Community 18 - "Pruebas de identidad"
-Cohesion: 0.25
-Nodes (16): api(), BASE, conGuiones(), crearUsuario(), cuitValido(), dvMalo(), espera(), extra() (+8 more)
+Cohesion: 0.20
+Nodes (19): Código de invitación XXXXX-XXXXX (un uso, 72 h), Organización PyME (RESPONSABLE / MIEMBRO), CodigoInvitacion (FLT-XXXX-XXXX, solo hash), api(), BASE, conGuiones(), crearUsuario(), cuitValido() (+11 more)
 
 ### Community 19 - "Sistema de diseño"
-Cohesion: 0.13
-Nodes (15): Fleter mobile app (React Native + Expo), Rol CLIENTE (PyME), Rol FLETERO (conductor), src/theme.js design tokens, Prototipo fleter-mobile-fase1-auth.html, Color tema claro, Color tema oscuro, Componentes RN (equivalentes BEM) (+7 more)
+Cohesion: 0.10
+Nodes (20): Fleter mobile app (React Native + Expo), Rol CLIENTE (PyME), Rol FLETERO (conductor), src/theme.js design tokens, Ciclo del viaje interno (ASIGNADO a FINALIZADO), Google Routes API (tiempos de manejo y peón), Confirmación de entrega por proximidad GPS (reemplaza QR), Prototipo fleter-mobile-fase1-auth.html (+12 more)
 
 ### Community 20 - "Plan de fases original"
 Cohesion: 0.19
 Nodes (16): Algoritmo estimacion de costo (hora CABA/km Provincia), Fase 0 Fundaciones, Fase 1 Usuarios y Registro, Fase 10 Pulido Seguridad Produccion, Fase 2 Creacion y Publicacion de Viajes, Fase 4 El Viaje en Vivo, Fase 5 Confirmacion y Cierre, Fase 6 Pagos Completos (+8 more)
 
 ### Community 21 - "4.4 Servicios (`src/services/`)"
-Cohesion: 0.06
-Nodes (91): 10. Registro de cambios de este documento, 1. Qué es la app, 2. Mapa de carpetas, 3. Cómo se conectan las piezas, 4.13 Pantallas del conductor (`src/screens/conductor/`), 4.14 Pantallas de la empresa (`src/screens/empresa/`), 4.2 Contextos (`src/context/`), 4.3 Navegación (`src/navigation/`) (+83 more)
+Cohesion: 0.36
+Nodes (20): 4.14 Pantallas de la empresa (`src/screens/empresa/`), 4.4 Servicios (`src/services/`), 6. Endpoints y eventos que usa la app, borrarLugar(), cambiarRol(), crearInvitacion(), desvincularConductor(), editarOrganizacion() (+12 more)
 
-### Community 22 - "Ciclo del viaje interno"
-Cohesion: 0.12
-Nodes (17): Ciclo del viaje interno (ASIGNADO a FINALIZADO), Remito PDF, Google Routes API (tiempos de manejo y peón), Ventana de inicio (-1 h / +1,5 h) y paso a VENCIDO, Bloqueo 409 VIAJE_EN_CURSO al desvincular (forzar=true), Issue #2: avisar antes de que un viaje pase a VENCIDO, Issue #1: desvincular a un conductor cancela viajes en curso, Estado INTERRUMPIDO con remito parcial (+9 more)
+### Community 22 - "Issue #1: desvincular a un conductor cancela viajes en curso"
+Cohesion: 0.15
+Nodes (14): Remito PDF, EmpresaUsuario, requireEmpresaMiembro, Rol EMPRESA (GERENTE como alias legacy), Room socket empresa:{id}, Evento viaje:cancelado, Bloqueo 409 VIAJE_EN_CURSO al desvincular (forzar=true), Issue #1: desvincular a un conductor cancela viajes en curso (+6 more)
 
 ### Community 23 - "Auth y afiliaciones API"
 Cohesion: 0.15
@@ -368,37 +381,37 @@ Nodes (13): DELETE /api/empresas/:id/conductores/:idc, DELETE /api/empresas/:id/
 Cohesion: 0.05
 Nodes (3): main(), ShadcnInstaller, TestShadcnInstaller
 
-### Community 26 - "formatPrecio"
-Cohesion: 0.15
-Nodes (22): agruparPorMes(), claveMes(), createStyles(), EstadoBadge(), estadoInfo(), ESTADOS_TERMINALES, FILTROS, formatFecha() (+14 more)
+### Community 26 - "cliente/HistorialScreen.js"
+Cohesion: 0.29
+Nodes (11): agruparPorMes(), claveMes(), createStyles(), EstadoBadge(), estadoInfo(), ESTADOS_TERMINALES, FILTROS, formatFecha() (+3 more)
 
 ### Community 27 - "series.mjs"
-Cohesion: 0.13
+Cohesion: 0.12
 Nodes (31): api(), aUTC(), BASE, conectado(), conectar(), crearPyme(), crearUsuario(), crearVehiculo() (+23 more)
 
-### Community 28 - "cip/generate.py"
-Cohesion: 0.19
-Nodes (7): build_cip_prompt(), check_logo_required(), generate_cip_set(), generate_with_nano_banana(), load_env(), load_logo_image(), main()
+### Community 28 - "RootNavigator.js"
+Cohesion: 0.17
+Nodes (22): 4.2 Contextos (`src/context/`), 4.3 Navegación (`src/navigation/`), 4.5 Hooks (`src/hooks/`), 4. Archivo por archivo, 5.1 Abrir la app, 8. Código heredado del marketplace, 9.1 Principios y reglas fijas del plan, 6. Puntos para discutir en el review (+14 more)
 
 ### Community 29 - "validate_data.py"
 Cohesion: 0.06
-Nodes (43): read_rows(), TestAccessibilityGuidance, TestChartsTypographyAndIcons, TestCurrentReactGuidance, TestSemanticColors, TestGeneratedCatalogContract, _catalog_date(), _check_app_interface_contract() (+35 more)
+Nodes (44): read_rows(), TestAccessibilityGuidance, TestChartsTypographyAndIcons, TestCurrentReactGuidance, TestSemanticColors, TestGeneratedCatalogContract, _catalog_date(), _check_app_interface_contract() (+36 more)
 
 ### Community 30 - "Plan mobile PyME + conductores por fases (0 a 4)"
-Cohesion: 0.13
-Nodes (15): Contrato vigente: API.md del backend, branch develop, Backend de staging (Railway), Flag CALIFICACIONES_HABILITADAS=false, Backend pasos 1 a 4 probados en staging, Precio único e informativo por viaje, calcularEstimacion, Kit de componentes compartidos (fase 0), Plan mobile PyME + conductores por fases (0 a 4) (+7 more)
+Cohesion: 0.22
+Nodes (9): Contrato vigente: API.md del backend, branch develop, Backend de staging (Railway), Backend pasos 1 a 4 probados en staging, Issue #3: el conductor no recibe ETA, desvíos ni ventana de inicio, Campos ventana_inicio_desde / ventana_inicio_hasta, Prototipo fleter-mobile-fase2-conductor.html, Rediseño fase 2: conductor, NODE_USE_ENV_PROXY=1 detrás de un proxy (+1 more)
 
 ### Community 31 - "scripts/core.py"
 Cohesion: 0.06
 Nodes (31): BM25, _contains_phrase(), detect_domain(), _domain_keywords(), _exact_match_diagnostic(), _exact_row_identity(), _exact_stack_identifier(), _file_signature() (+23 more)
 
 ### Community 32 - "FleteroStack.js"
-Cohesion: 0.17
-Nodes (11): ClienteStack, FleteroStack, RootNavigator (role from JWT), PymeStack (Inicio, Viajes, Nuevo, Conductores, Más), FleteroStack(), Stack, Tab, AsignadosScreen() (+3 more)
+Cohesion: 0.13
+Nodes (18): ClienteStack, FleteroStack, RootNavigator (role from JWT), PymeStack (Inicio, Viajes, Nuevo, Conductores, Más), @react-navigation/bottom-tabs, Stack, Tab, AsignadosScreen() (+10 more)
 
-### Community 33 - "Disponibles gerente"
-Cohesion: 0.43
-Nodes (7): createStyles(), DisponiblesGerenteScreen(), mapViaje(), TAG_COLORS(), TAG_LABELS, TagRequisito(), ViajeCard()
+### Community 33 - "conductor/ViajesScreen.js"
+Cohesion: 0.13
+Nodes (20): 9.6 Fase 4 — Cierre (en curso: hecho lo que no depende del backend), ConductorStack (Viajes / Historial / Perfil), ICONOS, Pestanas(), Stack, Tab, createStyles(), FILTROS (+12 more)
 
 ### Community 34 - "Endpoints admin"
 Cohesion: 0.29
@@ -408,13 +421,13 @@ Nodes (7): Admin endpoints, GET /api/admin/estadisticas, GET /api/admin/usuarios
 Cohesion: 0.29
 Nodes (7): Conductores vehiculos endpoints, DELETE /api/conductores/mis-vehiculos/:id, DELETE /api/conductores/mis-vehiculos/:id/condiciones/:condicion, GET /api/conductores/mis-vehiculos, POST /api/conductores/mis-vehiculos, POST /api/conductores/mis-vehiculos/:id/condiciones/:condicion, PUT /api/conductores/mis-vehiculos/:id
 
-### Community 36 - "pathlib"
+### Community 36 - "csv"
 Cohesion: 0.05
-Nodes (11): GeminiModelIdTests, _load_module(), main(), _run(), test_flags_hardcoded_hex_sharing_line_with_token(), test_token_only_line_reports_no_violation(), TestDiagnosticsContracts, read_rows() (+3 more)
+Nodes (16): detect_domain(), get_cip_brief(), _load_csv(), search(), search_all(), _search_csv(), detect_domain(), _load_csv() (+8 more)
 
-### Community 37 - "logo/core.py"
-Cohesion: 0.21
-Nodes (5): detect_domain(), _load_csv(), search(), search_all(), _search_csv()
+### Community 37 - "generate-slide.py"
+Cohesion: 0.13
+Nodes (10): _e(), generate_chart_slide(), generate_cta_slide(), generate_deck(), generate_metrics_slide(), generate_problem_slide(), generate_solution_slide(), generate_testimonial_slide() (+2 more)
 
 ### Community 38 - "test_sync_brand_to_tokens.py"
 Cohesion: 0.09
@@ -429,24 +442,24 @@ Cohesion: 0.40
 Nodes (5): scripts, android, ios, start, web
 
 ### Community 41 - "ViajeActivoFleteroScreen.js"
-Cohesion: 0.16
-Nodes (20): GPS background (componente mas critico), 4.6 Tareas (`src/tasks/`), Cierre forzado por ADMIN, ViajeEvento (auditoría), Iniciar viaje manual (POST /iniciar), ViajeActivoFleteroScreen, expo-location, expo-task-manager (+12 more)
+Cohesion: 0.22
+Nodes (16): GPS background (componente mas critico), 4.6 Tareas (`src/tasks/`), ViajeActivoFleteroScreen, expo-location, POS_DEV, useGpsViaje(), createStyles(), estadoIndex() (+8 more)
 
 ### Community 43 - "gray"
 Cohesion: 0.05
 Nodes (53): $type, $value, $type, $value, $type, $value, $type, $value (+45 more)
 
-### Community 45 - "argparse"
-Cohesion: 0.06
-Nodes (20): generate_html(), get_deliverable_info(), get_image_base64(), main(), format_brief(), format_results(), main(), format_output() (+12 more)
+### Community 45 - "pathlib"
+Cohesion: 0.05
+Nodes (18): build_cip_prompt(), check_logo_required(), generate_cip_set(), generate_with_nano_banana(), load_env(), load_logo_image(), main(), generate_html() (+10 more)
 
 ### Community 46 - "Security Checklist"
 Cohesion: 0.04
 Nodes (48): 10. Dependency Security, 1. Secrets Management, 2. Input Validation, 3. SQL Injection Prevention, 4. Authentication & Authorization, 5. XSS Prevention, 6. CSRF Protection, 7. Rate Limiting (+40 more)
 
 ### Community 47 - "test_icon_generate.py"
-Cohesion: 0.07
-Nodes (28): cip(), _Config, _image_response(), load_cip(), _run_main(), test_main_exits_0_when_part_of_a_set_is_generated(), test_main_exits_1_when_every_deliverable_in_a_set_fails(), test_main_exits_1_when_single_deliverable_fails() (+20 more)
+Cohesion: 0.13
+Nodes (16): _Config, gen(), _response(), _run_main(), test_generate_batch_handles_empty_response(), test_generate_batch_reports_max_tokens(), test_generate_batch_warns_when_truncated_after_some_icons(), test_generate_icon_handles_none_text() (+8 more)
 
 ### Community 48 - "Tailwind CSS Utility Reference"
 Cohesion: 0.05
@@ -465,8 +478,8 @@ Cohesion: 0.07
 Nodes (6): AtlasGenerationTests, ExitStatusTests, _fake_genai(), GeminiImageTypeTests, _image_response(), MuapiGenerationTests
 
 ### Community 52 - "DesignSystemGenerator"
-Cohesion: 0.08
-Nodes (6): DesignSystemGenerator, _resolve_dial(), TestReasoningMatch, read_rows(), TestLandingAndStackContract, TestReasoningContract
+Cohesion: 0.06
+Nodes (13): DesignSystemGenerator, _resolve_dial(), apply_decision_rules(), _object_without_duplicates(), parse_decision_rules(), _validate_action(), TestReasoningMatch, read_rows() (+5 more)
 
 ### Community 53 - "Brand Guidelines v1.0"
 Cohesion: 0.05
@@ -490,19 +503,19 @@ Nodes (35): 1. Visual Communication First, 2. Minimal Text Integration, 3. Exper
 
 ### Community 58 - "design_system.py"
 Cohesion: 0.04
-Nodes (26): ansi_ljust(), _detect_page_type(), format_ascii_box(), add_wrapped(), wrap_text(), format_markdown(), format_page_override_md(), generate_design_system() (+18 more)
+Nodes (26): GeminiModelIdTests, _load_module(), ansi_ljust(), _button_outline_text_color(), _detect_page_type(), format_ascii_box(), add_wrapped(), wrap_text() (+18 more)
 
 ### Community 59 - "slide_search_core.py"
-Cohesion: 0.08
-Nodes (17): format_context(), format_result(), main(), BM25, calculate_pattern_break(), detect_domain(), get_background_config(), get_color_for_emotion() (+9 more)
-
-### Community 60 - "ui/index.js"
 Cohesion: 0.11
-Nodes (40): 4.8 Kit de UI (`src/components/ui/`), aptitud(), createStyles(), HojaConductor(), ListaConductores(), resumenConductor(), titulos(), createStyles() (+32 more)
+Nodes (16): format_context(), format_result(), main(), calculate_pattern_break(), detect_domain(), get_background_config(), get_color_for_emotion(), get_layout_for_goal() (+8 more)
 
-### Community 61 - "google.js"
-Cohesion: 0.32
-Nodes (7): 5.2 Login, expo-auth-session, expo-web-browser, loginGoogle(), GOOGLE_CONFIGURADO, IDS, useGoogleLogin()
+### Community 60 - "NuevoViajeScreen.js"
+Cohesion: 0.11
+Nodes (41): 4.9 bis Componentes de la empresa (`src/components/empresa/`), aptitud(), createStyles(), HojaConductor(), ListaConductores(), resumenConductor(), nombreConductor(), textoParadas() (+33 more)
+
+### Community 61 - "auth.js"
+Cohesion: 0.10
+Nodes (28): 4.11 Pantallas de entrada y alta (`src/screens/auth/`), 5.2 Login, 5.3 Alta de empresa, 5.4 Alta de conductor, 5.5 Viaje del conductor, 5.6 Tiempo real, 5.8 Seguir y resolver un viaje, 5.9 Alertas (+20 more)
 
 ### Community 62 - "Form & Input Components"
 Cohesion: 0.06
@@ -533,8 +546,8 @@ Cohesion: 0.07
 Nodes (28): 10. Logging Sensitive Data (MEDIUM), 1. Hardcoded Secrets (CRITICAL), 1. Initial Scan Phase, 2. OWASP Top 10 Analysis, 2. SQL Injection (CRITICAL), 3. Command Injection (CRITICAL), 3. Example Project-Specific Security Checks, 4. Cross-Site Scripting (XSS) (HIGH) (+20 more)
 
 ### Community 69 - "useTheme"
-Cohesion: 0.08
-Nodes (55): Componentes base src/components/ui, Rediseño fase 0 + 1: entrada y alta, expo-clipboard, @expo/vector-icons, react, react-native, react-native-safe-area-context, react-native-svg (+47 more)
+Cohesion: 0.07
+Nodes (66): Componentes base src/components/ui, expo-clipboard, react, react-native, react-native-safe-area-context, react-native-svg, createStyles(), HojaParada() (+58 more)
 
 ### Community 70 - "Logo Usage Rules"
 Cohesion: 0.07
@@ -556,12 +569,8 @@ Nodes (27): 1. Current State Analysis, 1. Modularity & Separation of Concerns, 2
 Cohesion: 0.07
 Nodes (27): 1. Extract Documentation from Code, 1. Repository Structure Analysis, 2. Module Analysis, 2. Update Documentation Files, 3. Documentation Validation, 3. Generate Codemaps, 4. Codemap Format, Analysis Commands (+19 more)
 
-### Community 75 - "cip/core.py"
-Cohesion: 0.12
-Nodes (7): BM25, detect_domain(), get_cip_brief(), _load_csv(), search(), search_all(), _search_csv()
-
 ### Community 76 - "icon/generate.py"
-Cohesion: 0.13
+Cohesion: 0.12
 Nodes (12): apply_color(), apply_viewbox_size(), extract_svgs(), _finish_reason(), generate_batch(), generate_icon(), generate_sizes(), load_env() (+4 more)
 
 ### Community 77 - "Build Error Resolver"
@@ -629,8 +638,8 @@ Cohesion: 0.09
 Nodes (22): @apply Directive, Best Practices, Color Customization, Complete Tailwind Config, Configuration Examples, Content Configuration, Custom Color Palette, Custom Font Sizes (+14 more)
 
 ### Community 93 - "conductor/PerfilScreen.js"
-Cohesion: 0.14
-Nodes (23): 4.10 Componentes sueltos (`src/components/`), ConductorStack (Viajes / Historial / Perfil), CamposVehiculo(), s, useFormVehiculo(), ICONOS, Pestanas(), Stack (+15 more)
+Cohesion: 0.21
+Nodes (16): 4.10 Componentes sueltos (`src/components/`), CamposVehiculo(), s, useFormVehiculo(), createStyles(), Opcion(), Chip(), iniciales() (+8 more)
 
 ### Community 94 - "spacing"
 Cohesion: 0.09
@@ -689,8 +698,8 @@ Cohesion: 0.11
 Nodes (17): Accent, Applying Semantic Tokens, Background & Foreground, Border & Ring, Color Semantics, Dark Mode Overrides, Destructive, Interactive States (+9 more)
 
 ### Community 110 - "test_design_system_mode.py"
-Cohesion: 0.05
-Nodes (17): _button_outline_text_color(), _contrast_ratio(), _derive_dark_palette(), _filter_anti_patterns_for_mode(), format_master_md(), _palette_is_dark(), _query_wants_dark(), _relative_luminance() (+9 more)
+Cohesion: 0.07
+Nodes (14): _contrast_ratio(), _derive_dark_palette(), _filter_anti_patterns_for_mode(), _palette_is_dark(), _query_wants_dark(), _relative_luminance(), _resolve_color_mode(), _select_palette_for_mode() (+6 more)
 
 ### Community 111 - "UI/UX Pro Max - Design Intelligence"
 Cohesion: 0.11
@@ -735,6 +744,10 @@ Nodes (14): AIDA (Attention-Interest-Desire-Action), Before-After-Bridge, Contra
 ### Community 122 - "Copywriting Formulas"
 Cohesion: 0.13
 Nodes (14): AIDA (Attention-Interest-Desire-Action), Before-After-Bridge, Contrast Patterns, Copywriting Formulas, Core Formulas, Cost of Inaction, FAB (Features-Advantages-Benefits), Formula-to-Slide Mapping (+6 more)
+
+### Community 123 - "test_cip_generate.py"
+Cohesion: 0.15
+Nodes (12): cip(), _Config, _image_response(), load_cip(), _run_main(), test_main_exits_0_when_part_of_a_set_is_generated(), test_main_exits_1_when_every_deliverable_in_a_set_fails(), test_main_exits_1_when_single_deliverable_fails() (+4 more)
 
 ### Community 125 - "Banner Design - Multi-Format Creative Banner System"
 Cohesion: 0.14
@@ -820,6 +833,10 @@ Nodes (11): extensions, formatReport(), fs, getFiles(), main(), parseArgs(), pat
 Cohesion: 0.20
 Nodes (12): $type, $value, bg, bg, padding, shadow, card, bg (+4 more)
 
+### Community 150 - "mobile.mjs"
+Cohesion: 0.19
+Nodes (18): api(), BASE, conectar(), crearUsuario(), cuitValido(), DESTINO, dormir(), enMin() (+10 more)
+
 ### Community 151 - "planner.md"
 Cohesion: 0.18
 Nodes (10): 1. Requirements Analysis, 2. Architecture Review, 3. Step Breakdown, 4. Implementation Order, Best Practices, Plan Format, Planning Process, Red Flags to Check (+2 more)
@@ -868,9 +885,25 @@ Nodes (10): fast, normal, slow, $type, $value, $type, $value, duration (+2 more)
 Cohesion: 0.20
 Nodes (9): Common Structures, Duarte Sparkline Pattern, Matching Strategy to Context, Product Demo (6 slides), Sales Pitch (9 slides), Search Commands, Slide Strategies, Strategy Selection (+1 more)
 
+### Community 168 - "Fleter Mobile — Arquitectura y archivos"
+Cohesion: 0.11
+Nodes (17): 10. Registro de cambios de este documento, 1. Qué es la app, 2. Mapa de carpetas, 3. Cómo se conectan las piezas, 7. Reglas para escribir código nuevo, 9.4 Fase 2 — Conductor (pestañas Viajes, Historial, Perfil), 9. Cómo se cumple el plan, fase por fase, Fleter Mobile — Arquitectura y archivos (+9 more)
+
 ### Community 169 - "Plan Command"
 Cohesion: 0.22
 Nodes (8): Example Usage, How It Works, Important Notes, Integration with Other Commands, Plan Command, Related Agents, What This Command Does, When to Use
+
+### Community 170 - "viajesEmpresa.js"
+Cohesion: 0.25
+Nodes (17): 5.7 Nuevo viaje de la empresa, 9.5 Fase 3 — Empresa, mock, asignarRechazadoA(), base(), cancelarSerie(), cancelarViaje(), crearSerie() (+9 more)
+
+### Community 172 - "Pedidos del mobile al backend"
+Cohesion: 0.17
+Nodes (11): 1. Notificaciones push (FCM) — alta, 2. Desvincular sin cancelar un viaje en curso — alta, 3. Historial de alertas — media, 4. Remito con foto — media, 5. ETA, desvíos y ventana de inicio para el conductor — media, 6. No mandarle el precio al conductor — media, 7. Alta con Google — baja, 8. Exponer la configuración que el mobile muestra — baja (+3 more)
+
+### Community 173 - "fontSize"
+Cohesion: 0.21
+Nodes (8): MapView, PROVIDER_GOOGLE, createStyles(), FilaPerfil(), PerfilScreen(), SeccionCard(), USUARIO_MOCK, fontSize
 
 ### Community 174 - "code-reviewer.md"
 Cohesion: 0.25
@@ -920,9 +953,21 @@ Nodes (6): Animation Classes, Background Images, Base Structure, Chart.js Integr
 Cohesion: 0.29
 Nodes (6): References (Knowledge Base), Routing, Script Paths, Slides, Subcommands, When to Use
 
+### Community 188 - "viajesConductor.js"
+Cohesion: 0.31
+Nodes (10): 4.13 Pantallas del conductor (`src/screens/conductor/`), confirmarLlegada(), confirmarViaje(), desvincularme(), iniciarViaje(), misOrganizaciones(), misVehiculos(), mock (+2 more)
+
 ### Community 190 - "RegisterFleteroScreen.js"
 Cohesion: 0.48
 Nodes (6): @react-native-community/datetimepicker, createFieldStyles(), createStyles(), Field(), mapApiError(), RegisterFleteroScreen()
+
+### Community 191 - "HistorialFleteroScreen.js"
+Cohesion: 0.31
+Nodes (10): agruparPorMes(), createStyles(), EstadoBadge(), estadoInfo(), ESTADOS_EN_CURSO, FILTROS, formatFecha(), HistorialFleteroScreen() (+2 more)
+
+### Community 192 - "test_validate_tokens.py"
+Cohesion: 0.27
+Nodes (3): _run(), test_flags_hardcoded_hex_sharing_line_with_token(), test_token_only_line_reports_no_violation()
 
 ### Community 194 - "Verification Command"
 Cohesion: 0.40
@@ -947,6 +992,10 @@ Nodes (5): lg, $type, $value, lg, lg
 ### Community 199 - "sm"
 Cohesion: 0.60
 Nodes (5): sm, sm, sm, $type, $value
+
+### Community 202 - "HistorialEmpresaScreen.js"
+Cohesion: 0.33
+Nodes (9): agruparPorMes(), createStyles(), EstadoBadge(), estadoInfo(), ESTADOS_EN_CURSO, FILTROS, formatFecha(), HistorialEmpresaScreen() (+1 more)
 
 ### Community 203 - "padding-y"
 Cohesion: 0.67
@@ -1000,25 +1049,41 @@ Nodes (3): ring, $type, $value
 Cohesion: 0.67
 Nodes (3): secondary-foreground, $type, $value
 
+### Community 229 - "LocationPickerModal.js"
+Cohesion: 0.46
+Nodes (7): @react-native-async-storage/async-storage, autocomplete(), createStyles(), fetchDetails(), guardarEnHistorial(), leerHistorial(), LocationPickerModal()
+
+### Community 230 - "socket.js"
+Cohesion: 0.39
+Nodes (6): socket.io-client, SocketProvider(), conectarSocket(), desconectarSocket(), reintentar(), tokenBearer()
+
+### Community 231 - "Ventana de inicio (-1 h / +1,5 h) y paso a VENCIDO"
+Cohesion: 0.33
+Nodes (6): Ventana de inicio (-1 h / +1,5 h) y paso a VENCIDO, Issue #2: avisar antes de que un viaje pase a VENCIDO, Push notifications (FCM) sin integrar, Evento viaje:por_vencer, Límite de canjes: 5 cada 15 min por IP (429), Modos de prueba principal / extra / vencido
+
+### Community 232 - "Iniciar viaje manual (POST /iniciar)"
+Cohesion: 0.50
+Nodes (3): Cierre forzado por ADMIN, ViajeEvento (auditoría), Iniciar viaje manual (POST /iniciar)
+
 ## Knowledge Gaps
 - **95 isolated node(s):** `expo-camera`, `expo-crypto`, `expo-status-bar`, `react-dom`, `react-native-google-places-autocomplete` (+90 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 2295 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 2311 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **36 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `TailwindConfigGenerator` connect `TailwindConfigGenerator` to `TestTailwindConfigGenerator`, `pathlib`, `.write_config`, `.add_colors`, `.test_node_check_parses_generated_config`, `.generate_config_string`, `.validate_config`, `.add_plugins`, `main`, `._base_config`?**
+- **Why does `TailwindConfigGenerator` connect `TailwindConfigGenerator` to `TestTailwindConfigGenerator`, `.write_config`, `.add_colors`, `.test_node_check_parses_generated_config`, `pathlib`, `.generate_config_string`, `.validate_config`, `.add_plugins`, `main`, `._base_config`?**
   _High betweenness centrality (0.012) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `useTheme()` (e.g. with `Toda pantalla en modo claro y oscuro` and `4.2 Contextos (`src/context/`)`) actually correct?**
   _`useTheme()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `expo-camera`, `expo-crypto`, `expo-status-bar` to the rest of the system?**
   _95 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Reglas del conductor` be split into smaller, more focused modules?**
-  _Cohesion score 0.08401430030643514 - nodes in this community are weakly interconnected._
-- **Why does `react` connect `useTheme` to `Reglas del conductor`, `Alta y onboarding (fase 1)`, `AuthContext.js`, `GPS y mapas`, `Stacks del marketplace`, `PymeStack.js`, `spacing`, `Pantallas cliente legacy`, `Stack fletero legacy`, `package.json`, `useTheme`, `formatPrecio`, `FleteroStack.js`, `Disponibles gerente`, `ViajeActivoFleteroScreen.js`, `ui/index.js`, `google.js`, `RegisterFleteroScreen.js`, `conductor/PerfilScreen.js`?**
+  _Cohesion score 0.07812822098536384 - nodes in this community are weakly interconnected._
+- **Why does `useTheme()` connect `useTheme` to `Reglas del conductor`, `Campo`, `GPS y mapas`, `Stacks del marketplace`, `PymeStack.js`, `api.js`, `Pantallas cliente legacy`, `Stack fletero legacy`, `useTheme`, `cliente/HistorialScreen.js`, `RootNavigator.js`, `FleteroStack.js`, `conductor/ViajesScreen.js`, `ViajeActivoFleteroScreen.js`, `fontSize`, `NuevoViajeScreen.js`, `RegisterFleteroScreen.js`, `HistorialFleteroScreen.js`, `HistorialEmpresaScreen.js`, `conductor/PerfilScreen.js`, `LocationPickerModal.js`?**
   _High betweenness centrality (0.011) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `useThemedStyles()` (e.g. with `Toda pantalla en modo claro y oscuro` and `9.1 Principios y reglas fijas del plan`) actually correct?**
   _`useThemedStyles()` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **Should `Alta y onboarding (fase 1)` be split into smaller, more focused modules?**
-  _Cohesion score 0.1261668172237278 - nodes in this community are weakly interconnected._
+- **Should `Campo` be split into smaller, more focused modules?**
+  _Cohesion score 0.1196808510638298 - nodes in this community are weakly interconnected._

@@ -92,7 +92,7 @@ const mock = (() => {
   });
   const viaje = (id, org, fecha, estado, paradas, extra = {}) => ({
     id_viaje: id, estado, fecha_programada: fecha, organizacion: org,
-    creador: { nombre: 'Ana', apellido: 'Ferreyra' }, vehiculo: null, condiciones_requeridas: [],
+    creador: { nombre: 'Ana', apellido: 'Ferreyra' }, vehiculo: null, motivo: null, descripcion: null,
     paradas, estimado: null, real: null, vencido: false, remito_url: null, historial_estados: [], ...extra,
   });
 
@@ -102,11 +102,11 @@ const mock = (() => {
       parada(1, 1, 'Depósito Pilar, Ruta 8 km 52, Pilar', -34.4587, -58.9142, v2420Fecha, 15),
       parada(2, 2, 'Av. Mitre 1450, Vicente López', -34.5266, -58.4728, masMin(v2420Fecha, 45)),
       parada(3, 3, 'Av. Corrientes 3200, Almagro, CABA', -34.6037, -58.4110, masMin(v2420Fecha, 80)),
-    ], { condiciones_requeridas: ['FRAGIL'], estimado: { manejo_horas: 1.08, peon_horas: 0.5, total_horas: 1.33, distancia_km: 48 } }),
+    ], { motivo: 'Reparto zona norte', descripcion: 'Cajas frágiles: no apilar más de tres. En Vicente López preguntar por Raúl.', estimado: { manejo_horas: 1.08, peon_horas: 0.5, total_horas: 1.33, distancia_km: 48 } }),
     viaje(2421, FS, en(0, 14, 30), 'CONFIRMADO', [
       parada(4, 1, 'Mercado Central, Autopista Ricchieri, Tapiales', -34.6969, -58.5085, en(0, 14, 30)),
       parada(5, 2, 'Av. Rivadavia 6800, Flores, CABA', -34.6294, -58.4633, en(0, 15, 15)),
-    ], { vehiculo: daily, condiciones_requeridas: ['REFRIGERADO'], estimado: { manejo_horas: 0.5, peon_horas: 0.25, total_horas: 0.75, distancia_km: 21 } }),
+    ], { vehiculo: daily, motivo: 'Reposición de lácteos, Flores', descripcion: 'Mercadería refrigerada: el local la recibe hasta las 11.', estimado: { manejo_horas: 0.5, peon_horas: 0.25, total_horas: 0.75, distancia_km: 21 } }),
     viaje(2425, DN, en(2, 7, 0), 'CONFIRMADO', [
       parada(6, 1, 'Depósito Pilar, Ruta 8 km 52, Pilar', -34.4587, -58.9142, en(2, 7, 0)),
       parada(7, 2, 'Av. Maipú 2100, Olivos', -34.5100, -58.4890, en(2, 7, 50)),
@@ -117,11 +117,11 @@ const mock = (() => {
       parada(10, 1, 'Depósito Pilar, Ruta 8 km 52, Pilar', -34.4587, -58.9142, en(-1, 9, 0), 15, { estado: 'ENTREGADO' }),
       parada(11, 2, 'Av. Mitre 1450, Vicente López', -34.5266, -58.4728, en(-1, 9, 45), 20, { estado: 'ENTREGADO' }),
       parada(12, 3, 'Av. Corrientes 3200, Almagro, CABA', -34.6037, -58.4110, en(-1, 10, 20), 20, { estado: 'ENTREGADO' }),
-    ], { vehiculo: transit, condiciones_requeridas: ['FRAGIL'], estimado: { manejo_horas: 1.08, peon_horas: 0.5, total_horas: 1.58, distancia_km: 48 }, real: { manejo_horas: 1.2, peon_horas: 0.63, total_horas: 1.83, distancia_km: 51 }, remito_url: 'https://example.com/remito-2416.pdf' }),
+    ], { vehiculo: transit, motivo: 'Reparto zona norte', descripcion: 'Cajas frágiles: no apilar más de tres.', estimado: { manejo_horas: 1.08, peon_horas: 0.5, total_horas: 1.58, distancia_km: 48 }, real: { manejo_horas: 1.2, peon_horas: 0.63, total_horas: 1.83, distancia_km: 51 }, remito_url: 'https://example.com/remito-2416.pdf' }),
     viaje(2409, FS, en(-4, 6, 30), 'VENCIDO', [
       parada(13, 1, 'Mercado Central, Autopista Ricchieri, Tapiales', -34.6969, -58.5085, en(-4, 6, 30)),
       parada(14, 2, 'Av. Rivadavia 6800, Flores, CABA', -34.6294, -58.4633, en(-4, 7, 15)),
-    ], { condiciones_requeridas: ['REFRIGERADO'], vencido: true, estimado: { manejo_horas: 0.5, peon_horas: 0.25, total_horas: 0.75, distancia_km: 21 } }),
+    ], { vencido: true, estimado: { manejo_horas: 0.5, peon_horas: 0.25, total_horas: 0.75, distancia_km: 21 } }),
   ];
 
   const GRUPOS = {

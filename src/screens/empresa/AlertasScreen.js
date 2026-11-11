@@ -129,7 +129,6 @@ export default function AlertasScreen({ navigation }) {
           ? 'Se crea un viaje nuevo con el mismo recorrido y horario. El conductor lo tiene que confirmar.'
           : `${alerta?.viaje.conductor?.nombre ?? 'El conductor'} deja de tenerlo y el nuevo lo tiene que confirmar.`}
         conductores={conductores}
-        condiciones={alerta?.viaje.condiciones_requeridas}
         excluir={alerta?.viaje.conductor?.id_conductor}
         cargando={accion === 'asignar'}
         onElegir={asignar}

@@ -3,7 +3,7 @@
 > Propuesta aprobada el 2026-10-19. Contrato: `API.md` del backend, branch `develop` (staging).
 > Diseño: `UXUI.md` + `src/theme.js`.
 
-## Estado (29 oct 2026)
+## Estado (11 nov 2026)
 
 | Fase | Estado | Dónde se ve |
 |---|---|---|
@@ -11,7 +11,7 @@
 | 1 — Entrada y alta | ✅ | `src/screens/auth/`, `src/screens/onboarding/` (commit `7df9b87`) |
 | 2 — Conductor | ✅ | `ConductorStack`, `src/screens/conductor/` (commit `9d3c39b`) |
 | 3 — Empresa | ✅ | `PymeStack`, `EmpresaContext`, `src/screens/empresa/` (16 pantallas) |
-| 4 — Cierre | ⏳ depende del backend y de decisiones del dueño | `ISSUES.md` #1 a #4 |
+| 4 — Cierre | 🔧 hecho lo que no depende del backend; el resto espera al backend y a decisiones del dueño | `docs/PEDIDOS_BACKEND.md`, `ISSUES.md` #1 a #4 |
 
 **La explicación de cómo se cumple cada ítem, archivo por archivo, está en `docs/ARQUITECTURA.md` §9.**
 Cada fase se diseñó primero como prototipo HTML (`prototype/fleter-mobile-fase{1,2,3}-*.html`), se aprobó y se
@@ -85,6 +85,8 @@ Desvíos respecto de este plan, todos acordados o explicados:
 | 3.10 | Perfil + datos de la PyME + apariencia | `PUT /organizaciones/:id`, `PUT /auth/perfil` |
 
 ## Fase 4 — Cierre
+> 11 nov 2026: hecho lo que no depende del backend (al día con `develop`, prueba contra staging 41/41,
+> accesibilidad del kit). Lo que espera al backend está en `docs/PEDIDOS_BACKEND.md`.
 - Push notifications (cuando el backend integre FCM; ver `ISSUES.md` #2).
 - Remito con foto (cuando el backend lo defina).
 - Desvincular con vista previa / bloqueo en curso (según cómo se resuelva `ISSUES.md` #1).

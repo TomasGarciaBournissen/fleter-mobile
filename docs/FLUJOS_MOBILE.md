@@ -171,10 +171,10 @@ Riesgos reales, de mayor a menor:
 5. **Ventana de inicio fija** en el mobile (−60 / +90 min, [`ventana.js`](../src/utils/ventana.js)). Es solo para
    mostrar; decide el backend. Pedido abierto: ISSUES.md #3.
 6. **La empresa ya usa `PymeStack`** (fase 3); el `ClienteStack` del marketplace quedó sin uso.
-7. **Filtrado de vehículos aptos en el mobile** ([`DetalleViajeScreen.js:58`](../src/screens/conductor/DetalleViajeScreen.js#L58)):
-   compara condiciones para ofrecer solo los que sirven. El backend igual valida al confirmar.
-8. **Sin tests automáticos**. Lo probado: recorridos completos en Expo web con datos de ejemplo, en los dos
-   temas. Falta contra el backend de staging y en un teléfono.
+7. **Sin condiciones en los viajes de la empresa** (pedido del 20-10-2026): el viaje pide motivo e indicaciones,
+   y el conductor confirma con cualquier vehículo propio.
+8. **Sin tests unitarios**. Lo probado: recorridos completos en Expo web con datos de ejemplo, en los dos
+   temas, y `scripts/api-tests/mobile.mjs` contra staging con los mismos pedidos que la app (41/41). Falta un teléfono.
 9. **Código del marketplace archivado** (`screens/cliente`, `fletero`, `gerente`, `auth/_marketplace`): no está en
    uso (desde la fase 3 tampoco `ClienteStack`); borrarlo es decisión del dueño.
 

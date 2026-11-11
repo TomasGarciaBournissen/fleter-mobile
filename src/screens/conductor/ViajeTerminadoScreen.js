@@ -32,6 +32,8 @@ export default function ViajeTerminadoScreen({ navigation, route }) {
     );
   }
 
+  // Quién lo cerró (Tarea 5): el conductor con «Salir», la empresa o el cierre automático
+  const cierre = v.cierre?.cerrado_por ?? v.cerrado_por;
   const e = v.estimado ?? {};
   const r = v.real ?? {};
   const filas = [
@@ -60,6 +62,12 @@ export default function ViajeTerminadoScreen({ navigation, route }) {
       <ChipEstado estado={v.estado} />
       <Titulo style={{ marginTop: 10 }}>Viaje terminado</Titulo>
       <Bajada>VJ-{v.id_viaje} para {v.organizacion?.nombre}.{v.remito_url ? ' Ya tienen el remito.' : ''}</Bajada>
+      {cierre === 'ORGANIZACION' ? <Nota>Lo cerró {v.organizacion?.nombre ?? 'la empresa'} porque no tocaste «Salir» en la última parada.</Nota> : null}
+      {cierre === 'AUTOMATICO' ? (
+        <Nota tipo={v.cierre?.incompleto ? 'aviso' : undefined}>
+          Se cerró solo a fin del día{v.cierre?.incompleto ? ', antes de que llegaras a todas las paradas' : ''}.
+        </Nota>
+      ) : null}
       <View style={s.tabla}>
         <View style={[s.fila, s.cabecera]}>
           <Text style={[s.celda, s.label]} />

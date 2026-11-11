@@ -5,10 +5,14 @@ import { fonts } from '../../theme';
 import { CONDICIONES } from '../../services/vehiculos';
 import { duracionHoras, duracionMin, km } from '../../utils/fechas';
 
+// Condiciones de un vehículo (dato del vehículo; los viajes de PyME ya no las piden)
 export function textoCondiciones(lista = []) {
   if (!lista.length) return 'Sin condiciones';
   return lista.map((id) => CONDICIONES.find((c) => c.id === id)?.titulo ?? id).join(', ');
 }
+
+// Para qué es el viaje (obligatorio desde el 20-10-2026; los viajes anteriores no lo tienen)
+export const textoMotivo = (v) => v?.motivo?.trim() || 'Sin motivo';
 
 export const distanciaDe = (v) => v?.estimado?.distancia_km ?? v?.distancia_estimada_km;
 export const tiempoDe = (v) => (v?.estimado?.total_horas != null ? duracionHoras(v.estimado.total_horas) : duracionMin(v?.duracion_estimada));
@@ -31,7 +35,7 @@ export default function DatosViaje({ items, style }) {
 // Los datos de siempre de un viaje para el conductor (sin precio)
 export function datosBasicos(v) {
   return [
-    { label: 'Condiciones', valor: textoCondiciones(v.condiciones_requeridas) },
+    { label: 'Motivo', valor: textoMotivo(v) },
     { label: 'Distancia', valor: km(distanciaDe(v)) },
     { label: 'Tiempo', valor: tiempoDe(v) },
   ];

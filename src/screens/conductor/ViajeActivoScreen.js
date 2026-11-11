@@ -18,7 +18,9 @@ import ChipEstado from '../../components/viaje/ChipEstado';
 import Recorrido, { partirDireccion } from '../../components/viaje/Recorrido';
 import MapaRecorrido from '../../components/viaje/MapaRecorrido';
 
-const EVENTOS = ['viaje:editado', 'viaje:desasignado', 'viaje:cancelado', 'viaje:vencido'];
+// `viaje:finalizado` llega también al conductor cuando la empresa lo cierra o se
+// cierra solo a fin del día; `parada:salida_detectada`, cuando el GPS ve que se fue.
+const EVENTOS = ['viaje:editado', 'viaje:desasignado', 'viaje:cancelado', 'viaje:vencido', 'viaje:finalizado', 'parada:salida_detectada'];
 
 // Abre Google Maps / Apple Maps con la dirección (el mobile no calcula rutas)
 function comoLlegar(p) {
@@ -163,6 +165,7 @@ export default function ViajeActivoScreen({ navigation, route }) {
         </Text>
         <Text style={s.titulo}>Andá al origen para iniciar</Text>
         <Text style={s.bajada}>{origen?.direccion}. Iniciá cuando estés en la puerta.</Text>
+        {v.descripcion ? <Nota>Indicaciones: {v.descripcion}</Nota> : null}
         <View style={s.relojes}>
           <Reloj label="Programado" valor={hora(v.fecha_programada)} />
           <Reloj label="Podés iniciar" valor={`${hora(inicioVentana(v))}–${hora(finVentanaInicio(v))}`} />
@@ -208,6 +211,12 @@ export default function ViajeActivoScreen({ navigation, route }) {
             ? 'Cuando termines de descargar, salí para terminar el viaje y generar el remito.'
             : v.estado === 'CARGANDO' ? 'Cuando termines de cargar, tocá «Salir de la parada».' : 'Cuando termines, tocá «Salir de la parada».'}
         </Text>
+        {enParada.salida_detectada ? (
+          <Nota tipo="aviso">Parece que te fuiste de la parada a las {hora(enParada.salida_detectada)}. Si ya terminaste, tocá «{esUltima ? 'Salir y terminar el viaje' : 'Salir de la parada'}».</Nota>
+        ) : null}
+        {esUltima && v.cierre?.cierre_automatico_en ? (
+          <Nota>Si no salís, el viaje se cierra solo a las {hora(v.cierre.cierre_automatico_en)}.</Nota>
+        ) : null}
         <View style={s.relojes}>
           <Reloj label="Llegaste" valor={hora(enParada.llegada_real)} />
           <Reloj label="En la parada" valor={transcurrido(enParada.llegada_real)} />

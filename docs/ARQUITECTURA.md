@@ -2,7 +2,7 @@
 
 > **Documento vivo.** Se actualiza en el mismo commit que cualquier cambio de código que agregue, borre o
 > cambie la responsabilidad de un archivo, un endpoint, un evento o un flujo (regla en `CLAUDE.md`).
-> Última actualización: 29 oct 2026 · rama `staging` · fases 0, 1, 2 y 3 programadas (la 4 es el cierre).
+> Última actualización: 11 nov 2026 · rama `staging` · fases 0, 1, 2 y 3 programadas; de la 4, lo que no depende del backend.
 >
 > Otros documentos: `PROGRESO.md` (estado y commits), `ISSUES.md` (problemas abiertos con el backend),
 > `docs/FLUJOS_MOBILE.md` (resumen para el review), `UXUI.md` (sistema de diseño), `API.md` del backend
@@ -30,7 +30,7 @@ los cierra con un remito.
 
 Tres principios que explican casi todas las decisiones del código:
 
-- **El backend decide todo.** Precios, distancias, tiempos, ventanas de inicio, radio de 50 m y validaciones viven
+- **El backend decide todo.** Precios, distancias, tiempos, ventanas de inicio, radio de confirmación (200 m en staging) y validaciones viven
   en el backend. La app manda datos (acciones, posición) y muestra lo que vuelve.
 - **La sesión elige la pantalla.** No hay navegación manual entre las zonas de la app: cuando cambia el usuario en
   el contexto, el router muestra otro stack.
@@ -229,7 +229,7 @@ recorrido completo se puede probar sin backend.
 `finalizarViaje` (cierre a mano de la Tarea 5), `obtenerRemito`. `paradaParaApi(p)` manda un lugar guardado como
 `{ id_lugar }` y una dirección suelta como `{ lat, lng, direccion }`. `asignarRechazadoA(idOrg, viaje, idConductor)`:
 un RECHAZADO es final y `reasignar` no lo acepta, así que «Asignar a otro conductor» **crea un viaje nuevo** con el
-mismo recorrido, hora, condiciones y nota. Series: `crearSerie`, `listarSeries`, `obtenerSerie`, `cancelarSerie`.
+mismo recorrido, hora, motivo e indicaciones (un viaje anterior al 20-10-2026 sin motivo se completa con «Reemplazo de VJ-…»). `crearViaje` y `crearSerie` mandan `motivo` y `descripcion`, **obligatorios** (pedido del front del 20-10-2026); los viajes de PyME ya **no tienen condiciones**. Series: `crearSerie`, `listarSeries`, `obtenerSerie`, `cancelarSerie`.
 `vivoDeEjemplo(viaje)`: en DEV, posición, llegada y desvío de ejemplo para el seguimiento (con backend llegan solo
 por socket).
 
@@ -252,7 +252,11 @@ backend los calcula el servidor.
 Sin `EXPO_PUBLIC_GOOGLE_PLACES_KEY`, en DEV busca en una lista de ejemplo.
 
 **`socket.js`** — `conectarSocket()` abre socket.io contra `EXPO_PUBLIC_API_URL` con el token de Firebase
-(se pide **una vez**, al conectar), solo transporte websocket. `getSocket`, `desconectarSocket`.
+(`auth: { token: 'Bearer …' }`). Los cortes de red los reintenta socket.io solo; un **rechazo del handshake**
+no (API.md → «Socket.io — handshake»), así que `reintentar()` lo hace a mano: `RATE_LIMIT` → espera
+`err.data.retryAfter` + un poco de azar; `Token invalido` / `Token no proporcionado` → refresca el token
+(`getIdToken(true)`) y reconecta con backoff; `Usuario no registrado` → no reintenta; cualquier otro → backoff
+exponencial de 1 s a 30 s. `desconectarSocket()` corta los reintentos.
 
 ### 4.5 Hooks (`src/hooks/`)
 
@@ -284,7 +288,7 @@ y no emite (pendiente).
 | `estados.js` | `ESTADOS`: etiqueta y familia de color de cada estado del viaje; `EN_CURSO`, `FINALES`; `coloresFamilia(familia, colors)`; `motivoFinal(viaje)` (por qué terminó sin hacerse, contado al conductor) y `motivoFinalEmpresa(viaje)` (lo mismo, contado a la empresa: «Lucía lo rechazó»). |
 | `fechas.js` | Formatos es-AR: `hora` (14:30), `diaCorto` (mié 22 oct), `cuando` (Hoy, 14:30), `cuandoLargo` (Hoy / Mañana / Ayer, mié 28 oct, 09:00), `mesAnio`, `mesAlta`, `duracionMin`/`duracionHoras` (1 h 20 min), `transcurrido` (cronómetro), `km`. Lo que falta devuelve «A confirmar». |
 | `formularios.js` | Formato al tipear y limpieza para la API: DNI, CUIT, código de invitación (XXXXX-XXXXX), patente (AE 421 KL), email, fecha corta. El backend vuelve a validar. |
-| `errores.js` | `mensajeDeError(err, porDefecto)`: traduce códigos de Firebase y mensajes del backend a texto en voseo; los 400 del backend se muestran tal cual. Ninguna pantalla muestra códigos técnicos. |
+| `errores.js` | `mensajeDeError(err, porDefecto)`: traduce códigos de Firebase y mensajes del backend a texto en voseo. Los `400`, `403`, `409` y `429` del backend se muestran tal cual (vienen en castellano: validaciones, «Ya tenés un viaje en curso», «Probá de nuevo en 40 segundos»); algunos se reescriben (viaje cerrado por la empresa o automáticamente, `Acceso denegado`). `503` → «Fleter no está disponible». Ninguna pantalla muestra códigos técnicos. |
 | `ventana.js` | Ventana de inicio de referencia (−60 / +90 min de `fecha_programada`). Solo para mostrar (ISSUES #3). |
 | `dinero.js` | `pesos(v)`: precio es-AR ($12.500, sin decimales). Solo del lado de la empresa (fase 3); el conductor nunca ve precios. |
 | `series.js` | Viajes repetidos (fase 3): `FRECUENCIAS`, `LETRAS_DIAS`, `DIAS_MAXIMOS_SERIE` (30), `textoFrecuencia(serie)` («Lun, mié y vie a las 07:00»), `etiquetaFrecuencia(serie)` (marca corta de las cards: «Diario», «L, M y V»), `contarViajes(...)` (aviso previo; el número real lo da el backend), `fechaIso`/`desdeIso`, `diaSemanaIso` (1 = lunes). |
@@ -315,7 +319,7 @@ Todo se importa desde `components/ui` (`index.js`). Usarlos antes de crear estil
 |---|---|
 | `ChipEstado` | Badge del estado con los colores de su familia; los estados en curso tienen un punto que late. |
 | `Recorrido` | Lista de paradas con los marcadores del sistema (origen naranja, parada gris, destino cuadrado). Las hechas en verde con horas reales; la actual resaltada. `partirDireccion()` separa calle y localidad. |
-| `DatosViaje` | Grilla de dato y valor en dos columnas («A confirmar» si falta). `datosBasicos(v)` arma condiciones, distancia y tiempo **sin precio**. |
+| `DatosViaje` | Grilla de dato y valor en dos columnas («A confirmar» si falta). `datosBasicos(v)` arma motivo, distancia y tiempo **sin precio**. `textoMotivo(v)` («Sin motivo» en viajes viejos); `textoCondiciones` queda solo para las condiciones de un vehículo. |
 | `TarjetaViaje` | Card de viaje del conductor, compacta (una línea con todo) o completa (recorrido y datos). Nunca muestra precio. |
 | `MapaRecorrido` | Mapa con la ruta planeada (o las paradas unidas), marcadores y la posición del conductor. |
 
@@ -325,7 +329,7 @@ Todo se importa desde `components/ui` (`index.js`). Usarlos antes de crear estil
 |---|---|
 | `TarjetaViajeEmpresa` | Card de viaje de la empresa con los **9 datos y el precio** (`pesos()`, el real si terminó): estado, ID, cuándo, conductor y vehículo, marca del viaje repetido si es de una serie, y una línea con origen → destino, paradas, condiciones, distancia, tiempo y motivo si terminó sin hacerse. `conTabla` cambia la línea por la `TablaParadas` (viaje en curso del Inicio). Exporta `nombreConductor`, `textoParadas`, `resumenViaje`. |
 | `TablaParadas` | Tabla Parada / Estim. / Real del viaje en curso: hechas en verde, la próxima resaltada con la llegada estimada del socket (`eta`), llegada tarde en ámbar según `diferencia_min` del backend. Exporta `tituloParada(p)` (la empresa ve el **nombre del lugar guardado**; el conductor nunca), `paradaActual(v)`, `MIN_DEMORA` (5) y `MIN_TARDE` (10). |
-| `HojaConductor` | `ListaConductores`: conductores para elegir; el que no tiene un vehículo que cumpla las condiciones queda visible y apagado, con el motivo. `HojaConductor`: la misma lista en una hoja, para reasignar o asignar a otro, con «Invitar a un conductor nuevo». `aptitud(conductor, condiciones)` y `resumenConductor(c)` («Ford Transit. Frágil y voluminoso.»). Solo ordena y explica: el backend vuelve a validar. |
+| `HojaConductor` | `ListaConductores`: conductores para elegir; el que no tiene vehículos cargados queda visible y apagado, con el motivo (`aptitud`). Sin condiciones: cualquier vehículo propio sirve. `resumenConductor` muestra vehículo y tipo. La hoja la usan reasignar y «Asignar a otro». |
 | `HojaParada` | Hoja para elegir una dirección: búsqueda con Places (`direcciones.js`) y los lugares guardados de la empresa como chips a un toque. Devuelve `{ direccion, lat, lng, id_lugar?, nombre? }`. Reemplaza a `LocationPickerModal` en lo nuevo. |
 
 ### 4.10 Componentes sueltos (`src/components/`)
@@ -371,8 +375,8 @@ Todo se importa desde `components/ui` (`index.js`). Usarlos antes de crear estil
 |---|---|---|---|
 | `ViajesScreen` | Viaje en curso fijo arriba; «Para confirmar», «Hoy», «Próximos»; estado vacío. | `listarViajes` | asignado, serie, editado, desasignado, cancelado, vencido |
 | `DetalleViajeScreen` | Detalle; confirmar (hoja de vehículos aptos; con uno solo, directo) o rechazar. Si el viaje ya está en curso, pasa a `ViajeActivo`. | `obtenerViaje`, `misVehiculos`, `confirmarViaje`, `rechazarViaje` | editado, desasignado, cancelado, vencido |
-| `ViajeActivoScreen` | Una acción grande según el estado: Iniciar (CONFIRMADO), Salir de la parada (CARGANDO/DESCARGANDO), Llegué (EN_RUTA). Pide permiso de ubicación con explicación previa. «Cómo llegar» abre Google/Apple Maps. Cancelar con hoja. `ejecutar()` centraliza llamada, error y recarga. | `iniciarViaje`, `salirDeParada`, `confirmarLlegada`, `cancelarViaje` + `useGpsViaje` | editado, desasignado, cancelado, vencido |
-| `ViajeTerminadoScreen` | Estimado contra real (manejo, carga y descarga, distancia, total) y remito. | `obtenerViaje` | — |
+| `ViajeActivoScreen` | Una acción grande según el estado: Iniciar (CONFIRMADO), Salir de la parada (CARGANDO/DESCARGANDO), Llegué (EN_RUTA). Pide permiso de ubicación con explicación previa. «Cómo llegar» abre Google/Apple Maps. Cancelar con hoja. Muestra las indicaciones de la empresa. En una parada: aviso si el GPS detectó la salida («Parece que te fuiste…, tocá Salir») y, en la última, a qué hora se cierra solo. Si la empresa lo cierra o se cierra solo, `viaje:finalizado` lo lleva al resumen. `ejecutar()` centraliza llamada, error y recarga (un `409` recarga). | `iniciarViaje`, `salirDeParada`, `confirmarLlegada`, `cancelarViaje` + `useGpsViaje` | editado, desasignado, cancelado, vencido, finalizado, `parada:salida_detectada` |
+| `ViajeTerminadoScreen` | Estimado contra real (manejo, carga y descarga, distancia, total) y remito. Dice quién lo cerró si no fue el conductor (`cierre.cerrado_por`: la empresa o el cierre automático, incompleto o no). | `obtenerViaje` | — |
 | `HistorialScreen` | Viajes finales agrupados por mes con filtros. | `listarViajes({ grupo: 'historial' })` | — |
 | `PerfilScreen` | Datos, sus empresas, sus vehículos, apariencia, cerrar sesión. | `misOrganizaciones`, `misVehiculos` | — |
 | `EmpresaConductorScreen` | Una empresa; desvincularse con aviso de lo que cancela (ISSUES #1). | `desvincularme` | — |
@@ -388,7 +392,7 @@ Todas en claro (default de la empresa) y oscuro, con tokens. La empresa **sí** 
 | `InicioScreen` | El día de un vistazo: nombre de la empresa, «Hoy, jue 29 oct», tres números (viajes hoy, en curso, estimado del día = suma de los `precio_estimado` que ya dio el backend), «En curso» con la tabla de paradas estimado/real y la llegada estimada, «Próximos de hoy», «Terminados hoy», estado vacío con «Cargar un viaje». Sin alertas (tienen su pestaña). | `EmpresaContext.viajes` | `eta:actualizar` + los de `EmpresaContext` |
 | `AlertasScreen` | «Para resolver» con la acción a un toque: rechazado → **Asignar a otro** (hoja de conductores) / Ver viaje; por vencer → **Llamar** / Reasignar; cierre habilitado → **Finalizar el viaje**. «Hoy» con lo que avisó el socket y un punto en lo no visto (se marca visto al salir de la pestaña). Estado vacío «Todo en orden». | `asignarRechazadoA`, `reasignarViaje`, `finalizarViaje`, `listarConductores` | vía `EmpresaContext` |
 | `ViajesScreen` | Viajes agrupados por día («Hoy, jue 29 oct · 4 viajes») con filtros Activos / En curso / Terminados (`grupo` del backend). Los de una serie llevan su marca («Diario», «L, M y V»). Tirar para abajo recarga. | `listarViajes`, `listarSeries` | asignado, serie, editado, confirmado, rechazado, iniciado, estado_cambiado, finalizado, cancelado, vencido |
-| `NuevoViajeScreen` | Alta en 4 pasos cortos + revisión. 1 **Recorrido**: origen, paradas y destino (hasta 10), cada una con `HojaParada`; los lugares guardados llevan su etiqueta. 2 **Cuándo**: fecha (`HojaCalendario`), hora (`HojaHora`) y «¿Se repite?» (una vez, todos los días, algunos días, semanal, mensual) con «Hasta» (máx. 30 días) y cuántos viajes salen. 3 **Carga**: condiciones y nota para el conductor. 4 **Conductor**: solo los vinculados; los no aptos apagados con el motivo; «Invitar a un conductor». **Revisar**: precio grande, distancia, tiempo, manejo y carga/descarga, y la hora estimada de cada parada, todo de `estimar-costo`; el botón dice qué pasa («Asignar 7 viajes a Martín»). Crea un viaje o una serie. Con `params.editar` edita un viaje programado (sin repetición ni conductor) y avisa si el conductor lo tiene que reconfirmar; con `params.copiar` arranca con los datos de otro viaje. | `listarLugares`, `listarConductores`, `estimarViaje`, `crearViaje`, `crearSerie`, `editarViaje` | — |
+| `NuevoViajeScreen` | Alta en 4 pasos cortos + revisión. 1 **Recorrido**: origen, paradas y destino (hasta 10), cada una con `HojaParada`; los lugares guardados llevan su etiqueta. 2 **Cuándo**: fecha (`HojaCalendario`), hora (`HojaHora`) y «¿Se repite?» (una vez, todos los días, algunos días, semanal, mensual) con «Hasta» (máx. 30 días) y cuántos viajes salen. 3 **Para qué**: motivo (hasta 120) e indicaciones para el conductor (hasta 500), los dos obligatorios. 4 **Conductor**: solo los vinculados; el que no tiene vehículo, apagado; «Invitar a un conductor». **Revisar**: precio grande, distancia, tiempo, manejo y carga/descarga, y la hora estimada de cada parada, todo de `estimar-costo`; el botón dice qué pasa («Asignar 7 viajes a Martín»). Crea un viaje o una serie. Con `params.editar` edita un viaje programado (sin repetición ni conductor) y avisa si el conductor lo tiene que reconfirmar; con `params.copiar` arranca con los datos de otro viaje. | `listarLugares`, `listarConductores`, `estimarViaje`, `crearViaje`, `crearSerie`, `editarViaje` | — |
 | `ViajeScreen` | Detalle que cambia según el estado. **En curso**: mapa con la posición del conductor (`mapa:actualizar`), aviso de desvío, «Llega a Av. Mitre 1450 a las 15:12» (`eta:actualizar`), conductor con **Llamar**, recorrido con horas reales y salida tarde; Cancelar (la hoja explica que se corta con la carga arriba) y **Finalizar el viaje** si el conductor no tocó «Salir». **Programado**: ventana de inicio o aviso de sin confirmar; **Editar**, **Reasignar** (hoja de conductores) y **Cancelar** (motivo opcional, lo ve el conductor). **Rechazado**: «Lucía lo rechazó a las 11:20» + **Asignar a otro conductor** o cargarlo de nuevo cambiando datos. **Terminado**: tabla estimado vs. real con precio (el `*` marca la descarga no medida), quién lo cerró, puntualidad en cada parada y **Ver remito**. Vencido o cancelado: el motivo y «Cargarlo de nuevo». | `obtenerViaje`, `cancelarViaje`, `reasignarViaje`, `asignarRechazadoA`, `finalizarViaje`, `obtenerRemito`, `listarConductores` | editado, confirmado, rechazado, iniciado, estado_cambiado, finalizado, cancelado, vencido, cierre_habilitado, salida_detectada; en vivo `mapa:actualizar`, `eta:actualizar`, `alerta:desvio`, `ruta:recalculada` |
 | `MasScreen` | La empresa (estado y si sos responsable) y la lista: Conductores (cuántos y cuántos en ruta), Lugares guardados, Viajes repetidos (activos), Equipo, Datos de la empresa, Mis datos; Apariencia (Claro / Oscuro / Sistema) y Cerrar sesión. | `listarConductores`, `listarLugares`, `listarSeries`, `listarMiembros` | — |
 | `ConductoresScreen` | Conductores con su vehículo y, si están en un viaje, su estado; invitaciones de conductor pendientes con **Revocar**; «Invitar conductor». | `listarConductores`, `listarInvitaciones`, `revocarInvitacion` | — |
@@ -439,7 +443,7 @@ directo desde el evento son las que **solo** existen por socket: la posición (`
 
 ### 5.7 Nuevo viaje de la empresa
 `NuevoViaje` paso 1 (paradas con `HojaParada`: Places o lugar guardado) → 2 (fecha, hora, repetición) → 3
-(condiciones, nota) → 4 (conductor apto) → Revisar: `estimarViaje` → precio y horas del backend →
+(motivo e indicaciones, obligatorios) → 4 (conductor con vehículo) → Revisar: `estimarViaje` → precio y horas del backend →
 - una vez: `crearViaje` → `viaje:asignado` al conductor → `Viaje` (ASIGNADO).
 - se repite: `crearSerie` (todos los viajes de hasta 30 días de una vez; el conductor recibe **un** `serie:asignada`)
   → `Serie` con cuántos se crearon y cuántos se saltearon.
@@ -503,6 +507,7 @@ la alerta desaparece sola.
 |---|---|---|
 | `viaje:asignado`, `serie:asignada` | servidor → conductor | ViajesScreen |
 | `viaje:editado`, `viaje:desasignado`, `viaje:cancelado`, `viaje:vencido` | servidor → conductor | Viajes, Detalle, Activo |
+| `viaje:finalizado` (la empresa lo cerró o se cerró solo), `parada:salida_detectada` | servidor → conductor | Activo |
 | `conductor:ubicacion` `{ id_viaje, lat, lng, timestamp }` | conductor → servidor | useGpsViaje / locationTask |
 | `viaje:asignado`, `viaje:desasignado`, `viaje:editado`, `viaje:confirmado`, `viaje:rechazado`, `viaje:iniciado`, `viaje:estado_cambiado`, `viaje:finalizado`, `viaje:cancelado`, `viaje:vencido`, `viaje:cierre_habilitado`, `serie:asignada` | servidor → sala `organizacion:{id}` | EmpresaContext (refetch + alertas), Viajes, Viaje |
 | `mapa:actualizar`, `eta:actualizar`, `alerta:desvio`, `alerta:parada`, `ruta:recalculada`, `parada:salida_detectada` | servidor → empresa | Viaje (seguimiento), Inicio (llegada), EmpresaContext («Hoy») |
@@ -586,7 +591,7 @@ datos de ejemplo (`viajesConductor.js`, `mockEmpresa.js`) que imitan las respues
 | # | Pantalla del plan | Archivos y qué hacen | Estado |
 |---|---|---|---|
 | 2.1 | Mis viajes: hoy / próximos, avisos de `VENCIDO` | `screens/conductor/ViajesScreen.js`: viaje en curso fijo arriba, «Para confirmar», «Hoy», «Próximos», estado vacío; en vez de agrupar por empresa, cada card dice de qué empresa es (así lo muestra el prototipo aprobado de la fase 2). Refresca con `viaje:asignado`, `serie:asignada`, editado, desasignado, cancelado, vencido. Los vencidos quedan en Historial con su filtro y su motivo. | ⚠️ |
-| 2.2 | Detalle + Confirmar (elegir vehículo) / Rechazar | `DetalleViajeScreen.js`: hoja con los vehículos (los que no cumplen las condiciones, apagados con el motivo; con uno solo confirma directo) → `confirmarViaje(id, idVehiculo)`; rechazar con confirmación → `rechazarViaje`. | ✅ |
+| 2.2 | Detalle + Confirmar (elegir vehículo) / Rechazar | `DetalleViajeScreen.js`: hoja con los vehículos (sirve cualquiera: los viajes de PyME no tienen condiciones; con uno solo confirma directo); muestra las indicaciones de la empresa → `confirmarViaje(id, idVehiculo)`; rechazar con confirmación → `rechazarViaje`. | ✅ |
 | 2.3 | Viaje activo: iniciar en el origen, parada por parada, GPS en 2º plano, ETA, desvíos | `ViajeActivoScreen.js` (Iniciar → Salir de la parada → Llegué, una acción grande por momento; «Cómo llegar»; cancelar antes de iniciar) + `hooks/useGpsViaje.js` (permiso explicado, `conductor:ubicacion` cada 15 s solo después del 200 de `/iniciar`) + `tasks/locationTask.js` (servicio en primer plano de Android). ETA y desvíos **no** llegan al conductor: el backend se los manda solo a la empresa (ISSUES.md #3). | ⚠️ |
 | 2.4 | Viaje finalizado: estimado vs. real + remito | `ViajeTerminadoScreen.js`: manejo, carga y descarga, distancia y total, estimado contra real, y «Ver remito». Sin precio. | ✅ |
 | 2.5 | Historial | `HistorialScreen.js`: viajes finales por mes, filtros Todos / Entregados / Cancelados / Vencidos, motivo en la fila. | ✅ |
@@ -601,7 +606,7 @@ pasa a encabezar Más (invitar también queda a mano desde Nuevo viaje). Así qu
 | # | Pantalla del plan | Archivos y qué hacen | Estado |
 |---|---|---|---|
 | 3.1 | Inicio: en curso ahora, próximos de hoy, sin confirmar / por vencer, alertas | `screens/empresa/InicioScreen.js`: tres números del día, «En curso» con `TablaParadas` (estimado y real por parada, próxima resaltada con la llegada de `eta:actualizar`, llegada tarde en ámbar), «Próximos de hoy» (los sin confirmar llevan su estado ámbar), «Terminados hoy». Las alertas viven en `AlertasScreen.js` + `context/EmpresaContext.js` (rechazados, por vencer y cierre habilitado con la acción a un toque; desvíos, salidas tarde, entregas y confirmaciones del día). | ✅ |
-| 3.2 | Nuevo viaje: lugares guardados, hasta 10 paradas, fecha/hora, condiciones, conductor + precio estimado; «repetir» → serie | `NuevoViajeScreen.js` (4 pasos + revisión) con `components/empresa/HojaParada.js` (Places vía `services/direcciones.js` + lugares guardados), `HojaCalendario`, `HojaHora`, `ListaConductores` (los no aptos apagados). Precio y horas de `estimarViaje` (`estimar-costo`). Crea con `crearViaje` o, si se repite, `crearSerie` (todas las frecuencias del backend, máx. 30 días). | ✅ |
+| 3.2 | Nuevo viaje: lugares guardados, hasta 10 paradas, fecha/hora, motivo e indicaciones (antes condiciones; cambio pedido al backend el 20-10-2026), conductor + precio estimado; «repetir» → serie | `NuevoViajeScreen.js` (4 pasos + revisión) con `components/empresa/HojaParada.js` (Places vía `services/direcciones.js` + lugares guardados), `HojaCalendario`, `HojaHora`, `ListaConductores` (los que no tienen vehículo, apagados). Precio y horas de `estimarViaje` (`estimar-costo`). Crea con `crearViaje` o, si se repite, `crearSerie` (todas las frecuencias del backend, máx. 30 días). | ✅ |
 | 3.3 | Seguimiento en vivo: mapa, ETA, timeline por parada, estimado vs. real, remito | `ViajeScreen.js` en curso: `MapaRecorrido` con la posición de `mapa:actualizar` y la ruta de `ruta:recalculada`, aviso de `alerta:desvio`, «Llega a … a las …» con `eta:actualizar`, recorrido con horas reales, salida tarde y puntualidad (`diferencia_min`). Terminado: tabla estimado vs. real con precio, quién lo cerró y «Ver remito» (`remito_url` u `obtenerRemito`). | ✅ |
 | 3.4 | Editar / reasignar / cancelar (y alcance en series) | Editar: `NuevoViajeScreen` con `params.editar` → `editarViaje` (avisa si el conductor tiene que reconfirmar). Reasignar: `HojaConductor` → `reasignarViaje`. Cancelar: hoja con motivo → `cancelarViaje`, también en curso, con el texto que explica qué pasa. Rechazado: `asignarRechazadoA` (viaje nuevo con los mismos datos, porque el backend no reasigna un rechazado). Extra de la Tarea 5: `finalizarViaje` cuando el conductor no tocó «Salir». Series: el contrato edita, reasigna y cancela **uno por uno** los viajes de una serie; la serie entera solo se cancela (`SerieScreen`). | ✅ |
 | 3.5 | Viajes: lista con filtros | `ViajesScreen.js` (empresa): por día, filtros Activos / En curso / Terminados (`grupo=activos|en_curso|historial`; Terminados incluye entregados, rechazados, vencidos y cancelados, cada uno con su motivo en la card), marca de la serie en cada viaje repetido. | ✅ |
@@ -616,17 +621,19 @@ Piezas nuevas que sostienen la fase 3: `context/EmpresaContext.js`, `navigation/
 `components/empresa/*` (TarjetaViajeEmpresa, TablaParadas, HojaConductor, HojaParada), `components/ui/Listas.js`,
 `components/ui/HojaHora.js`, `utils/dinero.js`, `utils/series.js` y `motivoFinalEmpresa` en `utils/estados.js`.
 
-### 9.6 Fase 4 — Cierre (pendiente)
+### 9.6 Fase 4 — Cierre (en curso: hecho lo que no depende del backend)
 
-| Ítem | Qué falta y de quién depende | Estado |
+| Ítem | Qué se hizo o qué falta, y de quién depende | Estado |
 |---|---|---|
-| Push notifications | El backend todavía no integra FCM (ISSUES.md #2). Mientras tanto, Alertas solo ve lo que pasa con la app abierta. | ⏳ backend |
+| Ponerse al día con `develop` (Tareas 5 y 6, pedido del 20-10) | Motivo e indicaciones obligatorios y sin condiciones (`NuevoViajeScreen`, `viajesEmpresa`, `HojaConductor`, `DetalleViajeScreen`, tarjetas y detalles); conductor: aviso de salida detectada por GPS, hora de cierre automático, `viaje:finalizado` lo lleva al resumen y el resumen dice quién cerró (`ViajeActivoScreen`, `ViajeTerminadoScreen`); reintento manual del socket ante rechazos del handshake (`services/socket.js`); errores `403`/`409`/`429`/`503` (`utils/errores.js`). | ✅ |
+| App contra staging | `scripts/api-tests/mobile.mjs` hace los mismos pedidos que la app (alta, empresa, conductor, viaje con motivo, serie, socket, recorrido entero hasta el remito y `cerrado_por`): **41/41 contra staging** (`version 11d2f80`, 11 nov 2026). Falta abrir la app compilada con `EXPO_PUBLIC_DEV_MODE=false`: necesita el `.env` de Firebase web. | ✅ / ⏳ `.env` |
+| Accesibilidad | Revisados los botones del kit y de las pantallas nuevas: todos con `accessibilityRole`, etiqueta y estado; área táctil de 44 px. Falta probar con TalkBack/VoiceOver en un teléfono. | ✅ / ⏳ dispositivo |
+| Push notifications | El backend todavía no integra FCM (ISSUES.md #2, `docs/PEDIDOS_BACKEND.md`). | ⏳ backend |
 | Remito con foto | El backend no lo definió. | ⏳ backend |
 | Desvincular con vista previa / bloqueo en curso | La app ya avisa qué se cancela; falta que el backend decida si bloquea o pide confirmación (ISSUES.md #1). | ⏳ backend |
 | Historial de alertas | Sin endpoint, las alertas del día viven en memoria (ISSUES.md #4). | ⏳ backend |
-| Pruebas en dispositivo físico (GPS en 2º plano, mapas, Places), accesibilidad | Requiere build nativa; en web los mapas son un recuadro. | ⏳ |
+| Pruebas en dispositivo físico (GPS en 2º plano, mapas, Places) | Requiere build nativa; en web los mapas son un recuadro. | ⏳ dispositivo |
 | Limpieza del marketplace y `DEV_MODE` apagado por defecto | Decisiones pendientes del dueño (§8 y `docs/FLUJOS_MOBILE.md` §6). | ⏳ dueño |
-| Pantallas de empresa contra staging | Las pantallas usan exactamente los endpoints que ya pasan las pruebas de contrato; falta recorrerlas con `EXPO_PUBLIC_DEV_MODE=false` y una cuenta de staging. | ⏳ |
 
 ## 10. Registro de cambios de este documento
 
@@ -635,3 +642,4 @@ Piezas nuevas que sostienen la fase 3: `context/EmpresaContext.js`, `navigation/
 | 27 oct 2026 | Versión inicial: fases 0, 1 y 2 completas, archivo por archivo. |
 | 29 oct 2026 | Fase 3 (en curso): utilidades `dinero.js` y `series.js`. |
 | 29 oct 2026 | Fase 3 completa: `PymeStack`, `EmpresaContext`, servicios de empresa (`viajesEmpresa`, `empresa`, `mockEmpresa`, `direcciones`), `components/empresa/`, `Listas` y `HojaHora` en el kit, 16 pantallas en `screens/empresa/`, flujos 5.7 a 5.9, endpoints y eventos de la empresa. Sección 9 nueva: cómo se cumple el plan, fase por fase y archivo por archivo. |
+| 11 nov 2026 | Fase 4 (lo que no depende del backend): al día con `develop` (motivo e indicaciones obligatorios y sin condiciones; cierre sin «Salir» del lado del conductor; reintento del socket; errores 403/409/429/503). `Campo` acepta `multiline`. `scripts/api-tests/mobile.mjs` nuevo (41/41 contra staging). Pedidos al backend en `docs/PEDIDOS_BACKEND.md`. |

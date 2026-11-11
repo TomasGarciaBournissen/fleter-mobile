@@ -4,26 +4,32 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useEmpresa } from '../../context/EmpresaContext';
 import { fonts } from '../../theme';
-import { CONDICIONES } from '../../services/vehiculos';
 import { listarConductores, listarLugares } from '../../services/empresa';
 import { estimarViaje, crearViaje, crearSerie, editarViaje } from '../../services/viajesEmpresa';
 import { FRECUENCIAS, LETRAS_DIAS, DIAS_MAXIMOS_SERIE, diaSemanaIso, fechaIso, textoFrecuencia, contarViajes } from '../../utils/series';
 import { diaCorto, cuandoLargo, hora, km, duracionHoras } from '../../utils/fechas';
 import { pesos } from '../../utils/dinero';
 import { mensajeDeError } from '../../utils/errores';
-import { Pantalla, Titulo, Bajada, Meta, Etiqueta, Pasos, Boton, Campo, Chip, Opcion, Nota, Enlace, HojaCalendario, HojaHora } from '../../components/ui';
-import DatosViaje, { textoCondiciones } from '../../components/viaje/DatosViaje';
+import { Pantalla, Titulo, Bajada, Meta, Etiqueta, Pasos, Boton, Campo, Opcion, Nota, Enlace, HojaCalendario, HojaHora } from '../../components/ui';
+import DatosViaje from '../../components/viaje/DatosViaje';
 import { partirDireccion } from '../../components/viaje/Recorrido';
 import HojaParada from '../../components/empresa/HojaParada';
-import { ListaConductores, aptitud } from '../../components/empresa/HojaConductor';
+import { ListaConductores } from '../../components/empresa/HojaConductor';
 import { nombreConductor } from '../../components/empresa/TarjetaViajeEmpresa';
 
 const MAX_PARADAS = 10; // MAX_PARADAS_POR_VIAJE del backend
-const PASOS = ['recorrido', 'cuándo', 'carga', 'conductor'];
+const PASOS = ['recorrido', 'cuándo', 'para qué', 'conductor'];
+const MAX_MOTIVO = 120;     // límites del backend (pedido del 20-10-2026)
+const MAX_INDICACIONES = 500;
 
-// Próxima franja de 15 min con margen (el backend pide anticipación mínima)
+// Anticipación mínima: `ANTICIPACION_MINIMA_MINUTOS` del backend (60 en staging y
+// producción). Es solo para no ofrecer horarios que va a rechazar: el que decide
+// es el backend, y si cambia el valor su mensaje de error se muestra tal cual.
+const ANTICIPACION_MIN = 60;
+
+// Próxima franja de 15 min con margen
 function franjaMinima() {
-  const d = new Date(Date.now() + 45 * 60000);
+  const d = new Date(Date.now() + (ANTICIPACION_MIN + 15) * 60000);
   d.setMinutes(Math.ceil(d.getMinutes() / 15) * 15, 0, 0);
   return d;
 }
@@ -34,7 +40,7 @@ const mismoDia = (a, b) => a.toDateString() === b.toDateString();
 // Parada del viaje (forma del backend) → parada del formulario
 const desdeViaje = (p) => ({ direccion: p.direccion, lat: Number(p.latitud), lng: Number(p.longitud), id_lugar: p.lugar?.activo ? p.id_lugar : null, nombre: p.lugar?.activo ? p.lugar.nombre : null });
 
-// Nuevo viaje en cuatro pasos cortos (recorrido, cuándo, carga, conductor) y
+// Nuevo viaje en cuatro pasos cortos (recorrido, cuándo, para qué, conductor) y
 // una revisión con el precio que devuelve el backend (`estimar-costo`): nada se
 // calcula en el teléfono. «Se repite» crea una serie de viajes.
 // Con `route.params.editar` (un viaje ASIGNADO o CONFIRMADO) edita ese viaje:
@@ -57,7 +63,7 @@ export default function NuevoViajeScreen({ navigation, route }) {
   const [frecuencia, setFrecuencia] = useState('UNA_VEZ');
   const [dias, setDias] = useState([diaSemanaIso(inicial)]);
   const [hasta, setHasta] = useState(() => { const d = new Date(inicial); d.setDate(d.getDate() + 14); return d; });
-  const [condiciones, setCondiciones] = useState(base?.condiciones_requeridas ?? []);
+  const [motivo, setMotivo] = useState(base?.motivo ?? '');
   const [descripcion, setDescripcion] = useState(base?.descripcion ?? '');
   const [conductor, setConductor] = useState(null);
 
@@ -85,8 +91,8 @@ export default function NuevoViajeScreen({ navigation, route }) {
   const volver = () => { setError(''); if (paso === 1) navigation.goBack(); else setPaso(paso - 1); };
   const seguir = async () => {
     setError('');
-    if (paso === 2 && !repite && fechaProgramada < new Date(Date.now() + 30 * 60000)) {
-      setError('Elegí un horario con al menos media hora de anticipación.');
+    if (paso === 2 && !repite && fechaProgramada < new Date(Date.now() + ANTICIPACION_MIN * 60000)) {
+      setError('Elegí un horario con al menos una hora de anticipación.');
       return;
     }
     if (paso === 2 && repite && cantidad === 0) { setError('Con esos días no sale ningún viaje antes de la fecha de fin.'); return; }
@@ -108,7 +114,7 @@ export default function NuevoViajeScreen({ navigation, route }) {
     setCreando(true);
     try {
       if (editar) {
-        await editarViaje(idOrg, editar.id_viaje, { paradas, fecha_programada: fechaProgramada.toISOString(), condiciones_requeridas: condiciones, descripcion: descripcion.trim() || null });
+        await editarViaje(idOrg, editar.id_viaje, { paradas, fecha_programada: fechaProgramada.toISOString(), motivo: motivo.trim(), descripcion: descripcion.trim() });
         await recargar();
         navigation.goBack();
       } else if (repite) {
@@ -118,12 +124,12 @@ export default function NuevoViajeScreen({ navigation, route }) {
           ...(frecuencia === 'SEMANAL' ? { dia_semana: regla.dia_semana } : {}),
           ...(frecuencia === 'MENSUAL' ? { dia_mes: regla.dia_mes } : {}),
           hora: horaSel, fecha_desde: fechaIso(fecha), fecha_hasta: fechaIso(hasta),
-          paradas, condiciones_requeridas: condiciones, descripcion,
+          paradas, motivo, descripcion,
         });
         await recargar();
         navigation.replace('Serie', { id: r.serie.id_serie, creada: { viajes: r.viajes.length, salteadas: r.salteadas?.length ?? 0, ajustadas: r.ajustadas?.length ?? 0 } });
       } else {
-        const v = await crearViaje(idOrg, { id_conductor: conductor.id_conductor, fecha_programada: fechaProgramada.toISOString(), paradas, condiciones_requeridas: condiciones, descripcion });
+        const v = await crearViaje(idOrg, { id_conductor: conductor.id_conductor, fecha_programada: fechaProgramada.toISOString(), paradas, motivo, descripcion });
         await recargar();
         navigation.replace('Viaje', { id: v.id_viaje });
       }
@@ -142,17 +148,16 @@ export default function NuevoViajeScreen({ navigation, route }) {
   };
   const sacarParada = (i) => setParadas((prev) => prev.filter((_, j) => j !== i));
 
-  // El conductor elegido tiene que seguir sirviendo si después cambiaron las condiciones
-  const condicionOk = !conductor || aptitud(conductor, condiciones).apto;
   const puedeSeguir = paso === 1 ? paradas.length >= 2
     : paso === 2 ? (frecuencia !== 'DIAS_SEMANA' || dias.length > 0)
-    : paso === 4 ? !!conductor && condicionOk
+    : paso === 3 ? !!motivo.trim() && !!descripcion.trim()
+    : paso === 4 ? !!conductor
     : true;
 
   const tituloBoton = revisando
     ? editar ? 'Guardar los cambios'
       : repite ? `Asignar ${cantidad} viajes a ${conductor?.nombre}` : `Asignar el viaje a ${conductor?.nombre}`
-    : ['Seguir con el horario', 'Seguir con la carga', editar ? 'Revisar los cambios' : 'Seguir con el conductor', 'Revisar el viaje'][paso - 1];
+    : ['Seguir con el horario', 'Seguir con el detalle', editar ? 'Revisar los cambios' : 'Seguir con el conductor', 'Revisar el viaje'][paso - 1];
 
   const pie = (
     <Boton
@@ -252,38 +257,33 @@ export default function NuevoViajeScreen({ navigation, route }) {
               ) : null}
             </>
           ) : editar.estado === 'CONFIRMADO' ? (
-            <Nota>Si cambiás el recorrido, el horario o las condiciones, {editar.conductor?.nombre ?? 'el conductor'} lo tiene que volver a confirmar.</Nota>
+            <Nota>Si cambiás el recorrido, el horario, el motivo o las indicaciones, {editar.conductor?.nombre ?? 'el conductor'} lo tiene que volver a confirmar.</Nota>
           ) : null}
         </>
       ) : null}
 
       {paso === 3 ? (
         <>
-          <Titulo>¿Qué lleva?</Titulo>
-          <Bajada>Marcá lo que pide la carga. Solo te vamos a ofrecer conductores con un vehículo que lo cumpla.</Bajada>
-          <Etiqueta style={{ marginTop: 20 }}>Condiciones</Etiqueta>
-          <View style={s.chips}>
-            {CONDICIONES.map((c) => (
-              <Chip key={c.id} titulo={c.titulo} activo={condiciones.includes(c.id)}
-                onPress={() => setCondiciones((prev) => (prev.includes(c.id) ? prev.filter((x) => x !== c.id) : [...prev, c.id]))} />
-            ))}
-          </View>
-          <Campo label="Nota para el conductor" opcional value={descripcion} onChangeText={setDescripcion} maxLength={500}
-            placeholder="Por ejemplo: tocar timbre en el portón de atrás" hint="La ve el conductor en el viaje." multiline={false} />
+          <Titulo>¿Para qué es el viaje?</Titulo>
+          <Bajada>El conductor ve las dos cosas en el viaje. Las dos son obligatorias.</Bajada>
+          <Campo label="Motivo" value={motivo} onChangeText={setMotivo} maxLength={MAX_MOTIVO}
+            placeholder="Por ejemplo: reposición de la sucursal Pilar" hint={`Para qué es, en pocas palabras. Hasta ${MAX_MOTIVO} caracteres.`} />
+          <Campo label="Indicaciones para el conductor" value={descripcion} onChangeText={setDescripcion} maxLength={MAX_INDICACIONES}
+            placeholder="Por ejemplo: portón azul, tocar timbre" hint="Qué tiene que saber para hacerlo: cómo entrar, a quién buscar, qué lleva." multiline />
         </>
       ) : null}
 
       {paso === 4 && !editar ? (
         <>
           <Titulo>¿Quién lo hace?</Titulo>
-          <Bajada>{condiciones.length ? <>El viaje pide <Text style={{ fontFamily: fonts.uiBold, color: colors.ink }}>{textoCondiciones(condiciones).toLowerCase()}</Text>.</> : 'El viaje no pide condiciones especiales.'}</Bajada>
+          <Bajada>Cualquiera de tus conductores con un vehículo cargado lo puede hacer.</Bajada>
           {conductores === null ? <ActivityIndicator color={colors.accent} style={{ marginTop: 24 }} /> : null}
           {conductores && !conductores.length ? (
             <Nota tipo="aviso">Todavía no tenés conductores. Invitá a uno con un código: cuando lo cargue en su app, aparece acá.</Nota>
           ) : null}
           {conductores?.length ? (
             <View style={{ marginTop: 16 }}>
-              <ListaConductores conductores={conductores} condiciones={condiciones} elegido={conductor?.id_conductor} onElegir={setConductor} />
+              <ListaConductores conductores={conductores} elegido={conductor?.id_conductor} onElegir={setConductor} />
             </View>
           ) : null}
           <Meta style={{ marginTop: 12 }}>El conductor elige con qué vehículo lo hace cuando lo confirma.</Meta>
@@ -328,10 +328,10 @@ export default function NuevoViajeScreen({ navigation, route }) {
           <DatosViaje items={[
             { label: 'Cuándo', valor: repite ? textoFrecuencia(regla) : cuandoLargo(fechaProgramada) },
             repite ? { label: 'Hasta', valor: `${diaCorto(hasta)} (${cantidad} viajes)` } : { label: 'Paradas', valor: String(paradas.length) },
-            { label: 'Condiciones', valor: textoCondiciones(condiciones) },
+            { label: 'Motivo', valor: motivo.trim() },
             { label: 'Conductor', valor: editar ? nombreConductor(editar.conductor) : nombreConductor(conductor) },
           ]} />
-          {descripcion.trim() ? <Nota>Nota para el conductor: {descripcion.trim()}</Nota> : null}
+          <Nota>Indicaciones para el conductor: {descripcion.trim()}</Nota>
           {repite && !error ? <Nota>{conductor?.nombre} recibe un solo aviso con los {cantidad} viajes y los confirma uno por uno. La serie no se renueva sola.</Nota> : null}
           {editar?.estado === 'CONFIRMADO' ? <Nota tipo="aviso">{editar.conductor?.nombre ?? 'El conductor'} lo va a tener que confirmar de nuevo.</Nota> : null}
         </>
@@ -388,7 +388,6 @@ const createStyles = (c) => StyleSheet.create({
   dia:          { flex: 1, height: 40, borderRadius: 8, borderWidth: 1, borderColor: c.lineStrong, backgroundColor: c.surface, alignItems: 'center', justifyContent: 'center' },
   diaOn:        { backgroundColor: c.ink, borderColor: c.ink },
   diaTexto:     { fontFamily: fonts.uiBold, fontSize: 13, color: c.ink2 },
-  chips:        { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   precio:       { marginTop: 16, borderWidth: 1, borderColor: c.line, borderRadius: 10, backgroundColor: c.surface, padding: 16 },
   precioValor:  { fontFamily: fonts.display, fontSize: 36, lineHeight: 40, letterSpacing: -1, color: c.ink },
   precioNota:   { fontFamily: fonts.ui, fontSize: 12, color: c.ink3, marginTop: 6 },

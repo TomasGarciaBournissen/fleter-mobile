@@ -6,7 +6,7 @@ import { cuando, diaCorto, hora, km } from '../../utils/fechas';
 import { motivoFinal } from '../../utils/estados';
 import ChipEstado from './ChipEstado';
 import Recorrido, { partirDireccion } from './Recorrido';
-import DatosViaje, { datosBasicos, textoCondiciones, distanciaDe, tiempoDe } from './DatosViaje';
+import DatosViaje, { datosBasicos, textoMotivo, distanciaDe, tiempoDe } from './DatosViaje';
 import { finVentanaInicio } from '../../utils/ventana';
 
 const idCorto = (id) => `VJ-${id}`;
@@ -25,7 +25,7 @@ export default function TarjetaViaje({ viaje: v, completa = false, onPress }) {
   const resumen = [
     `${origen || 'A confirmar'} → ${destino}.`,
     `${textoParadas}.`,
-    `${textoCondiciones(v.condiciones_requeridas)}.`,
+    `${textoMotivo(v)}.`,
     `${km(distanciaDe(v))}, ${tiempoDe(v)}.`,
     motivoFinal(v),
   ].filter(Boolean).join(' ');

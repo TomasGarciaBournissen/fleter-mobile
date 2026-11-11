@@ -9,7 +9,7 @@ import { diaCorto } from '../../utils/fechas';
 import { mensajeDeError } from '../../utils/errores';
 import { Pantalla, Titulo, Seccion, Nota, Boton, Pastilla, HojaInferior } from '../../components/ui';
 import Recorrido from '../../components/viaje/Recorrido';
-import DatosViaje, { textoCondiciones } from '../../components/viaje/DatosViaje';
+import DatosViaje, { textoMotivo } from '../../components/viaje/DatosViaje';
 import TarjetaViajeEmpresa, { nombreConductor } from '../../components/empresa/TarjetaViajeEmpresa';
 import { ESTADO_SERIE, porHacer } from './SeriesScreen';
 
@@ -72,10 +72,10 @@ export default function SerieScreen({ navigation, route }) {
       <DatosViaje items={[
         { label: 'Desde', valor: diaCorto(desdeIso(serie.fecha_desde)) },
         { label: 'Hasta', valor: diaCorto(desdeIso(serie.fecha_hasta)) },
-        { label: 'Condiciones', valor: textoCondiciones(serie.condiciones_requeridas) },
+        { label: 'Motivo', valor: textoMotivo(serie) },
         { label: 'Conductor', valor: nombreConductor(serie.conductor) },
       ]} />
-      {serie.descripcion ? <Nota>Nota para el conductor: {serie.descripcion}</Nota> : null}
+      {serie.descripcion ? <Nota>Indicaciones para el conductor: {serie.descripcion}</Nota> : null}
       {serie.estado === 'BORRADA' ? <Nota>Se borró al desvincular al conductor; sus viajes por hacer se cancelaron.</Nota> : null}
       {error ? <Nota tipo="error">{error}</Nota> : null}
 

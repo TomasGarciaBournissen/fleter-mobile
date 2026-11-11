@@ -21,7 +21,17 @@ const BACKEND = {
   'Ya estas vinculado a esta PyME': 'Ya trabajás con esta empresa.',
   'Demasiados intentos. Proba de nuevo en unos minutos': 'Hubo demasiados intentos. Esperá unos minutos y probá de nuevo.',
   'Usuario no registrado': 'No hay una cuenta de Fleter con ese usuario. Creá una cuenta primero.',
+  'El viaje ya fue cerrado por la empresa': 'La empresa ya cerró este viaje.',
+  'El viaje ya fue cerrado automaticamente': 'El viaje ya se cerró solo a fin del día.',
+  'El viaje ya fue cerrado por el chofer': 'El conductor ya cerró el viaje.',
+  'El chofer todavia no llego a la ultima parada: no se puede finalizar el viaje': 'El conductor todavía no llegó a la última parada: no lo podés finalizar.',
+  'El cuerpo de la solicitud es demasiado grande': 'Es demasiado texto. Acortalo y probá de nuevo.',
+  'Acceso denegado': 'No tenés permiso para hacer esto.',
 };
+
+// Status cuyo mensaje el backend ya manda en castellano y sirve tal cual
+// (validaciones, conflictos de estado, empresa suspendida, rate limit con su espera)
+const TAL_CUAL = [400, 403, 409, 429];
 
 export function mensajeDeError(err, porDefecto = 'Algo salió mal. Probá de nuevo en unos segundos.') {
   if (!err) return porDefecto;
@@ -31,8 +41,9 @@ export function mensajeDeError(err, porDefecto = 'Algo salió mal. Probá de nue
     if (BACKEND[api]) return BACKEND[api];
     if (/cuit/i.test(api) && /registrad|existe|uso/i.test(api)) return 'Ya hay una empresa registrada con ese CUIT. Pedile a alguien de tu empresa un código para sumarte.';
     if (/cuit/i.test(api)) return 'Revisá el CUIT: tiene que tener 11 números.';
-    if (err.response.status === 400) return api; // validaciones del backend, ya en castellano
+    if (TAL_CUAL.includes(err.response.status)) return api;
   }
+  if (err?.response?.status === 503) return 'Fleter no está disponible en este momento. Probá de nuevo en unos minutos.';
   if (err.message === 'Network Error') return 'No hay conexión con Fleter. Revisá internet y probá de nuevo.';
   return porDefecto;
 }

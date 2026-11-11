@@ -1,5 +1,22 @@
 # Pruebas de contrato del backend
 
+## Lo que hace la app — `mobile.mjs`
+
+Los mismos pedidos que manda la app (`src/services/*`), con los mismos bodies: alta de empresa y de
+conductor, empresa, vehículo sin condiciones, código, viaje con `motivo` y `descripcion` (y sus `400`),
+lista, edición, lugar, serie, socket (token bueno y malo), recorrido entero del conductor hasta el remito
+con el bloque `cierre` y `cerrado_por`, y cancelar. Espera ~2 minutos a que abra la ventana de inicio.
+Usa 1 canje. Último resultado: 41/41 contra staging (`11d2f80`, 11 nov 2026).
+
+```bash
+BASE_URL=https://nombre-proyecto-back-staging.up.railway.app FIREBASE_API_KEY=AIza... \
+NODE_USE_ENV_PROXY=1 node scripts/api-tests/mobile.mjs
+```
+
+> `viajes.mjs` y `series.mjs` son anteriores al pedido del 20-10-2026: todavía mandan
+> `condiciones_requeridas` y no mandan `motivo`, así que contra el `develop` actual fallan en esos
+> casos. El backend ya cubre el ciclo con su simulador (`e2e/sim/` del repo del backend).
+
 `organizaciones.mjs` prueba la capa de identidad de `api.md` (PyMEs, miembros, invitaciones, canje,
 choferes y los campos nuevos de `GET /api/auth/me`). No necesita dependencias: alcanza con Node 18 o más.
 
