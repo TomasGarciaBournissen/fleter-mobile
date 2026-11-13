@@ -13,6 +13,21 @@ BASE_URL=https://nombre-proyecto-back-staging.up.railway.app FIREBASE_API_KEY=AI
 NODE_USE_ENV_PROXY=1 node scripts/api-tests/mobile.mjs
 ```
 
+## Precio v2 — `precio-v2.mjs`
+
+La sección «Precio v2» de `API.md` (`develop` desde `c480164`) desde el lado de la app: `estimar-precio` con la
+aritmética de la fórmula (mínimo de 2 h, ayudante, escalera, factura A, peajes, provincia, paradas extra y el rango
+−20 % / +30 %), los `400` nuevos, factura A por defecto, lugar con acceso por defecto, viaje creado con los datos
+nuevos, lo que recibe el conductor (lista, detalle, `GET /api/viajes/:id`, sockets, `salir`: sin precios ni datos
+personales, con servicio, carga y acceso por parada), `costo-acumulado` `403` para el conductor, el viaje entero
+sin GPS (el precio no sale $0), el remito sin precio y el feedback del precio pagado. Usa 1 canje y espera ~2
+minutos. Último resultado: 54/54 contra staging (13 nov 2026).
+
+```bash
+BASE_URL=https://nombre-proyecto-back-staging.up.railway.app FIREBASE_API_KEY=AIza... \
+NODE_USE_ENV_PROXY=1 node scripts/api-tests/precio-v2.mjs
+```
+
 > `viajes.mjs` y `series.mjs` son anteriores al pedido del 20-10-2026: todavía mandan
 > `condiciones_requeridas` y no mandan `motivo`, así que contra el `develop` actual fallan en esos
 > casos. El backend ya cubre el ciclo con su simulador (`e2e/sim/` del repo del backend).

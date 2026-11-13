@@ -336,9 +336,9 @@
     "semantic_hash": "d33cf6709bc18c233e14b6321735576f"
   },
   "PROGRESO.md": {
-    "mtime": 1794411200.6652575,
-    "seen": 1794411251.5875711,
-    "ast_hash": "60258441ed5f0d987ab9264aceffcfe2",
+    "mtime": 1794591098.2567227,
+    "seen": 1794591112.8155851,
+    "ast_hash": "834a7804db9b235c9eea6f7539b18906",
     "semantic_hash": ""
   },
   "UXUI.md": {
@@ -630,9 +630,9 @@
     "semantic_hash": ""
   },
   "scripts/api-tests/README.md": {
-    "mtime": 1794411200.6663861,
-    "seen": 1794411251.5876174,
-    "ast_hash": "028b7ac80fd186bd879b81c854788515",
+    "mtime": 1794591098.2570033,
+    "seen": 1794591112.8156157,
+    "ast_hash": "aa17221ca099adc6b978db3415cfac18",
     "semantic_hash": ""
   },
   "src/screens/auth/_marketplace/LEEME.md": {
@@ -1968,9 +1968,9 @@
     "semantic_hash": ""
   },
   "docs/ARQUITECTURA.md": {
-    "mtime": 1794411101.2955325,
-    "seen": 1794411251.5875807,
-    "ast_hash": "691d09fa1d17618f879ae493ea3be092",
+    "mtime": 1794591098.253427,
+    "seen": 1794591112.8155906,
+    "ast_hash": "8c3578a8a349e10913bce5e3ed6e7971",
     "semantic_hash": ""
   },
   "docs/FLUJOS_MOBILE.md": {
@@ -2184,9 +2184,9 @@
     "semantic_hash": ""
   },
   "src/screens/empresa/NuevoViajeScreen.js": {
-    "mtime": 1794411121.30194,
-    "seen": 1794411251.5871465,
-    "ast_hash": "e0f7937211571b061ca36c00a5af55e1",
+    "mtime": 1794591055.329843,
+    "seen": 1794591112.8152628,
+    "ast_hash": "a7c5345321d0552838524f2e17baa222",
     "semantic_hash": ""
   },
   "src/screens/empresa/SerieScreen.js": {
@@ -2202,9 +2202,9 @@
     "semantic_hash": ""
   },
   "src/screens/empresa/ViajeScreen.js": {
-    "mtime": 1794410416.9603643,
-    "seen": 1794411251.5871513,
-    "ast_hash": "0ac41c0ef8acc39ee55a1bae7eb95cfc",
+    "mtime": 1794591055.3301234,
+    "seen": 1794591112.8152666,
+    "ast_hash": "76040a4f684cf9c082ecdcace1c664ec",
     "semantic_hash": ""
   },
   "src/screens/empresa/ViajesScreen.js": {
@@ -2226,15 +2226,15 @@
     "semantic_hash": ""
   },
   "src/services/mockEmpresa.js": {
-    "mtime": 1794411121.3048053,
-    "seen": 1794411251.587192,
-    "ast_hash": "2dcd088da5b2ef6a74f5b02dcc8c40d2",
+    "mtime": 1794591048.8593006,
+    "seen": 1794591112.8153005,
+    "ast_hash": "4793b347936a73cea37199b40410aabd",
     "semantic_hash": ""
   },
   "src/services/viajesEmpresa.js": {
-    "mtime": 1794410274.7579002,
-    "seen": 1794411251.5871992,
-    "ast_hash": "f5d029699e03fae981a3ccf266b624f1",
+    "mtime": 1794591048.8588846,
+    "seen": 1794591112.8153062,
+    "ast_hash": "a23617d38a8cf9fbc20e25cc1e499f1d",
     "semantic_hash": ""
   },
   "src/utils/dinero.js": {
@@ -2256,9 +2256,21 @@
     "semantic_hash": ""
   },
   "docs/PEDIDOS_BACKEND.md": {
-    "mtime": 1794411163.9692912,
-    "seen": 1794411251.5875912,
-    "ast_hash": "0f65c526961937c5244555cad78189b7",
+    "mtime": 1794591103.7328954,
+    "seen": 1794591112.8155973,
+    "ast_hash": "8f4cb916b149b30414ebe58ccb4b2164",
+    "semantic_hash": ""
+  },
+  "scripts/api-tests/precio-v2.mjs": {
+    "mtime": 1794590779.7404203,
+    "seen": 1794591112.815128,
+    "ast_hash": "08b439efefc32d69e59c9aedc1f48c6f",
+    "semantic_hash": ""
+  },
+  "docs/PEDIDOS_BACKEND.pdf": {
+    "mtime": 1794449593.866093,
+    "seen": 1794591112.8156204,
+    "ast_hash": "a87be1e520a28f1ab3c74f35e587b478",
     "semantic_hash": ""
   }
 }

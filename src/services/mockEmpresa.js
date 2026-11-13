@@ -147,7 +147,8 @@ function resumen(id) {
   return { total: vs.length, por_estado: vs.reduce((acc, v) => ({ ...acc, [v.estado]: (acc[v.estado] ?? 0) + 1 }), {}) };
 }
 
-// Estimación inventada para DEV: en la app real la devuelve POST /api/viajes/estimar-costo
+// Estimación inventada para DEV: en la app real la devuelve
+// POST /api/organizaciones/:id/viajes/estimar-precio (precio v2, con rango)
 function estimarDev(paradas, fecha) {
   let km = 0;
   for (let i = 1; i < paradas.length; i += 1) {
@@ -167,9 +168,14 @@ function estimarDev(paradas, fecha) {
     t = masMin(t, 15);
     return tramo;
   });
+  const total = Math.max(84000, Math.round((km * 4500) / 1000) * 1000);
   return {
+    version_precio: 2,
     zona: 'PROVINCIA',
-    precio_estimado: Math.round((15000 + km * 1100) / 100) * 100,
+    total,
+    bajo: Math.round((total * 0.8) / 1000) * 1000,
+    alto: Math.round((total * 1.3) / 1000) * 1000,
+    precio_estimado: total,
     estimado: { manejo_horas: manejo, peon_horas: peon, total_horas: manejo + peon, distancia_km: km, inicio_estimado: inicio, fin_estimado: t },
     tramos,
   };

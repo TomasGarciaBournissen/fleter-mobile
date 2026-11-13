@@ -217,6 +217,9 @@ export default function ViajeScreen({ navigation, route }) {
           { label: 'Precio estimado', valor: pesos(v.precio_estimado) },
         ]} />
       ) : null}
+      {v.estado !== 'FINALIZADO' && v.precio_estimado_min != null && v.precio_estimado_max != null ? (
+        <Nota>El precio puede quedar entre {pesos(v.precio_estimado_min)} y {pesos(v.precio_estimado_max)}: se confirma al cerrar el viaje.</Nota>
+      ) : null}
       {v.descripcion ? <Nota>Indicaciones para el conductor: {v.descripcion}</Nota> : null}
       {error ? <Nota tipo="error">{error}</Nota> : null}
 

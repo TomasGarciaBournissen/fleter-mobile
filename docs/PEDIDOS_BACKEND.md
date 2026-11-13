@@ -22,7 +22,7 @@
 | 3 | Historial de alertas por empresa | Media | Pestaña Alertas completa (hoy se pierde lo que pasa con la app cerrada) |
 | 4 | Remito con foto | Media | Foto de la entrega en la última parada |
 | 5 | ETA, desvíos y ventana de inicio también para el conductor | Media | Llegada actualizada y aviso de desvío en Viaje activo |
-| 6 | No mandarle el precio al conductor | Media | Regla del producto (hoy la cumple solo la app) |
+| 6 | No mandarle el precio al conductor | ✅ Hecho | Resuelto en `develop` (`c480164`, 13 nov 2026) |
 | 7 | Alta con Google | Baja | Botón «Entrar con Google» para cuentas nuevas |
 | 8 | Exponer la configuración que el mobile muestra | Baja | Ventana, anticipación y radio sin valores fijos en la app |
 
@@ -130,7 +130,10 @@ Nos sirve saber:
 - Emitir también a `usuario:{id}` del conductor `eta:actualizar`, `alerta:desvio` y `ruta:recalculada`.
 - Sumar al viaje `ventana_inicio_desde` y `ventana_inicio_hasta` (ISO).
 
-## 6. No mandarle el precio al conductor — media
+## 6. No mandarle el precio al conductor — hecho
+
+> **Resuelto** en `develop` (`c480164`, «Precio v2», 13 nov 2026): el conductor ya no recibe precios, tarifas,
+> desglose ni datos personales del creador por ningún canal. Probado con `scripts/api-tests/precio-v2.mjs`.
 
 **Hoy.** `GET /api/choferes/viajes` trae `precio_estimado` (visto en staging: `1338.88…`). Es probable
 que el detalle también traiga `precio_real` y `desglose`. La regla del producto es que **el conductor

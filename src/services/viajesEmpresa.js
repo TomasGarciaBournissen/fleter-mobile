@@ -20,18 +20,21 @@ export async function obtenerViaje(idOrg, id) {
   return data;
 }
 
-// Precio y tiempos antes de crear. Acá las paradas van solo con coordenadas
-// (un lugar guardado se manda con sus lat/lng; `id_lugar` no se acepta).
-export async function estimarViaje({ paradas, fecha_programada }) {
-  const body = { paradas: paradas.map(({ lat, lng, direccion }) => ({ lat, lng, direccion })), fecha_programada };
+// Parada para crear, editar o estimar: un lugar guardado va por su id (la empresa
+// ve su nombre después y el backend copia su acceso y pisos); una dirección
+// suelta, con coordenadas.
+export const paradaParaApi = (p) => (p.id_lugar ? { id_lugar: p.id_lugar } : { lat: p.lat, lng: p.lng, direccion: p.direccion });
+
+// Precio y tiempos antes de crear, con la fórmula del precio v2 (la misma con la
+// que el backend crea el viaje): `total` y el rango `bajo` / `alto` (−20 % / +30 %),
+// más `estimado` y `tramos`. No crea nada. El `/api/viajes/estimar-costo` viejo es
+// del marketplace y da otro número: no se usa para viajes de empresa.
+export async function estimarViaje(idOrg, { paradas, fecha_programada }) {
+  const body = { paradas: paradas.map(paradaParaApi), fecha_programada };
   if (DEV_MODE) return mock.estimar(body);
-  const { data } = await api.post('/api/viajes/estimar-costo', body);
+  const { data } = await api.post(`${base(idOrg)}/estimar-precio`, body);
   return data;
 }
-
-// Parada para crear o editar: un lugar guardado va por su id (la empresa ve
-// su nombre después); una dirección suelta, con coordenadas.
-export const paradaParaApi = (p) => (p.id_lugar ? { id_lugar: p.id_lugar } : { lat: p.lat, lng: p.lng, direccion: p.direccion });
 
 // `motivo` (para qué es, 1 a 120) y `descripcion` (indicaciones, 1 a 500) son
 // obligatorios desde el pedido del 20-10-2026. Los viajes de PyME ya no tienen

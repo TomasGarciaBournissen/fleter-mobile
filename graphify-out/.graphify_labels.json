@@ -6,11 +6,9 @@
   "7": "Pruebas de viajes",
   "9": "Config Expo app.json",
   "12": "Pantallas cliente legacy",
-  "13": "Cambio de enfoque",
   "14": "Stack fletero legacy",
   "15": "Endpoints viajes legacy",
   "16": "Eventos socket",
-  "17": "package.json",
   "18": "Pruebas de identidad",
   "19": "Sistema de diseño",
   "20": "Plan de fases original",
@@ -18,8 +16,6 @@
   "24": "Endpoints empresas legacy",
   "34": "Endpoints admin",
   "35": "Vehículos API",
-  "39": "Mocks web",
-  "40": "Scripts npm",
   "42": "Seguridad de tokens",
   "44": "Mock Firebase app"
 }

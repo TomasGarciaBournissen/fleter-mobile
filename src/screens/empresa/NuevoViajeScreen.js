@@ -41,7 +41,7 @@ const mismoDia = (a, b) => a.toDateString() === b.toDateString();
 const desdeViaje = (p) => ({ direccion: p.direccion, lat: Number(p.latitud), lng: Number(p.longitud), id_lugar: p.lugar?.activo ? p.id_lugar : null, nombre: p.lugar?.activo ? p.lugar.nombre : null });
 
 // Nuevo viaje en cuatro pasos cortos (recorrido, cuándo, para qué, conductor) y
-// una revisión con el precio que devuelve el backend (`estimar-costo`): nada se
+// una revisión con el precio que devuelve el backend (`estimar-precio`, v2 con rango): nada se
 // calcula en el teléfono. «Se repite» crea una serie de viajes.
 // Con `route.params.editar` (un viaje ASIGNADO o CONFIRMADO) edita ese viaje:
 // sin repetición ni conductor (eso es «Reasignar», desde el detalle). Con
@@ -101,7 +101,7 @@ export default function NuevoViajeScreen({ navigation, route }) {
     setEstimacion(null);
     setEstimando(true);
     try {
-      setEstimacion(await estimarViaje({ paradas, fecha_programada: fechaProgramada.toISOString() }));
+      setEstimacion(await estimarViaje(idOrg, { paradas, fecha_programada: fechaProgramada.toISOString() }));
     } catch (e) {
       setError(mensajeDeError(e, 'No pudimos calcular el precio. Probá de nuevo en unos segundos.'));
     } finally {
@@ -297,8 +297,8 @@ export default function NuevoViajeScreen({ navigation, route }) {
           {estimando ? <ActivityIndicator color={colors.accent} style={{ marginTop: 24 }} /> : null}
           {estimacion ? (
             <View style={s.precio}>
-              <Text style={s.precioValor}>{pesos(estimacion.precio_estimado)}</Text>
-              <Text style={s.precioNota}>Precio estimado{repite ? ' por viaje' : ''}. Se confirma con el GPS al cerrar.</Text>
+              <Text style={s.precioValor}>{pesos(estimacion.total)}</Text>
+              <Text style={s.precioNota}>Precio estimado{repite ? ' por viaje' : ''}, entre {pesos(estimacion.bajo)} y {pesos(estimacion.alto)}. Se confirma al cerrar el viaje.</Text>
               <DatosViaje items={[
                 { label: 'Distancia', valor: km(estimacion.estimado?.distancia_km) },
                 { label: 'Tiempo', valor: duracionHoras(estimacion.estimado?.total_horas) },
