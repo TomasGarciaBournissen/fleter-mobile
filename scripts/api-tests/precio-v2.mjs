@@ -107,6 +107,7 @@ const patente = () => Array.from({ length: 2 }, () => LETRAS[Math.floor(Math.ran
 const ORIGEN = { lat: -34.6037, lng: -58.3816, direccion: 'Plaza de Mayo, CABA' };
 const DESTINO = { lat: -34.5895, lng: -58.3974, direccion: 'Recoleta, CABA' };
 const PROVINCIA = { lat: -34.4708, lng: -58.5286, direccion: 'San Isidro, Buenos Aires' };
+const LA_PLATA = { lat: -34.9214, lng: -57.9545, direccion: 'Plaza Moreno, La Plata' }; // por la autopista, con peaje
 const enMin = (min) => new Date(Date.now() + min * 60000).toISOString();
 const pesos = (n) => (n == null ? '—' : `$${Number(n).toLocaleString('es-AR')}`);
 const cerca = (a, b, tol = 1000) => typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= tol;
@@ -218,6 +219,34 @@ async function main() {
   const cam = await est({ tipo_servicio: 'CAMION' });
   registrar('CAMION responde', cam.status === 200 && !cuentasV2(cam.body?.desglose), `${cam.status} ${cuentasV2(cam.body?.desglose)}`);
   nota(`Plaza de Mayo → Recoleta por servicio: LIVIANO ${pesos(basico.body?.total)} · EQUIPO ${pesos(eq.body?.total)} · CAMION ${pesos(cam.body?.total)}`);
+
+  seccion('Peajes automáticos con Google');
+  const pl = await api(E, 'POST', `/api/organizaciones/${A}/viajes/estimar-precio`, { paradas: [ORIGEN, LA_PLATA], fecha_programada: enMin(120) });
+  const pk = pl.body?.peajes; const pd = pl.body?.desglose?.peajes_detalle;
+  registrar('a La Plata calcula los peajes solo (fuente GOOGLE)', pl.status === 200 && pk?.fuente === 'GOOGLE' && pk?.google > 0 && pk?.usados === pk?.google,
+    `${pl.status} ${JSON.stringify(pk)}`);
+  registrar('Google = ida × 2 (vuelta) × 1 (LIVIANO)', pd?.google_ida > 0 && cerca(pd?.google_total, pd.google_ida * pd.factor_vuelta * pd.multiplicador, 1) && pd?.factor_vuelta === 2 && pd?.multiplicador === 1,
+    JSON.stringify(pd));
+  registrar('los peajes entran en el precio (sin IVA)', pl.body?.desglose?.peajes === pk?.google && !cuentasV2(pl.body?.desglose), `${cuentasV2(pl.body?.desglose)} ${JSON.stringify({ peajes: pl.body?.desglose?.peajes, iva: pl.body?.desglose?.iva })}`);
+  nota(`Plaza de Mayo → La Plata: peajes de Google ${pesos(pk?.google)} (ida ${pesos(pd?.google_ida)}), precio ${pesos(pl.body?.total)}`);
+  const plPyme = await api(E, 'POST', `/api/organizaciones/${A}/viajes/estimar-precio`, { paradas: [ORIGEN, LA_PLATA], fecha_programada: enMin(120), peajes_estimados: 3000 });
+  registrar('si la empresa declara peajes, gana lo suyo (y Google queda de referencia)', plPyme.body?.peajes?.fuente === 'PYME' && plPyme.body?.peajes?.usados === 3000 && plPyme.body?.peajes?.google === pk?.google,
+    JSON.stringify(plPyme.body?.peajes));
+  const plCam = await api(E, 'POST', `/api/organizaciones/${A}/viajes/estimar-precio`, { paradas: [ORIGEN, LA_PLATA], fecha_programada: enMin(120), tipo_servicio: 'CAMION' });
+  registrar('CAMION paga el doble de peaje (multiplicador 2)', plCam.body?.desglose?.peajes_detalle?.multiplicador === 2 && cerca(plCam.body?.peajes?.google, (pd?.google_ida ?? 0) * 4, 2),
+    JSON.stringify(plCam.body?.desglose?.peajes_detalle));
+  const sinPeaje = await api(E, 'POST', `/api/organizaciones/${A}/viajes/estimar-precio`, { paradas: [ORIGEN, DESTINO], fecha_programada: enMin(120) });
+  registrar('ruta sin peajes: 0', sinPeaje.body?.peajes?.usados === 0 && ['GOOGLE', 'NINGUNA'].includes(sinPeaje.body?.peajes?.fuente) && sinPeaje.body?.peajes?.error !== true,
+    JSON.stringify(sinPeaje.body?.peajes));
+  const vPl = await api(E, 'POST', `/api/organizaciones/${A}/viajes`, {
+    id_conductor: IDC, fecha_programada: enMin(3 * 24 * 60), motivo: 'Entrega en La Plata', descripcion: 'Prueba de peajes', paradas: [ORIGEN, LA_PLATA],
+  });
+  registrar('crear el viaje a La Plata guarda los peajes de Google', vPl.status === 201 && vPl.body?.fuente_peajes === 'GOOGLE' && vPl.body?.peajes_google_ida > 0 && vPl.body?.desglose_estimado?.peajes > 0,
+    `${vPl.status} ${JSON.stringify({ f: vPl.body?.fuente_peajes, ida: vPl.body?.peajes_google_ida, d: vPl.body?.desglose_estimado?.peajes_detalle })}`);
+  const dPl = await api(C, 'GET', `/api/choferes/viajes/${vPl.body?.id_viaje}`);
+  registrar('el conductor no ve nada de peajes', dPl.status === 200 && fugas(dPl.body).length === 0 && !dPl.body?.paradas?.some?.((x) => 'peajes_google_tramo' in x || 'id_lugar' in x),
+    `${dPl.status} trae: ${fugas(dPl.body).join(', ')}`);
+  await api(E, 'POST', `/api/organizaciones/${A}/viajes/${vPl.body?.id_viaje}/cancelar`, { motivo: 'Prueba del mobile' });
 
   seccion('Factura A por defecto y lugares con acceso');
   const pf = await api(E, 'PUT', `/api/organizaciones/${A}`, { factura_a_por_defecto: true });

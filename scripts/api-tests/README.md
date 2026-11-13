@@ -20,8 +20,9 @@ aritmética de la fórmula (mínimo de 2 h, ayudante, escalera, factura A, peaje
 −20 % / +30 %), los `400` nuevos, factura A por defecto, lugar con acceso por defecto, viaje creado con los datos
 nuevos, lo que recibe el conductor (lista, detalle, `GET /api/viajes/:id`, sockets, `salir`: sin precios ni datos
 personales, con servicio, carga y acceso por parada), `costo-acumulado` `403` para el conductor, el viaje entero
-sin GPS (el precio no sale $0), el remito sin precio y el feedback del precio pagado. Usa 1 canje y espera ~2
-minutos. Último resultado: 54/54 contra staging (13 nov 2026).
+sin GPS (el precio no sale $0), el remito sin precio, el feedback del precio pagado y los peajes automáticos con Google (`0b690b4`: ida × 2 ×
+multiplicador, lo de la empresa gana, el conductor no los ve). Usa 1 canje y espera ~2 minutos. Último resultado:
+62/62 contra staging (13 nov 2026).
 
 ```bash
 BASE_URL=https://nombre-proyecto-back-staging.up.railway.app FIREBASE_API_KEY=AIza... \
