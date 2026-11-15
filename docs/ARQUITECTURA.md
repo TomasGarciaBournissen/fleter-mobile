@@ -2,7 +2,7 @@
 
 > **Documento vivo.** Se actualiza en el mismo commit que cualquier cambio de código que agregue, borre o
 > cambie la responsabilidad de un archivo, un endpoint, un evento o un flujo (regla en `CLAUDE.md`).
-> Última actualización: 13 nov 2026 · rama `staging` · fases 0, 1, 2 y 3 programadas; de la 4, lo que no depende del backend. Precio v2 del backend (`c480164`) probado contra staging.
+> Última actualización: 15 nov 2026 · rama `staging` · fases 0, 1, 2 y 3 programadas; de la 4, lo que no depende del backend. Precio v2 del backend (`c480164`) probado contra staging. Marketplace guardado en `legacy/`, `DEV_MODE` apagado por defecto y sesión guardada en el llavero.
 >
 > Otros documentos: `PROGRESO.md` (estado y commits), `ISSUES.md` (problemas abiertos con el backend),
 > `docs/FLUJOS_MOBILE.md` (resumen para el review), `UXUI.md` (sistema de diseño), `API.md` del backend
@@ -59,8 +59,8 @@ src/
     onboarding/            cuenta de empresa sin empresa (fase 1)
     conductor/             app del conductor (fase 2)
     empresa/               app de la empresa (fase 3)
-    cliente/ fletero/ gerente/ auth/_marketplace/   heredado, ver sección 8
   mocks/                   stubs de Firebase nativo para web / Expo Go
+legacy/marketplace/        código del marketplace guardado fuera de src/ (no se compila), ver sección 8
 prototype/                 prototipos HTML aprobados por fase
 docs/                      documentación
 ```
@@ -104,10 +104,10 @@ Dependencias entre capas (de arriba hacia abajo, nunca al revés):
 con `useFonts`; si fallan, sigue con las del sistema. Importa `src/tasks/locationTask` **antes** de renderizar,
 porque `TaskManager.defineTask` tiene que correr a nivel de módulo. Arma el árbol de providers de la sección 3.
 
-**`src/config.js`** — Exporta `DEV_MODE = EXPO_PUBLIC_DEV_MODE !== 'false'`. Con DEV_MODE prendido no se usa
+**`src/config.js`** — Exporta `DEV_MODE = EXPO_PUBLIC_DEV_MODE === 'true'`. Con DEV_MODE prendido no se usa
 Firebase ni el backend: cada servicio devuelve datos de ejemplo, el login entra sin contraseña (un email con
-«conductor» o «martin» entra como conductor) y el GPS usa una posición fija. ⚠️ Está prendido por defecto; ver
-`docs/FLUJOS_MOBILE.md` §6.
+«conductor» o «martin» entra como conductor) y el GPS usa una posición fija. Apagado por defecto desde el 15 nov
+2026: un build sin `.env` va contra Firebase y el backend reales, nunca con usuarios de prueba.
 
 **`app.json` / `package.json`** — Configuración de Expo (permisos de ubicación, ícono, splash) y dependencias.
 `package.json` redirige `@react-native-firebase/*` a `src/mocks/` para que el código heredado compile en web.
@@ -195,11 +195,19 @@ Lugares, Lugar, Series, Serie, Equipo, DatosEmpresa, MisDatos. Mismo estilo de p
 
 Toda llamada al backend o a Firebase pasa por acá. Cada función tiene su rama `if (DEV_MODE)` con datos de ejemplo.
 
-**`api.js`** — Instancia de axios con `baseURL = EXPO_PUBLIC_API_URL` y timeout de 30 s. Un interceptor pide el
+**`api.js`** — Instancia de axios con `baseURL = EXPO_PUBLIC_API_URL` y timeout de 30 s. Sin la variable, en
+desarrollo (`__DEV__`) usa staging y en un build de producción no tiene valor por defecto (avisa en consola); ya no cae
+a `http://localhost:3000`. Un interceptor pide el
 ID token de Firebase en **cada** request (`getIdToken()`; Firebase lo renueva solo) y lo manda como `Bearer`.
 
-**`firebase.js`** — Inicializa Firebase con las variables `EXPO_PUBLIC_FIREBASE_*` (en DEV, con una clave falsa
-para que no falle). Usa `inMemoryPersistence`: la sesión no sobrevive a cerrar la app (pendiente para el build nativo).
+**`firebase.js`** — Inicializa Firebase con las variables `EXPO_PUBLIC_FIREBASE_*` (sin clave usa una falsa para
+arrancar y avisa en consola). La sesión usa `persistenciaSesion`; en DEV queda en memoria.
+
+**`persistenciaSesion.js`** / **`persistenciaSesion.web.js`** — Dónde guarda Firebase la sesión (con el refresh
+token) para que sobreviva a cerrar la app. En el teléfono: `getReactNativePersistence` sobre `expo-secure-store`
+(Keychain / Keystore, nunca AsyncStorage); normaliza la clave a `[A-Za-z0-9._-]` y parte el valor en pedazos de
+1.800 caracteres (`<clave>.0`, `<clave>.1`…, con la cantidad en `<clave>.n`) porque SecureStore acepta ~2 KB por
+valor. En web: `browserLocalPersistence`.
 
 **`auth.js`** — `loginEmail`, `loginGoogle(idToken)`, `recuperarContrasena`, `registroCliente`,
 `registroConductor` (los dos registran en el backend y después abren sesión en Firebase), `obtenerPerfil`
@@ -273,8 +281,6 @@ a primer plano. Guarda `recargar` en un `ref` para no re-suscribirse en cada ren
 - `posicionActual()`: lectura precisa para iniciar o confirmar una parada.
 - En DEV, posición fija en el origen de los viajes de ejemplo.
 
-**`useMiEmpresa.js`** — Heredado del marketplace (`/api/empresas/mias`). No lo usa ninguna pantalla nueva.
-
 ### 4.6 Tareas (`src/tasks/`)
 
 **`locationTask.js`** — Define la tarea `conductor-ubicacion` con `TaskManager`. `startLocationTracking()` pide
@@ -293,7 +299,6 @@ y no emite (pendiente).
 | `ventana.js` | Ventana de inicio de referencia (−60 / +90 min de `fecha_programada`). Solo para mostrar (ISSUES #3). |
 | `dinero.js` | `pesos(v)`: precio es-AR ($12.500, sin decimales). Solo del lado de la empresa (fase 3); el conductor nunca ve precios. |
 | `series.js` | Viajes repetidos (fase 3): `FRECUENCIAS`, `LETRAS_DIAS`, `DIAS_MAXIMOS_SERIE` (30), `textoFrecuencia(serie)` («Lun, mié y vie a las 07:00»), `etiquetaFrecuencia(serie)` (marca corta de las cards: «Diario», «L, M y V»), `contarViajes(...)` (aviso previo; el número real lo da el backend), `fechaIso`/`desdeIso`, `diaSemanaIso` (1 = lunes). |
-| `format.js`, `vehiculo.js` | Heredados del marketplace; sin uso en las fases nuevas. |
 
 ### 4.8 Kit de UI (`src/components/ui/`)
 
@@ -343,7 +348,6 @@ Todo se importa desde `components/ui` (`index.js`). Usarlos antes de crear estil
 | `SelectorApariencia.js` | Claro / Oscuro / Sistema; guarda con `setMode`. |
 | `MapViewWrapper.js` | Carga `react-native-maps` si existe; si no, muestra un recuadro. En iOS usa Apple Maps hasta tener la clave de Google. |
 | `MapViewWrapper.web.js` | Misma API para web, sin importar `react-native-maps` (rompería el bundle). |
-| `LocationPickerModal.js` | Heredado del marketplace (elegir dirección con Places). La fase 3 no lo usa: lo reemplazan `HojaParada` + `services/direcciones.js` con el estilo del sistema. |
 
 ### 4.11 Pantallas de entrada y alta (`src/screens/auth/`)
 
@@ -528,14 +532,18 @@ la alerta desaparece sola.
 
 ## 8. Código heredado del marketplace
 
-La versión anterior de la app (fleteros que aceptaban ofertas, gerentes de empresas de transporte). Está fuera de los
-flujos nuevos. Con la fase 3 ya **nada nuevo lo monta** para la empresa: `RootNavigator` manda a `PymeStack`. Queda en
-el repo hasta que el dueño decida borrarlo (fase 4, limpieza):
+La versión anterior de la app (fleteros que aceptaban ofertas, gerentes de empresas de transporte). Desde el 15 nov
+2026 está **guardada fuera de `src/`, en `legacy/marketplace/`** (decisión del dueño: guardarla, no borrarla). Metro solo
+empaqueta lo que se importa, así que no entra en la app. Conserva las rutas originales (`legacy/marketplace/src/...`)
+para volver a ponerla con `git mv`; ver `legacy/marketplace/LEEME.md`. `RootNavigator` ya no monta `FleteroStack` ni
+`GerenteStack`: esos roles ven «Acceso no disponible».
 
-- `src/screens/cliente/`, `src/screens/fletero/`, `src/screens/gerente/`, `src/screens/auth/_marketplace/`
-- `src/navigation/ClienteStack.js` (ya sin uso), `FleteroStack.js`, `GerenteStack.js` (solo roles legacy)
-- `src/hooks/useMiEmpresa.js`, `src/utils/format.js`, `src/utils/vehiculo.js`, `src/mocks/` (los mocks de Firebase nativo siguen haciendo falta para web)
-- `src/components/LocationPickerModal.js` (reemplazado por `HojaParada` en lo nuevo)
+- `screens/cliente/`, `screens/fletero/`, `screens/gerente/`, `screens/auth/_marketplace/`
+- `navigation/ClienteStack.js`, `FleteroStack.js`, `GerenteStack.js`
+- `hooks/useMiEmpresa.js`, `utils/format.js`, `utils/vehiculo.js`, `components/LocationPickerModal.js`
+
+Siguen en `src/` porque los usa la app nueva: `src/mocks/` (Firebase nativo para web), `MapViewWrapper`, `Isotipo`,
+`SelectorApariencia`, `tasks/locationTask`. `services/auth.js` conserva `registroGerente` sin uso.
 
 ## 9. Cómo se cumple el plan, fase por fase
 
@@ -634,7 +642,7 @@ Piezas nuevas que sostienen la fase 3: `context/EmpresaContext.js`, `navigation/
 | Desvincular con vista previa / bloqueo en curso | La app ya avisa qué se cancela; falta que el backend decida si bloquea o pide confirmación (ISSUES.md #1). | ⏳ backend |
 | Historial de alertas | Sin endpoint, las alertas del día viven en memoria (ISSUES.md #4). | ⏳ backend |
 | Pruebas en dispositivo físico (GPS en 2º plano, mapas, Places) | Requiere build nativa; en web los mapas son un recuadro. | ⏳ dispositivo |
-| Limpieza del marketplace y `DEV_MODE` apagado por defecto | Decisiones pendientes del dueño (§8 y `docs/FLUJOS_MOBILE.md` §6). | ⏳ dueño |
+| Limpieza del marketplace y `DEV_MODE` apagado por defecto | Marketplace guardado en `legacy/marketplace/` (§8); `DEV_MODE` solo con `=true`; sesión guardada en el llavero (`persistenciaSesion.js`). | ✅ |
 
 ## 10. Registro de cambios de este documento
 
@@ -643,5 +651,6 @@ Piezas nuevas que sostienen la fase 3: `context/EmpresaContext.js`, `navigation/
 | 27 oct 2026 | Versión inicial: fases 0, 1 y 2 completas, archivo por archivo. |
 | 29 oct 2026 | Fase 3 (en curso): utilidades `dinero.js` y `series.js`. |
 | 29 oct 2026 | Fase 3 completa: `PymeStack`, `EmpresaContext`, servicios de empresa (`viajesEmpresa`, `empresa`, `mockEmpresa`, `direcciones`), `components/empresa/`, `Listas` y `HojaHora` en el kit, 16 pantallas en `screens/empresa/`, flujos 5.7 a 5.9, endpoints y eventos de la empresa. Sección 9 nueva: cómo se cumple el plan, fase por fase y archivo por archivo. |
+| 15 nov 2026 | Marketplace a `legacy/marketplace/` (fuera del bundle; `RootNavigator` sin `FleteroStack` ni `GerenteStack`); `DEV_MODE` apagado por defecto; `api.js` sin caída a localhost; sesión persistente con `persistenciaSesion.js` (SecureStore en el teléfono, `browserLocalPersistence` en web); dependencia `expo-secure-store`. |
 | 13 nov 2026 | Precio v2 del backend: `estimarViaje` pasa a `POST /api/organizaciones/:id/viajes/estimar-precio` (antes usaba el `estimar-costo` del marketplace, que daba $1.276 para un viaje que en v2 cuesta $84.000); Nuevo viaje y el detalle de la empresa muestran el rango. `scripts/api-tests/precio-v2.mjs` nuevo (54/54 contra staging). |
 | 11 nov 2026 | Fase 4 (lo que no depende del backend): al día con `develop` (motivo e indicaciones obligatorios y sin condiciones; cierre sin «Salir» del lado del conductor; reintento del socket; errores 403/409/429/503). `Campo` acepta `multiline`. `scripts/api-tests/mobile.mjs` nuevo (41/41 contra staging). Pedidos al backend en `docs/PEDIDOS_BACKEND.md`. |

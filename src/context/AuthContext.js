@@ -25,9 +25,6 @@ const DEV_USERS = {
     id_usuario: 2, nombre: 'Martín', apellido: 'Gómez', email: 'martin.gomez@gmail.com', rol: 'CONDUCTOR',
     organizaciones: [{ id_organizacion: 1, nombre: 'Distribuidora Norte' }],
   },
-  GERENTE: {
-    id_usuario: 3, nombre: 'Laura', apellido: 'Gómez', email: 'laura@empresa.com', rol: 'GERENTE',
-  },
 };
 
 const AuthContext = createContext(null);

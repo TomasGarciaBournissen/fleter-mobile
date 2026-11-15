@@ -1,8 +1,14 @@
 import axios from 'axios';
 import { auth } from './firebase';
 
+// Sin EXPO_PUBLIC_API_URL: en desarrollo (Metro) se usa staging; en un build
+// de producción no hay valor por defecto, para no mandar datos a otro backend.
+const STAGING = 'https://nombre-proyecto-back-staging.up.railway.app';
+const baseURL = process.env.EXPO_PUBLIC_API_URL || (__DEV__ ? STAGING : undefined);
+if (!baseURL) console.error('[API] Falta EXPO_PUBLIC_API_URL en el .env del build.');
+
 const api = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000',
+  baseURL,
   timeout: 30000,
 });
 

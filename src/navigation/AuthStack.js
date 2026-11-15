@@ -13,7 +13,7 @@ import ConductorListoScreen from '../screens/auth/ConductorListoScreen';
 const Stack = createNativeStackNavigator();
 
 // Entrada y alta. Las pantallas del marketplace quedan archivadas en
-// screens/auth/_marketplace.
+// legacy/marketplace/src/screens/auth/_marketplace.
 export default function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

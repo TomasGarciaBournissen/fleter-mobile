@@ -1,7 +1,7 @@
 import { DEV_MODE } from '../config';
 
 // Búsqueda de direcciones con Google Places (API nueva, v1), la misma que usaba
-// LocationPickerModal. Devuelve { direccion, lat, lng } listo para una parada.
+// LocationPickerModal (guardado en legacy/marketplace). Devuelve { direccion, lat, lng } listo para una parada.
 // Sin clave en modo desarrollo, busca en una lista de direcciones de ejemplo.
 const PLACES_KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY ?? '';
 

@@ -8,9 +8,7 @@ import SplashScreen from '../screens/auth/SplashScreen';
 import AuthStack from './AuthStack';
 import OnboardingEmpresaStack from './OnboardingEmpresaStack';
 import PymeStack from './PymeStack';
-import FleteroStack from './FleteroStack';
 import ConductorStack from './ConductorStack';
-import GerenteStack from './GerenteStack';
 
 function RolNoSoportado({ onLogout }) {
   const { colors } = useTheme();
@@ -35,13 +33,12 @@ function RolNoSoportado({ onLogout }) {
 // Elige el stack según la sesión:
 // sin sesión (o con un alta en curso) → entrada y alta
 // cuenta de empresa sin empresa → registrar la empresa o sumarse con código
-// conductor → ConductorStack · empresa → PymeStack (fase 3)
+// conductor → ConductorStack · empresa → PymeStack. Los roles del marketplace
+// (FLETERO, GERENTE) quedaron guardados en legacy/marketplace y ven «Acceso no disponible».
 function Stacks({ user, altaEnCurso }) {
   if (!user || altaEnCurso) return <AuthStack />;
   if (user.rol === 'CLIENTE') return user.organizacion === null ? <OnboardingEmpresaStack /> : <PymeStack />;
   if (user.rol === 'CONDUCTOR') return <ConductorStack />;
-  if (user.rol === 'FLETERO') return <FleteroStack />; // marketplace, dormido
-  if (user.rol === 'GERENTE') return <GerenteStack />; // marketplace, dormido
   return null;
 }
 
@@ -69,7 +66,7 @@ export default function RootNavigator() {
     return <SplashScreen onTerminar={() => setSplashListo(true)} />;
   }
 
-  const rolNoSoportado = user && !altaEnCurso && !['CLIENTE', 'CONDUCTOR', 'FLETERO', 'GERENTE'].includes(user.rol);
+  const rolNoSoportado = user && !altaEnCurso && !['CLIENTE', 'CONDUCTOR'].includes(user.rol);
   if (rolNoSoportado) {
     return <RolNoSoportado onLogout={logout} />;
   }

@@ -1,12 +1,8 @@
 {
   "0": "Reglas del conductor",
-  "4": "GPS y mapas",
-  "5": "Stacks del marketplace",
   "6": "Dependencias Expo",
   "7": "Pruebas de viajes",
   "9": "Config Expo app.json",
-  "12": "Pantallas cliente legacy",
-  "14": "Stack fletero legacy",
   "15": "Endpoints viajes legacy",
   "16": "Eventos socket",
   "18": "Pruebas de identidad",

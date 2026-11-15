@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-11-15  
-> Branch: staging | Commits totales: 97
+> Branch: staging | Commits totales: 98
 
 ---
 
@@ -92,7 +92,8 @@
 | `74791dc` | 11 Nov 2026 | Docs — `docs/PEDIDOS_BACKEND.pdf` |
 | `1918b56` | 13 Nov 2026 | Feat — precio v2 del backend (`c480164`): Nuevo viaje estima con `POST /api/organizaciones/:id/viajes/estimar-precio` y muestra el rango (antes usaba el `estimar-costo` del marketplace: $1.276 contra $84.000 reales); el detalle de la empresa muestra el rango. `scripts/api-tests/precio-v2.mjs`: 54/54 contra staging (estimar, fórmula, validaciones, factura A por defecto, lugares con acceso, viaje entero, el conductor sin precios ni datos personales, remito sin precio, precio pagado) |
 | `6384c55` | 13 Nov 2026 | Test — `precio-v2.mjs` suma los peajes automáticos con Google del backend (`0b690b4`): La Plata con fuente GOOGLE ($10.374 = ida $5.187 × 2), lo declarado por la empresa gana, CAMION ×2, ruta sin peajes en 0, el conductor no ve peajes. 62/62 contra staging |
-| (este commit) | 15 Nov 2026 | Test — `seguridad.mjs` (49/52 contra staging: IDOR, roles, campos forzados, entradas, cabeceras; fallan coordenadas imposibles → 503, CORS `*` en staging y el 429 no medible por el proxy) y `carga.mjs` (listas y detalles 2,3–2,5 s de a uno, crear viaje 6 s, sin errores con 40 a la vez) |
+| `a8097cb` | 15 Nov 2026 | Test — `seguridad.mjs` (49/52 contra staging: IDOR, roles, campos forzados, entradas, cabeceras; fallan coordenadas imposibles → 503, CORS `*` en staging y el 429 no medible por el proxy) y `carga.mjs` (listas y detalles 2,3–2,5 s de a uno, crear viaje 6 s, sin errores con 40 a la vez) |
+| (este commit) | 15 Nov 2026 | Chore/Fix — decisiones del dueño: el código del marketplace se guarda en `legacy/marketplace/` (fuera del bundle, con su LEEME para volver a ponerlo), `DEV_MODE` apagado por defecto (solo `EXPO_PUBLIC_DEV_MODE=true`), `api.js` sin caída a localhost y la sesión de Firebase guardada en el llavero con `expo-secure-store` (`persistenciaSesion.js`), así no pide login cada vez que se abre la app. Bundles de Android y web OK; la web arranca en el login real |
 
 ---
 
@@ -110,7 +111,7 @@ Modelo empresa + conductores. Componentes base en `src/components/ui/`. Todas en
 | `RegistroConductorScreen` → `LicenciaConductorScreen` → `VehiculoConductorScreen` | ✅ | 3 pasos. Licencia con `HojaCalendario` propia. El vehículo (tipo, patente, marca, modelo, año, color, condiciones) se da de alta junto con la cuenta — resuelve «el registro no carga vehículo». Se puede saltear. `altaEnCurso` mantiene el AuthStack montado durante el alta |
 | `CodigoConductorScreen` | ✅ | Opcional, después de crear la cuenta (el canje necesita sesión). POST /api/invitaciones/canjear |
 | `ConductorListoScreen` | ✅ | Empresa + vehículo, o aviso si no cargó vehículo |
-| `_marketplace/*` | 📦 Archivadas | Login/Register cliente-fletero-gerente y CuentaPendiente del modelo anterior, sin montar |
+| `_marketplace/*` | 📦 Guardadas | En `legacy/marketplace/` desde el 15 nov 2026, fuera del bundle |
 
 ### Alta de empresa (`OnboardingEmpresaStack`, cuenta CLIENTE con `organizacion: null`)
 | Pantalla | Estado | Notas |
@@ -130,7 +131,7 @@ Viaje interno (API.md de develop, Pasos 2 a 4). Oscuro por default, verificado e
 | `ViajeTerminadoScreen` | ✅ | Estimado vs. real (manejo, carga y descarga, distancia, total) y «Ver remito». Dice si lo cerró la empresa o se cerró solo (Tarea 5) |
 | `HistorialScreen` | ✅ | Agrupado por mes, filtros Todos / Entregados / Cancelados / Vencidos, motivo en la fila |
 | `PerfilScreen` + `EmpresaConductorScreen` + `SumarEmpresaScreen` + `NuevoVehiculoScreen` | ✅ | Empresas (sumar con código, desvincularse con aviso de ISSUES.md #1), vehículos (form compartido `FormVehiculo`), Apariencia, cerrar sesión |
-| `FleteroStack` (fletero/*) | 📦 Dormido | Pantallas del marketplace; solo para el rol legacy FLETERO |
+| `FleteroStack` (fletero/*) | 📦 Guardado | En `legacy/marketplace/`; el rol FLETERO ve «Acceso no disponible» |
 
 ### Empresa (rediseño fase 3 — `PymeStack`, branch `staging`)
 Viaje interno del lado de la empresa (API.md de develop: Pasos 2 a 4 y Tarea 5). Claro por default, verificado en claro y oscuro con capturas (Expo web 390×844, modo desarrollo con datos de ejemplo en `services/mockEmpresa.js`). La empresa sí ve precios.
@@ -202,7 +203,7 @@ Viaje interno del lado de la empresa (API.md de develop: Pasos 2 a 4 y Tarea 5).
 | `services/auth.js` | ✅ | registroCliente, registroConductor via Firebase + backend |
 | `services/firebase.js` | ✅ | Inicializa Firebase app (web SDK) |
 | `services/socket.js` | ✅ | socket.io-client con Bearer token en auth header |
-| `context/AuthContext.js` | ✅ | onAuthStateChanged → POST /api/auth/login → setUser, DEV_MODE via EXPO_PUBLIC_DEV_MODE |
+| `context/AuthContext.js` | ✅ | onAuthStateChanged → POST /api/auth/login → setUser; la sesión sobrevive a cerrar la app (SecureStore). DEV_MODE solo con `EXPO_PUBLIC_DEV_MODE=true` |
 | `context/SocketContext.js` | ✅ | Conecta al login, desconecta al logout |
 
 ---
@@ -213,7 +214,7 @@ Viaje interno del lado de la empresa (API.md de develop: Pasos 2 a 4 y Tarea 5).
 |-------|--------|-----------|
 | `AuthStack` | ✅ | Login → RegisterCliente / RegisterFletero / RegisterGerente → CuentaPendiente |
 | `PymeStack` | ✅ (fase 3) | Bottom tabs: Inicio, Viajes, Nuevo (abre el alta), Alertas (con contador), Más + Viaje, NuevoViaje, Conductores, Conductor, Invitar, Lugares, Lugar, Series, Serie, Equipo, DatosEmpresa, MisDatos |
-| `ClienteStack` | 📦 Sin uso | Bottom tabs del marketplace: Inicio, Crear, Historial, Perfil. Reemplazado por `PymeStack` |
+| `ClienteStack` | 📦 Guardado | En `legacy/marketplace/`. Reemplazado por `PymeStack` |
 | `FleteroStack` | ✅ | Bottom tabs: Disponibles, **Asignados** (nueva), Historial, Perfil + DetalleViaje, ViajeActivo |
 | `GerenteStack` | ✅ (nueva) | Bottom tabs: Disponibles, Empresa, Historial, Perfil — stacks anidados para reservar/asignar y flota/conductores |
 | `RootNavigator` | ✅ | Detecta rol (CLIENTE/CONDUCTOR/FLETERO/GERENTE) y redirige al stack correcto; ADMIN sigue en placeholder "Acceso no disponible" (decisión: panel admin no va en mobile) |
@@ -310,7 +311,8 @@ Viaje interno del lado de la empresa (API.md de develop: Pasos 2 a 4 y Tarea 5).
 - [x] Documento para el backend: `docs/PEDIDOS_BACKEND.md`
 - [ ] Push (FCM, ISSUES.md #2), historial de alertas (ISSUES.md #4), remito con foto, vista previa de desvincular en el backend (ISSUES.md #1), sin precio para el conductor — esperan al backend
 - [ ] Pruebas en dispositivo físico (GPS en 2º plano, mapas, Places) y con TalkBack/VoiceOver
-- [ ] Decisiones del dueño: borrar el código del marketplace y apagar `DEV_MODE` por defecto
+- [x] Decisiones del dueño: marketplace guardado en `legacy/marketplace/` (no se borra) y `DEV_MODE` apagado por defecto
+- [x] Sesión que sobrevive a cerrar la app (`persistenciaSesion.js`, SecureStore)
 
 ### Fase 1 (incompleto)
 - [ ] Agregar sección de vehículo + condiciones a `RegisterFleteroScreen`

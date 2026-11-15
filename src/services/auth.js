@@ -44,7 +44,7 @@ export async function registroConductor(datos) {
   await signInWithEmailAndPassword(auth, datos.email, datos.contrasena);
 }
 
-// Registro de gerente (marketplace, archivado en screens/auth/_marketplace)
+// Registro de gerente (marketplace, guardado en legacy/marketplace)
 export async function registroGerente(datos) {
   await api.post('/api/auth/registro-gerente', datos);
   await signInWithEmailAndPassword(auth, datos.email, datos.contrasena);
