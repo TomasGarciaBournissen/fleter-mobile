@@ -29,6 +29,24 @@ BASE_URL=https://nombre-proyecto-back-staging.up.railway.app FIREBASE_API_KEY=AI
 NODE_USE_ENV_PROXY=1 node scripts/api-tests/precio-v2.mjs
 ```
 
+## Seguridad — `seguridad.mjs`
+
+Dos empresas, un miembro y dos conductores que intentan leer o tocar lo que no es suyo: sin token y con
+token falso, IDOR entre empresas y entre conductores, roles (conductor en rutas de empresa, miembro
+haciendo cosas de responsable, panel de admin), campos forzados (precio, estado, organización, rol),
+entradas raras (inyección SQL, JSON roto, body de 200 KB, coordenadas imposibles), cabeceras, CORS y
+rate limit. No intenta tirar el servidor. Último resultado: 49/52 contra staging (15 nov 2026). Las 3
+que fallan: coordenadas imposibles dan 503 en vez de 400, CORS abierto (`*`) en staging, y el 429 no
+se ve desde acá porque el proxy sale por IPs distintas (el límite sí está activo: cabecera `ratelimit`).
+
+## Carga y tiempos — `carga.mjs`
+
+Cuánto tarda cada pedido de la app de a uno y con 1, 5, 10, 20 y 40 usuarios a la vez (10 s cada
+escalón, lecturas mezcladas), y 20 sockets juntos. Carga moderada a propósito: la base de staging es la
+de producción. Último resultado (15 nov 2026): `/health` 0,1 s, `/me` 0,7 s, listas y detalles 2,3 a
+2,5 s, crear viaje 6 s; con 40 a la vez no hay errores y la mediana no empeora (2,6 s), o sea que la
+demora es de cada pedido, no de capacidad.
+
 > `viajes.mjs` y `series.mjs` son anteriores al pedido del 20-10-2026: todavía mandan
 > `condiciones_requeridas` y no mandan `motivo`, así que contra el `develop` actual fallan en esos
 > casos. El backend ya cubre el ciclo con su simulador (`e2e/sim/` del repo del backend).

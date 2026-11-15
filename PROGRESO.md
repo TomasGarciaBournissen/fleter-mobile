@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-11-13  
-> Branch: staging | Commits totales: 96
+> Última actualización: 2026-11-15  
+> Branch: staging | Commits totales: 97
 
 ---
 
@@ -91,7 +91,8 @@
 | `636ecbc` | 11 Nov 2026 | Feat — fase 4 (lo que no depende del backend): al día con develop (motivo e indicaciones, cierre sin Salir del lado del conductor, socket y errores), prueba contra staging 41/41, `docs/PEDIDOS_BACKEND.md` |
 | `74791dc` | 11 Nov 2026 | Docs — `docs/PEDIDOS_BACKEND.pdf` |
 | `1918b56` | 13 Nov 2026 | Feat — precio v2 del backend (`c480164`): Nuevo viaje estima con `POST /api/organizaciones/:id/viajes/estimar-precio` y muestra el rango (antes usaba el `estimar-costo` del marketplace: $1.276 contra $84.000 reales); el detalle de la empresa muestra el rango. `scripts/api-tests/precio-v2.mjs`: 54/54 contra staging (estimar, fórmula, validaciones, factura A por defecto, lugares con acceso, viaje entero, el conductor sin precios ni datos personales, remito sin precio, precio pagado) |
-| (este commit) | 13 Nov 2026 | Test — `precio-v2.mjs` suma los peajes automáticos con Google del backend (`0b690b4`): La Plata con fuente GOOGLE ($10.374 = ida $5.187 × 2), lo declarado por la empresa gana, CAMION ×2, ruta sin peajes en 0, el conductor no ve peajes. 62/62 contra staging |
+| `6384c55` | 13 Nov 2026 | Test — `precio-v2.mjs` suma los peajes automáticos con Google del backend (`0b690b4`): La Plata con fuente GOOGLE ($10.374 = ida $5.187 × 2), lo declarado por la empresa gana, CAMION ×2, ruta sin peajes en 0, el conductor no ve peajes. 62/62 contra staging |
+| (este commit) | 15 Nov 2026 | Test — `seguridad.mjs` (49/52 contra staging: IDOR, roles, campos forzados, entradas, cabeceras; fallan coordenadas imposibles → 503, CORS `*` en staging y el 429 no medible por el proxy) y `carga.mjs` (listas y detalles 2,3–2,5 s de a uno, crear viaje 6 s, sin errores con 40 a la vez) |
 
 ---
 
