@@ -317,7 +317,7 @@ Todo se importa desde `components/ui` (`index.js`). Usarlos antes de crear estil
 | `Campo` | Campo con label arriba, foco naranja con halo, `hint`, `error` (texto o `true` para solo marcar el borde), `secreto` (ojito), `mono` (solo con valor cargado), `icono`, y modo selector con `onPress`. Con `editable={false}` se ve como dato fijo (fondo `surface2`). |
 | `CampoCodigo` | Código de invitación grande, se formatea solo y tiene botón «Pegar». |
 | `Opcion` | Tarjeta de opción única (tipo de cuenta, tipo de vehículo). |
-| `HojaInferior` | Hoja desde abajo para elegir o confirmar algo que no se deshace. |
+| `HojaInferior` | Hoja desde abajo para elegir o confirmar algo que no se deshace. En iOS sube con el teclado (`KeyboardAvoidingView`) y no pasa del 90 % de la pantalla; el contenido largo lleva su propio `ScrollView`. |
 | `HojaCalendario` | Calendario propio (sin picker nativo), semana desde el lunes, `minimo`. |
 | `HojaHora` | Hora en franjas de 15 min con grilla propia (sin picker nativo); `desde` apaga las que ya pasaron. Fase 3. |
 | `Listas.js` | Fase 3. `Lista` (caja con filas separadas por línea), `Fila` (izquierda, título, bajada, chevron o acción en texto; sin `onPress` es una vista, así la acción de adentro se puede tocar), `Avatar` (iniciales o ícono, 36×36), `Seccion` (título en Archivo Black 14 + nota), `Vacio` (estado vacío con ícono, título y qué va a aparecer), `Filtros` (opción única: Activos / En curso / Terminados), `iniciales()`. |
@@ -343,7 +343,7 @@ Todo se importa desde `components/ui` (`index.js`). Usarlos antes de crear estil
 | `TablaParadas` | Tabla Parada / Estim. / Real del viaje en curso: hechas en verde, la próxima resaltada con la llegada estimada del socket (`eta`), llegada tarde en ámbar según `diferencia_min` del backend. Exporta `tituloParada(p)` (la empresa ve el **nombre del lugar guardado**; el conductor nunca), `paradaActual(v)`, `MIN_DEMORA` (5) y `MIN_TARDE` (10). |
 | `HojaConductor` | `ListaConductores`: conductores para elegir; el que no tiene vehículos cargados queda visible y apagado, con el motivo (`aptitud`). Sin condiciones: cualquier vehículo propio sirve. `resumenConductor` muestra vehículo y tipo. La hoja la usan reasignar y «Asignar a otro». |
 | `ElegirPermisos` | Casillas de permisos (`Opcion` con `multiple`). Marcar «Cargar y cambiar viajes» marca «Ver viajes»; desmarcar «Ver viajes» saca también el otro. Lo usan Invitar y Miembro. |
-| `HojaParada` | Hoja para elegir una dirección: búsqueda con Places (`direcciones.js`) y los lugares guardados de la empresa como chips a un toque. Devuelve `{ direccion, lat, lng, id_lugar?, nombre? }`. Reemplaza a `LocationPickerModal` en lo nuevo. |
+| `HojaParada` | Hoja para elegir una dirección: búsqueda con Places (`direcciones.js`) y los lugares guardados de la empresa como chips a un toque. Devuelve `{ direccion, lat, lng, id_lugar?, nombre? }`. Sugerencias y lugares van en un `ScrollView` con `keyboardShouldPersistTaps="handled"` (se eligen al primer toque con el teclado abierto). Reemplaza a `LocationPickerModal` en lo nuevo. |
 
 ### 4.10 Componentes sueltos (`src/components/`)
 
@@ -664,6 +664,7 @@ Piezas nuevas que sostienen la fase 3: `context/EmpresaContext.js`, `navigation/
 | 27 oct 2026 | Versión inicial: fases 0, 1 y 2 completas, archivo por archivo. |
 | 29 oct 2026 | Fase 3 (en curso): utilidades `dinero.js` y `series.js`. |
 | 29 oct 2026 | Fase 3 completa: `PymeStack`, `EmpresaContext`, servicios de empresa (`viajesEmpresa`, `empresa`, `mockEmpresa`, `direcciones`), `components/empresa/`, `Listas` y `HojaHora` en el kit, 16 pantallas en `screens/empresa/`, flujos 5.7 a 5.9, endpoints y eventos de la empresa. Sección 9 nueva: cómo se cumple el plan, fase por fase y archivo por archivo. |
+| 16 nov 2026 | Fix de iPhone: `HojaInferior` sube con el teclado (la hoja de dirección quedaba escondida detrás y solo se veía el fondo oscuro) y `HojaParada` desplaza sus sugerencias. |
 | 16 nov 2026 | `mockEmpresa.estimar` resuelve los lugares guardados antes de estimar (en modo de prueba, Nuevo viaje fallaba con lugares guardados). |
 | 16 nov 2026 | `api.js`: los builds de producción van al backend de producción por defecto; exporta `baseURL` y `socket.js` la usa (el socket todavía caía a `http://localhost:3000` sin `.env`). |
 | 16 nov 2026 | Dueño y permisos (backend develop): `utils/permisos.js`, `EmpresaContext` con `esDueno` / `puede` / `sistemaNuevo` y el evento `organizacion:permisos_actualizados`; pestañas, Inicio, Más, Viaje, Alertas, Series, Lugares y Nuevo viaje según el permiso; `MiembroScreen` y `ElegirPermisos` nuevos; Equipo e Invitar con permisos; desvincular (empresa y conductor) con la vista previa del backend y el 409 del viaje en curso. Todo funciona igual contra un backend sin permisos. `Opcion` suma `multiple`. |

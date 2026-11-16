@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-11-16  
-> Branch: staging | Commits totales: 101
+> Branch: staging | Commits totales: 102
 
 ---
 
@@ -98,7 +98,8 @@
 | `efb97b3` | 16 Nov 2026 | Feat — dueño y permisos de la empresa (backend develop): `utils/permisos.js`, `EmpresaContext` con `esDueno` / `puede` y el evento `organizacion:permisos_actualizados` (se ve sin recargar), pestañas y acciones según el permiso, `MiembroScreen` (permisos, pasar la empresa, sacar), Invitar miembro eligiendo permisos, desvincular con la vista previa del backend y el 409 del viaje en curso (empresa y conductor; pedido 2 al backend resuelto). Compatible con el backend sin permisos (producción). `scripts/api-tests/permisos.mjs`: 85/86 contra staging. Primera prueba de la app compilada (web) contra staging: login, permisos en vivo y sesión al recargar |
 | — | 16 Nov 2026 | Release — `main` avanzado a `efb97b3` (fast-forward) a pedido del dueño: producción del mobile con dueño y permisos |
 | `8b51c1e` | 16 Nov 2026 | Config — los builds de producción usan por defecto el backend de producción (`https://nombre-proyecto-back-production.up.railway.app`); desarrollo sigue en staging. `EXPO_PUBLIC_API_URL` en el `.env` manda sobre los dos. Fix: el socket usa la misma dirección (sin `.env` caía a `http://localhost:3000`) |
-| (este commit) | 16 Nov 2026 | Fix — modo desarrollo: la estimación de prueba no resolvía los lugares guardados (llegan solo con su id) y Nuevo viaje mostraba «No pudimos calcular el precio». Solo afectaba al modo de prueba. Encontrado al sacar las capturas de las 67 pantallas |
+| `2a2f9a9` | 16 Nov 2026 | Fix — modo desarrollo: la estimación de prueba no resolvía los lugares guardados (llegan solo con su id) y Nuevo viaje mostraba «No pudimos calcular el precio». Solo afectaba al modo de prueba. Encontrado al sacar las capturas de las 67 pantallas |
+| (este commit) | 16 Nov 2026 | Fix — iPhone: al tocar «Agregar el origen» la hoja de dirección quedaba detrás del teclado (solo se veía el fondo oscuro). `HojaInferior` sube con el teclado y se limita al 90 % de la pantalla; `HojaParada` desplaza sugerencias y lugares y se eligen al primer toque. Falta confirmarlo en el teléfono |
 
 ---
 

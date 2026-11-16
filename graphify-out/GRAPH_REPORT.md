@@ -1,17 +1,17 @@
 # Graph Report - fleter-mobile  (2026-11-16)
 
 ## Corpus Check
-- 341 files · ~460,932 words
+- 341 files · ~461,150 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 110 file(s) not represented in the graph (top: .ttf 54, .csv 53, (none) 2)
 
 ## Summary
-- 4597 nodes · 9286 edges · 229 communities (189 shown, 40 thin omitted)
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 744 edges (avg confidence: 0.91)
+- 4597 nodes · 9288 edges · 231 communities (191 shown, 40 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 746 edges (avg confidence: 0.91)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8b51c1e7`
+- Built from commit: `2a2f9a9c`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -208,7 +208,9 @@
 - radius
 - lg
 - sm
+- InvitarScreen.js
 - TestStyleTaxonomy
+- HojaConductor.js
 - padding-y
 - xl
 - none
@@ -270,15 +272,15 @@
 - **Propuesta para desvincular sin cancelar viajes en curso** — issues_desvincular_cancela_viajes, issues_409_viaje_en_curso, issues_vista_previa_desvinculacion, issues_series_liberar, issues_estado_interrumpido [EXTRACTED 1.00]
 - **Pruebas de contrato de los pasos 1 a 4 del backend contra staging** — scripts_api_tests_organizaciones, scripts_api_tests_viajes, scripts_api_tests_series, docs_cambio_de_enfoque_pasos_backend, claude_staging_backend [INFERRED 0.95]
 
-## Communities (229 total, 40 thin omitted)
+## Communities (231 total, 40 thin omitted)
 
 ### Community 0 - "ViajeScreen.js"
 Cohesion: 0.07
-Nodes (79): Componentes base src/components/ui, 4.9 bis Componentes de la empresa (`src/components/empresa/`), react, react-native, react-native-safe-area-context, @react-navigation/native, aptitud(), createStyles() (+71 more)
+Nodes (73): Componentes base src/components/ui, react, react-native, react-native-safe-area-context, @react-navigation/native, createStyles(), MIN_DEMORA, MIN_TARDE (+65 more)
 
 ### Community 1 - "Pantalla"
-Cohesion: 0.09
-Nodes (82): 4.10 Componentes sueltos (`src/components/`), 4.11 Pantallas de entrada y alta (`src/screens/auth/`), 4.12 Pantallas de empresa sin empresa (`src/screens/onboarding/`), 5.2 Login, 5.3 Alta de empresa, 5.4 Alta de conductor, 9.3 Fase 1 — Entrada y alta, 5. Piezas compartidas (+74 more)
+Cohesion: 0.10
+Nodes (72): 4.10 Componentes sueltos (`src/components/`), 4.11 Pantallas de entrada y alta (`src/screens/auth/`), 4.12 Pantallas de empresa sin empresa (`src/screens/onboarding/`), 5.3 Alta de empresa, 9.3 Fase 1 — Entrada y alta, OnboardingEmpresaStack, Rediseño fase 0 + 1: entrada y alta, CamposVehiculo() (+64 more)
 
 ### Community 2 - "Problemas conocidos"
 Cohesion: 0.10
@@ -306,7 +308,7 @@ Nodes (46): api(), BASE, conectar(), crearUsuario(), cuitValido(), DESTINO, dorm
 
 ### Community 8 - "useTheme"
 Cohesion: 0.08
-Nodes (68): 4.8 Kit de UI (`src/components/ui/`), createStyles(), HojaParada(), Isotipo(), createStyles(), OPCIONES, SelectorApariencia(), Avatar() (+60 more)
+Nodes (67): 4.8 Kit de UI (`src/components/ui/`), createStyles(), HojaParada(), Isotipo(), createStyles(), OPCIONES, SelectorApariencia(), Avatar() (+59 more)
 
 ### Community 9 - "Config Expo app.json"
 Cohesion: 0.07
@@ -538,7 +540,7 @@ Nodes (28): 10. Logging Sensitive Data (MEDIUM), 1. Hardcoded Secrets (CRITICAL)
 
 ### Community 69 - "AuthContext.js"
 Cohesion: 0.06
-Nodes (54): App(), GPS background (componente mas critico), 4.2 Contextos (`src/context/`), 4.3 Navegación (`src/navigation/`), 4.5 Hooks (`src/hooks/`), 4.6 Tareas (`src/tasks/`), 4. Archivo por archivo, 5.1 Abrir la app (+46 more)
+Nodes (55): App(), GPS background (componente mas critico), 4.2 Contextos (`src/context/`), 4.3 Navegación (`src/navigation/`), 4.5 Hooks (`src/hooks/`), 4.6 Tareas (`src/tasks/`), 4. Archivo por archivo, 5.1 Abrir la app (+47 more)
 
 ### Community 70 - "Logo Usage Rules"
 Cohesion: 0.07
@@ -873,8 +875,8 @@ Cohesion: 0.22
 Nodes (8): Example Usage, How It Works, Important Notes, Integration with Other Commands, Plan Command, Related Agents, What This Command Does, When to Use
 
 ### Community 170 - "NuevoViajeScreen.js"
-Cohesion: 0.08
-Nodes (76): 10. Registro de cambios de este documento, 4.14 Pantallas de la empresa (`src/screens/empresa/`), 4.4 Servicios (`src/services/`), 5.7 Nuevo viaje de la empresa, 6. Endpoints y eventos que usa la app, 9.5 Fase 3 — Empresa, expo-clipboard, ElegirPermisos() (+68 more)
+Cohesion: 0.10
+Nodes (68): 10. Registro de cambios de este documento, 4.14 Pantallas de la empresa (`src/screens/empresa/`), 4.4 Servicios (`src/services/`), 5.7 Nuevo viaje de la empresa, 6. Endpoints y eventos que usa la app, 9.5 Fase 3 — Empresa, createStyles(), HojaCalendario() (+60 more)
 
 ### Community 172 - "Pedidos del mobile al backend"
 Cohesion: 0.17
@@ -938,7 +940,7 @@ Nodes (7): createStyles(), DisponiblesGerenteScreen(), mapViaje(), TAG_COLORS(),
 
 ### Community 190 - "conductor/DetalleViajeScreen.js"
 Cohesion: 0.08
-Nodes (67): 4.13 Pantallas del conductor (`src/screens/conductor/`), 4.7 Utilidades (`src/utils/`), 4.9 Componentes del viaje (`src/components/viaje/`), 9.2 Fase 0 — Base, Issue #3: el conductor no recibe ETA, desvíos ni ventana de inicio, Campos ventana_inicio_desde / ventana_inicio_hasta, ConductorStack (Viajes / Historial / Perfil), Rediseño fase 2: conductor (+59 more)
+Nodes (69): 4.13 Pantallas del conductor (`src/screens/conductor/`), 4.7 Utilidades (`src/utils/`), 4.9 Componentes del viaje (`src/components/viaje/`), 9.2 Fase 0 — Base, 5. Piezas compartidas, Issue #3: el conductor no recibe ETA, desvíos ni ventana de inicio, Campos ventana_inicio_desde / ventana_inicio_hasta, ConductorStack (Viajes / Historial / Perfil) (+61 more)
 
 ### Community 194 - "Verification Command"
 Cohesion: 0.40
@@ -963,6 +965,14 @@ Nodes (5): lg, $type, $value, lg, lg
 ### Community 199 - "sm"
 Cohesion: 0.60
 Nodes (5): sm, sm, sm, $type, $value
+
+### Community 200 - "InvitarScreen.js"
+Cohesion: 0.23
+Nodes (13): expo-clipboard, ElegirPermisos(), createStyles(), InvitarScreen(), TEXTOS, MiembroScreen(), mismos(), nombreDe() (+5 more)
+
+### Community 202 - "HojaConductor.js"
+Cohesion: 0.38
+Nodes (9): 4.9 bis Componentes de la empresa (`src/components/empresa/`), 9.4 Fase 2 — Conductor (pestañas Viajes, Historial, Perfil), 9.6 Fase 4 — Cierre (en curso: hecho lo que no depende del backend), 9. Cómo se cumple el plan, fase por fase, aptitud(), createStyles(), HojaConductor(), ListaConductores() (+1 more)
 
 ### Community 203 - "padding-y"
 Cohesion: 0.67
@@ -1043,10 +1053,10 @@ _Questions this graph is uniquely positioned to answer:_
 - **What connects `expo-camera`, `expo-crypto`, `expo-status-bar` to the rest of the system?**
   _98 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `ViajeScreen.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.07303732303732303 - nodes in this community are weakly interconnected._
-- **Why does `react` connect `ViajeScreen.js` to `Pantalla`, `GerenteStack.js`, `useTheme`, `@expo/vector-icons`, `package.json`, `RegisterFleteroScreen.js`, `MapViewWrapper.js`, `HomeScreen.js`, `CrearViajeScreen.js`, `fletero/DetalleViajeScreen.js`, `ref_theme`, `formatPrecio`, `NuevoViajeScreen.js`, `google.js`, `DisponiblesGerenteScreen.js`, `conductor/DetalleViajeScreen.js`, `AuthContext.js`, `DisponiblesScreen.js`, `HistorialFleteroScreen.js`?**
+  _Cohesion score 0.07454863133372161 - nodes in this community are weakly interconnected._
+- **Why does `react` connect `ViajeScreen.js` to `Pantalla`, `GerenteStack.js`, `useTheme`, `@expo/vector-icons`, `package.json`, `RegisterFleteroScreen.js`, `MapViewWrapper.js`, `HomeScreen.js`, `CrearViajeScreen.js`, `fletero/DetalleViajeScreen.js`, `ref_theme`, `formatPrecio`, `NuevoViajeScreen.js`, `google.js`, `DisponiblesGerenteScreen.js`, `conductor/DetalleViajeScreen.js`, `AuthContext.js`, `InvitarScreen.js`, `HojaConductor.js`, `DisponiblesScreen.js`, `HistorialFleteroScreen.js`?**
   _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `useTheme()` (e.g. with `Toda pantalla en modo claro y oscuro` and `4.2 Contextos (`src/context/`)`) actually correct?**
   _`useTheme()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **Should `Pantalla` be split into smaller, more focused modules?**
-  _Cohesion score 0.08766564729867482 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10161616161616162 - nodes in this community are weakly interconnected._

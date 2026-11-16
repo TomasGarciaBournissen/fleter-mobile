@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { fonts } from '../../theme';
@@ -64,35 +64,38 @@ export default function HojaParada({ visible, titulo = 'Agregar parada', lugares
           style={{ marginTop: 0 }}
         />
       ) : <Nota tipo="aviso">La búsqueda de direcciones no está configurada en esta versión.</Nota>}
-      {buscando ? <ActivityIndicator color={colors.accent} /> : null}
-      {error ? <Nota tipo="error">{error}</Nota> : null}
-      {sugerencias.length ? (
-        <Lista>
-          {sugerencias.slice(0, 5).map((sug) => (
-            <Fila key={sug.id} titulo={sug.titulo} sub={sug.detalle} onPress={() => elegir(sug)} />
-          ))}
-        </Lista>
-      ) : null}
-
-      {lugares.length ? (
-        <>
-          <Etiqueta style={{ marginTop: 6, marginBottom: 0 }}>Lugares guardados</Etiqueta>
-          <View style={s.chips}>
-            {lugares.map((l) => (
-              <Pressable
-                key={l.id_lugar}
-                onPress={() => onElegir({ direccion: l.direccion, lat: Number(l.lat), lng: Number(l.lng), id_lugar: l.id_lugar, nombre: l.nombre })}
-                accessibilityRole="button"
-                accessibilityLabel={`${l.nombre}, ${l.direccion}`}
-                style={({ pressed }) => [s.chip, pressed && { backgroundColor: colors.surface3 }]}
-              >
-                <MaterialCommunityIcons name="star-outline" size={14} color={colors.ink2} />
-                <Text style={s.chipTexto}>{l.nombre}</Text>
-              </Pressable>
+      {/* Con el teclado abierto, «handled» deja elegir una sugerencia al primer toque */}
+      <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ gap: 10 }} keyboardShouldPersistTaps="handled">
+        {buscando ? <ActivityIndicator color={colors.accent} /> : null}
+        {error ? <Nota tipo="error">{error}</Nota> : null}
+        {sugerencias.length ? (
+          <Lista>
+            {sugerencias.slice(0, 5).map((sug) => (
+              <Fila key={sug.id} titulo={sug.titulo} sub={sug.detalle} onPress={() => elegir(sug)} />
             ))}
-          </View>
-        </>
-      ) : null}
+          </Lista>
+        ) : null}
+
+        {lugares.length ? (
+          <>
+            <Etiqueta style={{ marginTop: 6, marginBottom: 0 }}>Lugares guardados</Etiqueta>
+            <View style={s.chips}>
+              {lugares.map((l) => (
+                <Pressable
+                  key={l.id_lugar}
+                  onPress={() => onElegir({ direccion: l.direccion, lat: Number(l.lat), lng: Number(l.lng), id_lugar: l.id_lugar, nombre: l.nombre })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${l.nombre}, ${l.direccion}`}
+                  style={({ pressed }) => [s.chip, pressed && { backgroundColor: colors.surface3 }]}
+                >
+                  <MaterialCommunityIcons name="star-outline" size={14} color={colors.ink2} />
+                  <Text style={s.chipTexto}>{l.nombre}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </>
+        ) : null}
+      </ScrollView>
     </HojaInferior>
   );
 }
