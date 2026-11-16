@@ -2,7 +2,7 @@
 
 > **Documento vivo.** Se actualiza en el mismo commit que cualquier cambio de código que agregue, borre o
 > cambie la responsabilidad de un archivo, un endpoint, un evento o un flujo (regla en `CLAUDE.md`).
-> Última actualización: 15 nov 2026 · rama `staging` · fases 0, 1, 2 y 3 programadas; de la 4, lo que no depende del backend. Precio v2 del backend (`c480164`) probado contra staging. Marketplace guardado en `legacy/`, `DEV_MODE` apagado por defecto y sesión guardada en el llavero.
+> Última actualización: 16 nov 2026 · rama `staging` · fases 0, 1, 2 y 3 programadas; de la 4, lo que no depende del backend. Precio v2 del backend (`c480164`) probado contra staging. Marketplace guardado en `legacy/`, `DEV_MODE` apagado por defecto y sesión guardada en el llavero. Dueño y permisos de la empresa (backend develop) con compatibilidad para el backend sin permisos.
 >
 > Otros documentos: `PROGRESO.md` (estado y commits), `ISSUES.md` (problemas abiertos con el backend),
 > `docs/FLUJOS_MOBILE.md` (resumen para el review), `UXUI.md` (sistema de diseño), `API.md` del backend
@@ -146,7 +146,10 @@ solo cuando está conectado (en `disconnect` vuelve a `null`). Lo consumen `useE
 `organizacion:{id}` de su empresa (lo hace el backend al conectar).
 
 **`EmpresaContext.js`** — Estado compartido del lado de la empresa (lo monta `PymeStack`).
-- `idOrg`, `organizacion` (de `user.organizacion`) y `esResponsable` (`rol === 'RESPONSABLE'`).
+- `idOrg`, `organizacion` (de `user.organizacion`) y, con `utils/permisos.js`: `esDueno`, `puede(permiso)` y
+  `sistemaNuevo` (el backend manda `es_dueno` / `mis_permisos`). `esResponsable` queda como alias de `esDueno`.
+  Sin `VER_VIAJES` no pide la lista de viajes (daría 403). Escucha `organizacion:permisos_actualizados` y vuelve a
+  pedir `/me`: los permisos nuevos, la propiedad o `{ miembro: false }` (sin empresa → onboarding) se ven al instante.
 - `viajes` + `recargar()`: la lista de viajes de la empresa (`GET /organizaciones/:id/viajes`), que se vuelve a
   pedir con los eventos del viaje (`useEnVivo`), al reconectar y al volver al frente. Inicio y Más la leen de acá.
 - `pendientes` («Para resolver», contador de la pestaña Alertas): se **deriva del REST**, así sobrevive a cortes y
@@ -171,8 +174,7 @@ Después, `Stacks()` elige:
 | `CLIENTE` con `organizacion === null` | `OnboardingEmpresaStack` |
 | `CLIENTE` con empresa | `PymeStack` (fase 3) |
 | `CONDUCTOR` | `ConductorStack` |
-| `FLETERO` / `GERENTE` | stacks heredados |
-| otro rol | «Acceso no disponible» (solo web) |
+| otro rol (incluye `FLETERO` / `GERENTE` del marketplace guardado) | «Acceso no disponible» |
 
 También arma el tema de React Navigation desde la paleta activa, para que no haya destellos blancos.
 
@@ -227,7 +229,7 @@ y `CONDICIONES` (frágil, refrigerado, carga pesada, peligroso, voluminoso). `cr
 **`viajesConductor.js`** — Todo el viaje del lado del conductor: `listarViajes`, `obtenerViaje`,
 `confirmarViaje(id, idVehiculo)`, `rechazarViaje`, `cancelarViaje`, `iniciarViaje(id, {lat, lng})`,
 `salirDeParada`, `confirmarLlegada(id, idParada, {lat, lng})`, `misVehiculos`, `misOrganizaciones`,
-`desvincularme`. Al final está el `mock`: cinco viajes de ejemplo en memoria que las acciones modifican, así el
+`previaDesvincularme` (misma forma que la de la empresa, sin precios) y `desvincularme` (409 con un viaje en curso). Al final está el `mock`: cinco viajes de ejemplo en memoria que las acciones modifican, así el
 recorrido completo se puede probar sin backend.
 
 **`viajesEmpresa.js`** — Los viajes del lado de la empresa, todos bajo `/api/organizaciones/:id`:
@@ -243,10 +245,13 @@ mismo recorrido, hora, motivo e indicaciones (un viaje anterior al 20-10-2026 si
 por socket).
 
 **`empresa.js`** — La organización y su gente: `obtenerOrganizacion` / `editarOrganizacion` (solo responsable;
-razón social y dirección vacías van como `null`), `listarMiembros`, `cambiarRol`, `eliminarMiembro`,
-`salirDeEmpresa`, `crearInvitacion(idOrg, 'CHOFER' | 'MIEMBRO')` (el `codigo` viene **solo** en esa respuesta),
-`listarInvitaciones`, `revocarInvitacion`, `listarConductores` (con sus vehículos), `desvincularConductor`
-(devuelve `viajes_cancelados` y `series_borradas`), lugares guardados (`listarLugares`, `guardarLugar` crea o
+razón social y dirección vacías van como `null`), `listarMiembros`, `cambiarPermisos` y `transferirEmpresa` (solo
+el dueño), `cambiarRol` (solo para un backend sin permisos: en develop ya no existe), `eliminarMiembro`,
+`salirDeEmpresa`, `crearInvitacion(idOrg, 'CHOFER' | 'MIEMBRO', permisos?)` (el `codigo` viene **solo** en esa
+respuesta), `listarInvitaciones`, `revocarInvitacion`, `listarConductores` (con sus vehículos),
+`previaDesvinculacion` (`{ viajes_a_cancelar, en_curso, series_a_borrar }`; `en_curso` es un id o `null`; devuelve
+`null` si el backend no tiene la vista previa) y `desvincularConductor` (devuelve `viajes_cancelados` y
+`series_borradas`; con un viaje en curso, 409 `{ error, en_curso }`), lugares guardados (`listarLugares`, `guardarLugar` crea o
 edita, `borrarLugar`) y `editarPerfil` (`PUT /api/auth/perfil`).
 
 **`mockEmpresa.js`** — El backend de mentira de DEV para la empresa: Distribuidora Norte con 3 conductores
@@ -292,6 +297,7 @@ y no emite (pendiente).
 
 | Archivo | Qué hace |
 |---|---|
+| `permisos.js` | Dueño y permisos de la empresa: `PERMISOS` (id, título, descripción, ícono), `PERMISOS_POR_DEFECTO` (ver viajes y estadísticas, lo mismo que el backend), `efectivos(lista)` (GESTIONAR_VIAJES suma VER_VIAJES), `permisosDe(organizacion)` → `{ sistemaNuevo, esDueno, puede }` (sin `es_dueno` en la respuesta vale el rol viejo: RESPONSABLE = dueño y todos pueden todo) y `textoPermisos(miembro)` para las listas. |
 | `estados.js` | `ESTADOS`: etiqueta y familia de color de cada estado del viaje; `EN_CURSO`, `FINALES`; `coloresFamilia(familia, colors)`; `motivoFinal(viaje)` (por qué terminó sin hacerse, contado al conductor) y `motivoFinalEmpresa(viaje)` (lo mismo, contado a la empresa: «Lucía lo rechazó»). |
 | `fechas.js` | Formatos es-AR: `hora` (14:30), `diaCorto` (mié 22 oct), `cuando` (Hoy, 14:30), `cuandoLargo` (Hoy / Mañana / Ayer, mié 28 oct, 09:00), `mesAnio`, `mesAlta`, `duracionMin`/`duracionHoras` (1 h 20 min), `transcurrido` (cronómetro), `km`. Lo que falta devuelve «A confirmar». |
 | `formularios.js` | Formato al tipear y limpieza para la API: DNI, CUIT, código de invitación (XXXXX-XXXXX), patente (AE 421 KL), email, fecha corta. El backend vuelve a validar. |
@@ -336,6 +342,7 @@ Todo se importa desde `components/ui` (`index.js`). Usarlos antes de crear estil
 | `TarjetaViajeEmpresa` | Card de viaje de la empresa con los **9 datos y el precio** (`pesos()`, el real si terminó): estado, ID, cuándo, conductor y vehículo, marca del viaje repetido si es de una serie, y una línea con origen → destino, paradas, condiciones, distancia, tiempo y motivo si terminó sin hacerse. `conTabla` cambia la línea por la `TablaParadas` (viaje en curso del Inicio). Exporta `nombreConductor`, `textoParadas`, `resumenViaje`. |
 | `TablaParadas` | Tabla Parada / Estim. / Real del viaje en curso: hechas en verde, la próxima resaltada con la llegada estimada del socket (`eta`), llegada tarde en ámbar según `diferencia_min` del backend. Exporta `tituloParada(p)` (la empresa ve el **nombre del lugar guardado**; el conductor nunca), `paradaActual(v)`, `MIN_DEMORA` (5) y `MIN_TARDE` (10). |
 | `HojaConductor` | `ListaConductores`: conductores para elegir; el que no tiene vehículos cargados queda visible y apagado, con el motivo (`aptitud`). Sin condiciones: cualquier vehículo propio sirve. `resumenConductor` muestra vehículo y tipo. La hoja la usan reasignar y «Asignar a otro». |
+| `ElegirPermisos` | Casillas de permisos (`Opcion` con `multiple`). Marcar «Cargar y cambiar viajes» marca «Ver viajes»; desmarcar «Ver viajes» saca también el otro. Lo usan Invitar y Miembro. |
 | `HojaParada` | Hoja para elegir una dirección: búsqueda con Places (`direcciones.js`) y los lugares guardados de la empresa como chips a un toque. Devuelve `{ direccion, lat, lng, id_lugar?, nombre? }`. Reemplaza a `LocationPickerModal` en lo nuevo. |
 
 ### 4.10 Componentes sueltos (`src/components/`)
@@ -401,11 +408,12 @@ Todas en claro (default de la empresa) y oscuro, con tokens. La empresa **sí** 
 | `ViajeScreen` | Detalle que cambia según el estado. **En curso**: mapa con la posición del conductor (`mapa:actualizar`), aviso de desvío, «Llega a Av. Mitre 1450 a las 15:12» (`eta:actualizar`), conductor con **Llamar**, recorrido con horas reales y salida tarde; Cancelar (la hoja explica que se corta con la carga arriba) y **Finalizar el viaje** si el conductor no tocó «Salir». **Programado**: ventana de inicio o aviso de sin confirmar; **Editar**, **Reasignar** (hoja de conductores) y **Cancelar** (motivo opcional, lo ve el conductor). **Rechazado**: «Lucía lo rechazó a las 11:20» + **Asignar a otro conductor** o cargarlo de nuevo cambiando datos. **Terminado**: tabla estimado vs. real con precio (el `*` marca la descarga no medida), quién lo cerró, puntualidad en cada parada y **Ver remito**. Vencido o cancelado: el motivo y «Cargarlo de nuevo». | `obtenerViaje`, `cancelarViaje`, `reasignarViaje`, `asignarRechazadoA`, `finalizarViaje`, `obtenerRemito`, `listarConductores` | editado, confirmado, rechazado, iniciado, estado_cambiado, finalizado, cancelado, vencido, cierre_habilitado, salida_detectada; en vivo `mapa:actualizar`, `eta:actualizar`, `alerta:desvio`, `ruta:recalculada` |
 | `MasScreen` | La empresa (estado y si sos responsable) y la lista: Conductores (cuántos y cuántos en ruta), Lugares guardados, Viajes repetidos (activos), Equipo, Datos de la empresa, Mis datos; Apariencia (Claro / Oscuro / Sistema) y Cerrar sesión. | `listarConductores`, `listarLugares`, `listarSeries`, `listarMiembros` | — |
 | `ConductoresScreen` | Conductores con su vehículo y, si están en un viaje, su estado; invitaciones de conductor pendientes con **Revocar**; «Invitar conductor». | `listarConductores`, `listarInvitaciones`, `revocarInvitacion` | — |
-| `ConductorScreen` | Un conductor: Llamar, sus vehículos con patente y condiciones, sus viajes por hacer (hasta 5). **Desvincular** con vista previa de lo que cancela (sus viajes por hacer, incluido uno en curso, y sus viajes repetidos; ISSUES.md #1). | `desvincularConductor`, `listarSeries` | — |
-| `InvitarScreen` | Genera un código de un solo uso (`CHOFER` o `MIEMBRO`) y lo muestra **una única vez**, grande en mono, con vencimiento, Copiar (`expo-clipboard`) y Compartir (`Share`, listo para WhatsApp), y la nota de que no se puede volver a ver. | `crearInvitacion` | — |
+| `ConductorScreen` | Un conductor: Llamar, sus vehículos con patente y condiciones, sus viajes por hacer (hasta 5). **Desvincular** (permiso CHOFERES) con la vista previa del backend: cuántos viajes se cancelan y qué series se borran; con un viaje en curso no deja y lleva a ese viaje (409). Con un backend sin vista previa, cuenta lo que la app ya tiene y avisa que corta el viaje en curso. | `previaDesvinculacion`, `desvincularConductor`, `listarSeries` | — |
+| `InvitarScreen` | Para un miembro (solo el dueño), primero elige sus permisos con `ElegirPermisos` (por defecto ver viajes y estadísticas). Genera un código de un solo uso (`CHOFER` o `MIEMBRO`) y lo muestra **una única vez**, grande en mono, con vencimiento, Copiar (`expo-clipboard`) y Compartir (`Share`, listo para WhatsApp), y la nota de que no se puede volver a ver. | `crearInvitacion` | — |
 | `LugaresScreen` / `LugarScreen` | Lista de lugares guardados; crear o editar (nombre único + dirección con `HojaParada`) y borrar con confirmación. Aclara que cambiar un lugar no toca los viajes que ya lo usan. | `listarLugares`, `guardarLugar`, `borrarLugar` | — |
 | `SeriesScreen` / `SerieScreen` | Viajes repetidos: frecuencia, recorrido, conductor, hasta cuándo y cuántos viajes quedan por hacer (`resumen_viajes`). Detalle con la regla, el recorrido, todos sus viajes y **Cancelar el viaje repetido** (no toca los viajes ya creados). Al crear una serie, avisa cuántos se crearon y cuántos se saltearon. | `listarSeries`, `obtenerSerie`, `cancelarSerie` | — |
-| `EquipoScreen` | Miembros con su rol; un responsable invita (código `MIEMBRO`), revoca, cambia roles y saca personas; cualquiera se puede ir de la empresa. El 409 del último responsable se explica en criollo. | `listarMiembros`, `cambiarRol`, `eliminarMiembro`, `salirDeEmpresa`, `listarInvitaciones`, `revocarInvitacion` | — |
+| `EquipoScreen` | Miembros con «Dueño» o el resumen de sus permisos; el dueño invita (código `MIEMBRO` con permisos), revoca y abre la ficha de cada uno; los demás se pueden ir; el dueño no (tiene que pasar la empresa antes). Con un backend sin permisos queda lo viejo: roles, hacer responsable / pasar a miembro. | `listarMiembros`, `cambiarRol` (solo backend viejo), `salirDeEmpresa`, `listarInvitaciones`, `revocarInvitacion` | — |
+| `MiembroScreen` | Ficha de una persona para el dueño: sus permisos (`ElegirPermisos` + Guardar), **Pasarle la empresa** (con confirmación) y **Sacar del equipo**. | `cambiarPermisos`, `transferirEmpresa`, `eliminarMiembro` | — |
 | `DatosEmpresaScreen` | Nombre, CUIT (con formato), razón social y dirección; editable solo por un responsable (los demás los ven fijos). | `obtenerOrganizacion`, `editarOrganizacion` | — |
 | `MisDatosScreen` | Nombre, apellido y teléfono; el email es el de la cuenta. | `editarPerfil` | — |
 
@@ -502,9 +510,13 @@ la alerta desaparece sola.
 | `GET …/viajes/:idViaje/remito` | `obtenerRemito` | Viaje (si el detalle no trae `remito_url`) |
 | `POST / GET /api/organizaciones/:id/series`, `GET …/series/:idSerie`, `POST …/series/:idSerie/cancelar` | `crearSerie`, `listarSeries`, `obtenerSerie`, `cancelarSerie` | NuevoViaje, Viajes, Más, Series, Serie, Conductor |
 | `GET / PUT /api/organizaciones/:id` | `empresa.obtenerOrganizacion`, `editarOrganizacion` | DatosEmpresa |
-| `GET …/miembros`, `PUT …/miembros/:idUsuario/rol`, `DELETE …/miembros/:idUsuario`, `POST …/salir` | `listarMiembros`, `cambiarRol`, `eliminarMiembro`, `salirDeEmpresa` | Equipo, Más |
+| `GET …/miembros`, `DELETE …/miembros/:idUsuario`, `POST …/salir` | `listarMiembros`, `eliminarMiembro`, `salirDeEmpresa` | Equipo, Miembro, Más |
+| `PUT …/miembros/:idUsuario/permisos`, `POST …/transferir` | `cambiarPermisos`, `transferirEmpresa` | Miembro (solo el dueño) |
+| `PUT …/miembros/:idUsuario/rol` | `cambiarRol` | Equipo, solo con un backend sin permisos (en develop da 404) |
 | `POST / GET …/invitaciones`, `DELETE …/invitaciones/:idInv` | `crearInvitacion`, `listarInvitaciones`, `revocarInvitacion` | Invitar, Conductores, Equipo |
 | `GET …/choferes`, `DELETE …/choferes/:idConductor` | `listarConductores`, `desvincularConductor` | NuevoViaje, Conductores, Conductor, Más, hojas de conductor |
+| `GET …/choferes/:idConductor/desvinculacion` | `previaDesvinculacion` | Conductor |
+| `GET /api/choferes/mis-organizaciones/:id/desvinculacion` | `previaDesvincularme` | EmpresaConductor |
 | `GET / POST …/lugares`, `PUT / DELETE …/lugares/:idLugar` | `listarLugares`, `guardarLugar`, `borrarLugar` | NuevoViaje, Lugares, Lugar, Más |
 | `PUT /api/auth/perfil` | `editarPerfil` | MisDatos |
 
@@ -516,6 +528,7 @@ la alerta desaparece sola.
 | `conductor:ubicacion` `{ id_viaje, lat, lng, timestamp }` | conductor → servidor | useGpsViaje / locationTask |
 | `viaje:asignado`, `viaje:desasignado`, `viaje:editado`, `viaje:confirmado`, `viaje:rechazado`, `viaje:iniciado`, `viaje:estado_cambiado`, `viaje:finalizado`, `viaje:cancelado`, `viaje:vencido`, `viaje:cierre_habilitado`, `serie:asignada` | servidor → sala `organizacion:{id}` | EmpresaContext (refetch + alertas), Viajes, Viaje |
 | `mapa:actualizar`, `eta:actualizar`, `alerta:desvio`, `alerta:parada`, `ruta:recalculada`, `parada:salida_detectada` | servidor → empresa | Viaje (seguimiento), Inicio (llegada), EmpresaContext («Hoy») |
+| `organizacion:permisos_actualizados` `{ id_organizacion, es_dueno, permisos }` o `{ miembro: false }` | servidor → la persona afectada | EmpresaContext (vuelve a pedir `/me`). Sin `VER_VIAJES` el backend deja de mandarle los eventos de viajes. |
 
 ## 7. Reglas para escribir código nuevo
 
@@ -604,7 +617,7 @@ datos de ejemplo (`viajesConductor.js`, `mockEmpresa.js`) que imitan las respues
 | 2.3 | Viaje activo: iniciar en el origen, parada por parada, GPS en 2º plano, ETA, desvíos | `ViajeActivoScreen.js` (Iniciar → Salir de la parada → Llegué, una acción grande por momento; «Cómo llegar»; cancelar antes de iniciar) + `hooks/useGpsViaje.js` (permiso explicado, `conductor:ubicacion` cada 15 s solo después del 200 de `/iniciar`) + `tasks/locationTask.js` (servicio en primer plano de Android). ETA y desvíos **no** llegan al conductor: el backend se los manda solo a la empresa (ISSUES.md #3). | ⚠️ |
 | 2.4 | Viaje finalizado: estimado vs. real + remito | `ViajeTerminadoScreen.js`: manejo, carga y descarga, distancia y total, estimado contra real, y «Ver remito». Sin precio. | ✅ |
 | 2.5 | Historial | `HistorialScreen.js`: viajes finales por mes, filtros Todos / Entregados / Cancelados / Vencidos, motivo en la fila. | ✅ |
-| 2.6 | Perfil: datos, vehículos, Mis empresas (canjear / desvincularme), apariencia | `PerfilScreen.js` + `EmpresaConductorScreen.js` (desvincularse con aviso de lo que cancela, ISSUES.md #1) + `SumarEmpresaScreen.js` + `NuevoVehiculoScreen.js` (`FormVehiculo`) + `SelectorApariencia`. | ✅ |
+| 2.6 | Perfil: datos, vehículos, Mis empresas (canjear / desvincularme), apariencia | `PerfilScreen.js` + `EmpresaConductorScreen.js` (desvincularse con la vista previa del backend; con un viaje en curso no deja, ISSUES.md #1 resuelto en develop) + `SumarEmpresaScreen.js` + `NuevoVehiculoScreen.js` (`FormVehiculo`) + `SelectorApariencia`. | ✅ |
 
 ### 9.5 Fase 3 — Empresa
 
@@ -619,10 +632,10 @@ pasa a encabezar Más (invitar también queda a mano desde Nuevo viaje). Así qu
 | 3.3 | Seguimiento en vivo: mapa, ETA, timeline por parada, estimado vs. real, remito | `ViajeScreen.js` en curso: `MapaRecorrido` con la posición de `mapa:actualizar` y la ruta de `ruta:recalculada`, aviso de `alerta:desvio`, «Llega a … a las …» con `eta:actualizar`, recorrido con horas reales, salida tarde y puntualidad (`diferencia_min`). Terminado: tabla estimado vs. real con precio, quién lo cerró y «Ver remito» (`remito_url` u `obtenerRemito`). | ✅ |
 | 3.4 | Editar / reasignar / cancelar (y alcance en series) | Editar: `NuevoViajeScreen` con `params.editar` → `editarViaje` (avisa si el conductor tiene que reconfirmar). Reasignar: `HojaConductor` → `reasignarViaje`. Cancelar: hoja con motivo → `cancelarViaje`, también en curso, con el texto que explica qué pasa. Rechazado: `asignarRechazadoA` (viaje nuevo con los mismos datos, porque el backend no reasigna un rechazado). Extra de la Tarea 5: `finalizarViaje` cuando el conductor no tocó «Salir». Series: el contrato edita, reasigna y cancela **uno por uno** los viajes de una serie; la serie entera solo se cancela (`SerieScreen`). | ✅ |
 | 3.5 | Viajes: lista con filtros | `ViajesScreen.js` (empresa): por día, filtros Activos / En curso / Terminados (`grupo=activos|en_curso|historial`; Terminados incluye entregados, rechazados, vencidos y cancelados, cada uno con su motivo en la card), marca de la serie en cada viaje repetido. | ✅ |
-| 3.6 | Conductores: lista, invitar (código una vez + compartir), desvincular con vista previa | `ConductoresScreen.js` (con su vehículo y si están en ruta; invitaciones pendientes con Revocar), `InvitarScreen.js` (código grande, vence, Copiar, Compartir; «no lo vas a poder ver de nuevo»), `ConductorScreen.js` (Llamar, vehículos, viajes por hacer, **Desvincular** con la cuenta de lo que se cancela antes de confirmar). La vista previa sale de los viajes y series que la app ya tiene; el backend confirma con `viajes_cancelados` y `series_borradas` (ISSUES.md #1 sigue abierto: el backend no tiene un «preview»). | ✅ |
+| 3.6 | Conductores: lista, invitar (código una vez + compartir), desvincular con vista previa | `ConductoresScreen.js` (con su vehículo y si están en ruta; invitaciones pendientes con Revocar), `InvitarScreen.js` (código grande, vence, Copiar, Compartir; «no lo vas a poder ver de nuevo»), `ConductorScreen.js` (Llamar, vehículos, viajes por hacer, **Desvincular** con la cuenta de lo que se cancela antes de confirmar). La vista previa la da el backend (`previaDesvinculacion`) y con un viaje en curso no deja (409); contra un backend sin vista previa, sale de los viajes y series que la app ya tiene. | ✅ |
 | 3.7 | Lugares guardados (CRUD) | `LugaresScreen.js` + `LugarScreen.js` (nombre único, dirección con `HojaParada`, borrar con confirmación) → `listarLugares`, `guardarLugar`, `borrarLugar`. En Nuevo viaje aparecen como chips y la parada se manda como `{ id_lugar }`. | ✅ |
 | 3.8 | Series (lista, detalle, cancelar) | `SeriesScreen.js` (frecuencia, recorrido, conductor, hasta cuándo, cuántos viajes quedan con `resumen_viajes`) + `SerieScreen.js` (regla, recorrido, todos sus viajes, cancelar; al crearla avisa cuántos se crearon y salteados). | ✅ |
-| 3.9 | Equipo: miembros, roles, invitar miembro (solo responsable), salir | `EquipoScreen.js`: roles con `Pastilla`, hoja por persona (hacer responsable / pasar a miembro / sacar del equipo / irme), invitaciones de equipo con Revocar, «Invitar a alguien de tu equipo» → `InvitarScreen` con `tipo: 'MIEMBRO'`. Un miembro ve el equipo pero no lo puede cambiar. | ✅ |
+| 3.9 | Equipo: miembros, roles, invitar miembro (solo responsable), salir | Desde el 16 nov, con el sistema de dueño y permisos: `EquipoScreen.js` (dueño o resumen de permisos, invitaciones con Revocar), `MiembroScreen.js` (permisos, pasar la empresa, sacar), `InvitarScreen` con permisos. El dueño no se puede ir sin pasar la empresa. Contra un backend sin permisos queda lo viejo (roles). | ✅ |
 | 3.10 | Perfil + datos de la empresa + apariencia | `MasScreen.js` (empresa, accesos, Apariencia, Cerrar sesión), `DatosEmpresaScreen.js` (`editarOrganizacion`, solo responsable), `MisDatosScreen.js` (`PUT /api/auth/perfil`). | ✅ |
 
 Piezas nuevas que sostienen la fase 3: `context/EmpresaContext.js`, `navigation/PymeStack.js`,
@@ -639,7 +652,7 @@ Piezas nuevas que sostienen la fase 3: `context/EmpresaContext.js`, `navigation/
 | Accesibilidad | Revisados los botones del kit y de las pantallas nuevas: todos con `accessibilityRole`, etiqueta y estado; área táctil de 44 px. Falta probar con TalkBack/VoiceOver en un teléfono. | ✅ / ⏳ dispositivo |
 | Push notifications | El backend todavía no integra FCM (ISSUES.md #2, `docs/PEDIDOS_BACKEND.md`). | ⏳ backend |
 | Remito con foto | El backend no lo definió. | ⏳ backend |
-| Desvincular con vista previa / bloqueo en curso | La app ya avisa qué se cancela; falta que el backend decida si bloquea o pide confirmación (ISSUES.md #1). | ⏳ backend |
+| Desvincular con vista previa / bloqueo en curso | Hecho en develop: vista previa del backend y 409 con un viaje en curso, los dos lados (ISSUES.md #1). Falta pasarlo a producción. | ✅ develop |
 | Historial de alertas | Sin endpoint, las alertas del día viven en memoria (ISSUES.md #4). | ⏳ backend |
 | Pruebas en dispositivo físico (GPS en 2º plano, mapas, Places) | Requiere build nativa; en web los mapas son un recuadro. | ⏳ dispositivo |
 | Limpieza del marketplace y `DEV_MODE` apagado por defecto | Marketplace guardado en `legacy/marketplace/` (§8); `DEV_MODE` solo con `=true`; sesión guardada en el llavero (`persistenciaSesion.js`). | ✅ |
@@ -651,6 +664,7 @@ Piezas nuevas que sostienen la fase 3: `context/EmpresaContext.js`, `navigation/
 | 27 oct 2026 | Versión inicial: fases 0, 1 y 2 completas, archivo por archivo. |
 | 29 oct 2026 | Fase 3 (en curso): utilidades `dinero.js` y `series.js`. |
 | 29 oct 2026 | Fase 3 completa: `PymeStack`, `EmpresaContext`, servicios de empresa (`viajesEmpresa`, `empresa`, `mockEmpresa`, `direcciones`), `components/empresa/`, `Listas` y `HojaHora` en el kit, 16 pantallas en `screens/empresa/`, flujos 5.7 a 5.9, endpoints y eventos de la empresa. Sección 9 nueva: cómo se cumple el plan, fase por fase y archivo por archivo. |
+| 16 nov 2026 | Dueño y permisos (backend develop): `utils/permisos.js`, `EmpresaContext` con `esDueno` / `puede` / `sistemaNuevo` y el evento `organizacion:permisos_actualizados`; pestañas, Inicio, Más, Viaje, Alertas, Series, Lugares y Nuevo viaje según el permiso; `MiembroScreen` y `ElegirPermisos` nuevos; Equipo e Invitar con permisos; desvincular (empresa y conductor) con la vista previa del backend y el 409 del viaje en curso. Todo funciona igual contra un backend sin permisos. `Opcion` suma `multiple`. |
 | 15 nov 2026 | Marketplace a `legacy/marketplace/` (fuera del bundle; `RootNavigator` sin `FleteroStack` ni `GerenteStack`); `DEV_MODE` apagado por defecto; `api.js` sin caída a localhost; sesión persistente con `persistenciaSesion.js` (SecureStore en el teléfono, `browserLocalPersistence` en web); dependencia `expo-secure-store`. |
 | 13 nov 2026 | Precio v2 del backend: `estimarViaje` pasa a `POST /api/organizaciones/:id/viajes/estimar-precio` (antes usaba el `estimar-costo` del marketplace, que daba $1.276 para un viaje que en v2 cuesta $84.000); Nuevo viaje y el detalle de la empresa muestran el rango. `scripts/api-tests/precio-v2.mjs` nuevo (54/54 contra staging). |
 | 11 nov 2026 | Fase 4 (lo que no depende del backend): al día con `develop` (motivo e indicaciones obligatorios y sin condiciones; cierre sin «Salir» del lado del conductor; reintento del socket; errores 403/409/429/503). `Campo` acepta `multiline`. `scripts/api-tests/mobile.mjs` nuevo (41/41 contra staging). Pedidos al backend en `docs/PEDIDOS_BACKEND.md`. |

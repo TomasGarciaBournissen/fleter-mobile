@@ -8,7 +8,9 @@ import { fonts } from '../../theme';
 import { crearInvitacion } from '../../services/empresa';
 import { diaCorto, hora } from '../../utils/fechas';
 import { mensajeDeError } from '../../utils/errores';
-import { Pantalla, Titulo, Bajada, Boton, Nota } from '../../components/ui';
+import { Pantalla, Titulo, Bajada, Boton, Nota, Seccion } from '../../components/ui';
+import ElegirPermisos from '../../components/empresa/ElegirPermisos';
+import { PERMISOS_POR_DEFECTO } from '../../utils/permisos';
 
 const TEXTOS = {
   CHOFER: {
@@ -25,20 +27,41 @@ const TEXTOS = {
 
 // Genera un código de invitación y lo muestra una única vez: el backend solo
 // guarda un hash, así que no se puede volver a ver (si se pierde, se revoca
-// y se genera otro). tipo: CHOFER | MIEMBRO (este último, solo responsables).
+// y se genera otro). tipo: CHOFER | MIEMBRO (este último, solo el dueño).
+// Para un miembro, con el sistema de permisos, primero se eligen sus permisos
+// (por defecto Ver viajes y Estadísticas, lo mismo que pone el backend).
 export default function InvitarScreen({ navigation, route }) {
   const tipo = route.params?.tipo ?? 'CHOFER';
   const { colors } = useTheme();
   const s = useThemedStyles(createStyles);
-  const { idOrg, organizacion } = useEmpresa();
+  const { idOrg, organizacion, sistemaNuevo } = useEmpresa();
+  const eligePermisos = tipo === 'MIEMBRO' && sistemaNuevo;
+  const [permisos, setPermisos] = useState(PERMISOS_POR_DEFECTO);
+  const [pedido, setPedido] = useState(!eligePermisos);
   const [inv, setInv] = useState(null);
   const [error, setError] = useState('');
   const [copiado, setCopiado] = useState(false);
   const t = TEXTOS[tipo];
 
   useEffect(() => {
-    crearInvitacion(idOrg, tipo).then(setInv).catch((e) => setError(mensajeDeError(e, 'No pudimos generar el código. Probá de nuevo en unos minutos.')));
-  }, [idOrg, tipo]);
+    if (!pedido) return;
+    crearInvitacion(idOrg, tipo, eligePermisos ? permisos : undefined).then(setInv).catch((e) => setError(mensajeDeError(e, 'No pudimos generar el código. Probá de nuevo en unos minutos.')));
+    // permisos queda fijo una vez pedido el código
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idOrg, tipo, pedido]);
+
+  if (!pedido) {
+    return (
+      <Pantalla onVolver={() => navigation.goBack()} pie={<Boton titulo="Generar el código" onPress={() => setPedido(true)} />}>
+        <Titulo>¿Qué va a poder hacer?</Titulo>
+        <Bajada>Elegí los permisos de la persona que invitás. Después los podés cambiar desde Equipo.</Bajada>
+        <Seccion titulo="Permisos">
+          <ElegirPermisos valor={permisos} onCambiar={setPermisos} />
+          {!permisos.length ? <Nota>Sin permisos solo va a ver el nombre de la empresa, quién es el dueño y el equipo.</Nota> : null}
+        </Seccion>
+      </Pantalla>
+    );
+  }
 
   const copiar = async () => {
     await Clipboard.setStringAsync(inv.codigo);

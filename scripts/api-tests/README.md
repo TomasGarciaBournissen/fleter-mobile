@@ -54,6 +54,24 @@ demora es de cada pedido, no de capacidad.
 `organizaciones.mjs` prueba la capa de identidad de `api.md` (PyMEs, miembros, invitaciones, canje,
 choferes y los campos nuevos de `GET /api/auth/me`). No necesita dependencias: alcanza con Node 18 o más.
 
+## Dueño y permisos — `permisos.mjs`
+
+Sistema de permisos de la PyME (develop, «Dueño y permisos»): el dueño (`es_dueno`, `mis_permisos` en `/me` y en la
+organización), invitaciones de miembro con permisos (por defecto VER_VIAJES + ANALYTICS), qué ve un miembro sin
+permisos (nombre, dueño y equipo, sin email ni teléfono), los 403 de cada permiso, que GESTIONAR_VIAJES incluye ver,
+que solo el dueño cambia permisos, edita, saca e invita, que `PUT …/rol` ya no existe, el evento
+`organizacion:permisos_actualizados` (y `{ miembro: false }` al sacar a alguien), que sin VER_VIAJES no llegan
+eventos de viajes, analytics, historial de permisos, transferir la propiedad y desvincular con un viaje en curso
+(vista previa de los dos lados y 409). Hace un viaje entero (~2 min de espera para iniciarlo).
+
+```bash
+BASE_URL=https://nombre-proyecto-back-staging.up.railway.app FIREBASE_API_KEY=AIza... \
+NODE_USE_ENV_PROXY=1 node scripts/api-tests/permisos.mjs
+```
+
+**Resultado (16 nov 2026): 85/86.** Falla «sin `desde` = Todo» en analytics: sin `desde` el backend toma el mes
+en curso (`rango.todo: false`), no todo el historial. `en_curso` de la vista previa es un id (o `null`), no una lista.
+
 ## Antes de correrlo
 
 - Crea cuentas y PyMEs de prueba que **no se borran**. Correrlo contra el backend local o staging,

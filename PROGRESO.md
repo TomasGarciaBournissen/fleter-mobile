@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
-> Última actualización: 2026-11-15  
-> Branch: staging | Commits totales: 98
+> Última actualización: 2026-11-16  
+> Branch: staging | Commits totales: 99
 
 ---
 
@@ -93,7 +93,9 @@
 | `1918b56` | 13 Nov 2026 | Feat — precio v2 del backend (`c480164`): Nuevo viaje estima con `POST /api/organizaciones/:id/viajes/estimar-precio` y muestra el rango (antes usaba el `estimar-costo` del marketplace: $1.276 contra $84.000 reales); el detalle de la empresa muestra el rango. `scripts/api-tests/precio-v2.mjs`: 54/54 contra staging (estimar, fórmula, validaciones, factura A por defecto, lugares con acceso, viaje entero, el conductor sin precios ni datos personales, remito sin precio, precio pagado) |
 | `6384c55` | 13 Nov 2026 | Test — `precio-v2.mjs` suma los peajes automáticos con Google del backend (`0b690b4`): La Plata con fuente GOOGLE ($10.374 = ida $5.187 × 2), lo declarado por la empresa gana, CAMION ×2, ruta sin peajes en 0, el conductor no ve peajes. 62/62 contra staging |
 | `a8097cb` | 15 Nov 2026 | Test — `seguridad.mjs` (49/52 contra staging: IDOR, roles, campos forzados, entradas, cabeceras; fallan coordenadas imposibles → 503, CORS `*` en staging y el 429 no medible por el proxy) y `carga.mjs` (listas y detalles 2,3–2,5 s de a uno, crear viaje 6 s, sin errores con 40 a la vez) |
-| (este commit) | 15 Nov 2026 | Chore/Fix — decisiones del dueño: el código del marketplace se guarda en `legacy/marketplace/` (fuera del bundle, con su LEEME para volver a ponerlo), `DEV_MODE` apagado por defecto (solo `EXPO_PUBLIC_DEV_MODE=true`), `api.js` sin caída a localhost y la sesión de Firebase guardada en el llavero con `expo-secure-store` (`persistenciaSesion.js`), así no pide login cada vez que se abre la app. Bundles de Android y web OK; la web arranca en el login real |
+| `e01b7fd` | 15 Nov 2026 | Chore/Fix — decisiones del dueño: el código del marketplace se guarda en `legacy/marketplace/` (fuera del bundle, con su LEEME para volver a ponerlo), `DEV_MODE` apagado por defecto (solo `EXPO_PUBLIC_DEV_MODE=true`), `api.js` sin caída a localhost y la sesión de Firebase guardada en el llavero con `expo-secure-store` (`persistenciaSesion.js`), así no pide login cada vez que se abre la app. Bundles de Android y web OK; la web arranca en el login real |
+| — | 16 Nov 2026 | Release — `main` avanzado a `e01b7fd` (fast-forward) a pedido del dueño: producción del mobile con el marketplace guardado, `DEV_MODE` apagado, sesión persistente y precio v2. Lo de permisos queda solo en `staging` |
+| (este commit) | 16 Nov 2026 | Feat — dueño y permisos de la empresa (backend develop): `utils/permisos.js`, `EmpresaContext` con `esDueno` / `puede` y el evento `organizacion:permisos_actualizados` (se ve sin recargar), pestañas y acciones según el permiso, `MiembroScreen` (permisos, pasar la empresa, sacar), Invitar miembro eligiendo permisos, desvincular con la vista previa del backend y el 409 del viaje en curso (empresa y conductor; pedido 2 al backend resuelto). Compatible con el backend sin permisos (producción). `scripts/api-tests/permisos.mjs`: 85/86 contra staging. Primera prueba de la app compilada (web) contra staging: login, permisos en vivo y sesión al recargar |
 
 ---
 

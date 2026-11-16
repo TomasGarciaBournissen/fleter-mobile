@@ -19,15 +19,19 @@ const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 export default function MasScreen({ navigation }) {
   const s = useThemedStyles(createStyles);
   const { user, logout } = useAuth();
-  const { idOrg, organizacion, esResponsable, viajes } = useEmpresa();
+  const { idOrg, organizacion, esDueno, puede, sistemaNuevo, viajes } = useEmpresa();
+  const ve = puede('VER_VIAJES');
+  const conductoresOk = puede('CHOFERES');
   const [cuentas, setCuentas] = useState({});
 
   useFocusEffect(useCallback(() => {
-    Promise.allSettled([listarConductores(idOrg), listarLugares(idOrg), listarSeries(idOrg, { estado: 'ACTIVA' }), listarMiembros(idOrg)])
+    // Solo se pide lo que el permiso deja ver (el resto daría 403)
+    const nada = Promise.resolve(undefined);
+    Promise.allSettled([conductoresOk ? listarConductores(idOrg) : nada, ve ? listarLugares(idOrg) : nada, ve ? listarSeries(idOrg, { estado: 'ACTIVA' }) : nada, listarMiembros(idOrg)])
       .then(([c, l, se, m]) => setCuentas({
         conductores: c.value, lugares: l.value, series: se.value, miembros: m.value,
       }));
-  }, [idOrg]));
+  }, [idOrg, ve, conductoresOk]));
 
   const enRuta = new Set((viajes ?? []).filter((v) => EN_CURSO.includes(v.estado)).map((v) => v.conductor?.id_conductor));
   const { conductores, lugares, series, miembros } = cuentas;
@@ -40,20 +44,21 @@ export default function MasScreen({ navigation }) {
         <Avatar nombre={organizacion?.nombre} />
         <View style={{ flex: 1 }}>
           <Text style={s.nombre}>{organizacion?.nombre}</Text>
-          <Text style={s.meta}>{ESTADOS_ORG[organizacion?.estado] ?? ''}. Sos {esResponsable ? 'responsable' : 'miembro'}.</Text>
+          <Text style={s.meta}>{ESTADOS_ORG[organizacion?.estado] ?? ''}. {esDueno ? 'Sos el dueño.' : 'Sos parte del equipo.'}</Text>
         </View>
       </View>
 
       <Lista style={{ marginTop: 16 }}>
-        <Fila izquierda={<Avatar icono="van-utility" />} titulo="Conductores" chevron onPress={() => navigation.navigate('Conductores')}
-          sub={conductores ? `${plural(conductores.length, 'conductor', 'conductores')}${conductores.some((c) => enRuta.has(c.id_conductor)) ? `, ${conductores.filter((c) => enRuta.has(c.id_conductor)).length} en ruta` : ''}` : ' '} />
-        <Fila izquierda={<Avatar icono="star-outline" />} titulo="Lugares guardados" chevron onPress={() => navigation.navigate('Lugares')}
-          sub={lugares ? plural(lugares.length, 'lugar', 'lugares') : ' '} />
-        <Fila izquierda={<Avatar icono="repeat" />} titulo="Viajes repetidos" chevron onPress={() => navigation.navigate('Series')}
-          sub={series ? (series.length ? plural(series.length, 'activo', 'activos') : 'Ninguno activo') : ' '} />
+        {conductoresOk ? <Fila izquierda={<Avatar icono="van-utility" />} titulo="Conductores" chevron onPress={() => navigation.navigate('Conductores')}
+          sub={conductores ? `${plural(conductores.length, 'conductor', 'conductores')}${conductores.some((c) => enRuta.has(c.id_conductor)) ? `, ${conductores.filter((c) => enRuta.has(c.id_conductor)).length} en ruta` : ''}` : ' '} /> : null}
+        {ve ? <Fila izquierda={<Avatar icono="star-outline" />} titulo="Lugares guardados" chevron onPress={() => navigation.navigate('Lugares')}
+          sub={lugares ? plural(lugares.length, 'lugar', 'lugares') : ' '} /> : null}
+        {ve ? <Fila izquierda={<Avatar icono="repeat" />} titulo="Viajes repetidos" chevron onPress={() => navigation.navigate('Series')}
+          sub={series ? (series.length ? plural(series.length, 'activo', 'activos') : 'Ninguno activo') : ' '} /> : null}
         <Fila izquierda={<Avatar icono="account-multiple-outline" />} titulo="Equipo" chevron onPress={() => navigation.navigate('Equipo')}
           sub={miembros ? (otros ? `${user?.nombre} y ${plural(otros, 'persona más', 'personas más')}` : 'Solo vos, por ahora') : ' '} />
-        <Fila izquierda={<Avatar icono="office-building-outline" />} titulo="Datos de la empresa" sub="CUIT, razón social, dirección" chevron onPress={() => navigation.navigate('DatosEmpresa')} />
+        {/* El backend solo le muestra CUIT, razón social y dirección al dueño */}
+        {esDueno || !sistemaNuevo ? <Fila izquierda={<Avatar icono="office-building-outline" />} titulo="Datos de la empresa" sub="CUIT, razón social, dirección" chevron onPress={() => navigation.navigate('DatosEmpresa')} /> : null}
         <Fila izquierda={<Avatar nombre={[user?.nombre, user?.apellido].filter(Boolean).join(' ')} />} titulo="Mis datos" sub={user?.email} chevron onPress={() => navigation.navigate('MisDatos')} />
       </Lista>
 

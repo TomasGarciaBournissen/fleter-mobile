@@ -3,21 +3,31 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useThemedStyles } from '../../context/ThemeContext';
 import { fonts } from '../../theme';
-import { desvincularme } from '../../services/viajesConductor';
+import { desvincularme, previaDesvincularme } from '../../services/viajesConductor';
 import { mesAlta } from '../../utils/fechas';
 import { mensajeDeError } from '../../utils/errores';
 import { Pantalla, Titulo, Bajada, Boton, Nota, HojaInferior } from '../../components/ui';
 import { iniciales } from './DetalleViajeScreen';
 
-// Una empresa con la que trabaja el conductor. Desvincularse cancela todos
-// sus viajes con esa empresa, incluso uno en curso (ISSUES.md #1): se avisa claro.
+// Una empresa con la que trabaja el conductor. Antes de desvincularse se pide
+// la vista previa (GET /api/choferes/mis-organizaciones/:id/desvinculacion):
+// con un viaje en curso no se puede (409) y la hoja lleva a terminarlo; si no,
+// dice cuántos viajes se cancelan. Un backend sin vista previa (producción hasta
+// que se pase) cancela todo, también un viaje en curso: ahí queda el aviso viejo.
 export default function EmpresaConductorScreen({ navigation, route }) {
   const { organizacion: o } = route.params;
   const s = useThemedStyles(createStyles);
   const { refrescarUsuario } = useAuth();
   const [hoja, setHoja] = useState(false);
+  const [previa, setPrevia] = useState(undefined); // undefined = cargando, null = sin vista previa
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+
+  const abrirHoja = () => {
+    setHoja(true);
+    setPrevia(undefined);
+    previaDesvincularme(o.id_organizacion).then(setPrevia).catch(() => setPrevia(null));
+  };
 
   const desvincular = async () => {
     setCargando(true);
@@ -34,7 +44,7 @@ export default function EmpresaConductorScreen({ navigation, route }) {
   };
 
   return (
-    <Pantalla onVolver={() => navigation.goBack()} pie={<Boton titulo="Desvincularme" variante="peligro" onPress={() => setHoja(true)} />}>
+    <Pantalla onVolver={() => navigation.goBack()} pie={<Boton titulo="Desvincularme" variante="peligro" onPress={abrirHoja} />}>
       <View style={s.avatar}><Text style={s.avatarTexto}>{iniciales(o.nombre)}</Text></View>
       <Titulo>{o.nombre}</Titulo>
       <Bajada>{o.fecha_alta ? `Trabajás con esta empresa desde ${mesAlta(o.fecha_alta)}.` : 'Trabajás con esta empresa.'} Ve solo los viajes que te asigna ella.</Bajada>
@@ -42,15 +52,34 @@ export default function EmpresaConductorScreen({ navigation, route }) {
 
       <HojaInferior
         visible={hoja}
-        titulo={`¿Desvincularte de ${o.nombre}?`}
-        bajada="Se cancelan todos tus viajes con esta empresa, también uno que esté en curso, y sus viajes repetidos. Para volver, te tienen que pasar un código nuevo."
+        titulo={previa?.en_curso ? 'Tenés un viaje en curso' : `¿Desvincularte de ${o.nombre}?`}
+        bajada={bajadaHoja(previa)}
         onCerrar={() => setHoja(false)}
       >
-        <Boton titulo="Desvincularme" variante="peligro" cargando={cargando} onPress={desvincular} />
+        {previa?.en_curso ? (
+          <Boton titulo="Ir al viaje" onPress={() => { setHoja(false); navigation.navigate('ViajeActivo', { id: previa.en_curso }); }} />
+        ) : (
+          <Boton titulo="Desvincularme" variante="peligro" cargando={cargando || previa === undefined} onPress={desvincular} />
+        )}
         <Boton titulo="Volver" variante="fantasma" onPress={() => setHoja(false)} />
       </HojaInferior>
     </Pantalla>
   );
+}
+
+const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+
+function bajadaHoja(previa) {
+  if (previa === undefined) return 'Revisando tus viajes con esta empresa…';
+  if (previa === null) return 'Se cancelan todos tus viajes con esta empresa, también uno que esté en curso, y sus viajes repetidos. Para volver, te tienen que pasar un código nuevo.';
+  if (previa.en_curso) return `Estás haciendo VJ-${previa.en_curso} para esta empresa. Terminalo y después te podés desvincular.`;
+  const n = previa.viajes_a_cancelar?.length ?? 0;
+  const se = previa.series_a_borrar?.length ?? 0;
+  const efectos = [n ? `se ${n === 1 ? 'cancela' : 'cancelan'} ${plural(n, 'viaje que tenías por hacer', 'viajes que tenías por hacer')}` : null,
+    se ? `se ${se === 1 ? 'borra' : 'borran'} ${plural(se, 'viaje repetido', 'viajes repetidos')}` : null].filter(Boolean);
+  const txt = efectos.join(' y ');
+  const primero = txt ? `${txt[0].toUpperCase()}${txt.slice(1)}. ` : 'No tenés viajes por hacer con esta empresa. ';
+  return `${primero}Para volver, te tienen que pasar un código nuevo.`;
 }
 
 const createStyles = (c) => StyleSheet.create({

@@ -4,15 +4,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { fonts } from '../../theme';
 
-// Option card del DS v2 (elegir rol, tipo de vehículo…). Selección única:
-// el padre maneja cuál está `seleccionada`.
-export default function Opcion({ icono, titulo, descripcion, seleccionada, onPress, compacta }) {
+// Option card del DS v2 (elegir rol, tipo de vehículo…). El padre maneja cuál
+// está `seleccionada`; `multiple` = casilla (varias a la vez) en vez de radio.
+export default function Opcion({ icono, titulo, descripcion, seleccionada, onPress, compacta, multiple }) {
   const { colors } = useTheme();
   const s = useThemedStyles(createStyles);
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="radio"
+      accessibilityRole={multiple ? 'checkbox' : 'radio'}
       accessibilityState={{ checked: !!seleccionada }}
       accessibilityLabel={descripcion ? `${titulo}. ${descripcion}` : titulo}
       style={[s.caja, compacta && s.compacta, seleccionada && s.cajaSel]}

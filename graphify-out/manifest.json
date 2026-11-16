@@ -42,9 +42,9 @@
     "semantic_hash": "8990e1410b2e10d9d424490fb5c47e55"
   },
   "src/context/AuthContext.js": {
-    "mtime": 1794755780.7095368,
-    "seen": 1794755938.730847,
-    "ast_hash": "ca3b0dfef77865c1bb4506a8b12af2e2",
+    "mtime": 1794792663.905386,
+    "seen": 1794793477.5087583,
+    "ast_hash": "c2fee87ce0f8c71eba09ea75fbb98124",
     "semantic_hash": ""
   },
   "src/context/SocketContext.js": {
@@ -138,9 +138,9 @@
     "semantic_hash": "d33cf6709bc18c233e14b6321735576f"
   },
   "PROGRESO.md": {
-    "mtime": 1794755932.9454782,
-    "seen": 1794755938.7311625,
-    "ast_hash": "7f02fe9d982202dd190ccdfce60cfda4",
+    "mtime": 1794793466.133435,
+    "seen": 1794793477.5090432,
+    "ast_hash": "d7b95af923e2bcc4daff6a91cf2a6a3b",
     "semantic_hash": ""
   },
   "UXUI.md": {
@@ -216,10 +216,10 @@
     "semantic_hash": "cfb3d37176490a27f21db7d920d73354"
   },
   "src/components/ui/Opcion.js": {
-    "mtime": 1792437546.1224728,
-    "seen": 1792630637.908291,
-    "ast_hash": "ff88ba067cd71460232e06231dc25c7c",
-    "semantic_hash": "ff88ba067cd71460232e06231dc25c7c"
+    "mtime": 1794792663.9050891,
+    "seen": 1794793477.508741,
+    "ast_hash": "0ec0cccbf0b034efddd1b2e87a64c80e",
+    "semantic_hash": ""
   },
   "src/components/ui/Pantalla.js": {
     "mtime": 1792439668.778298,
@@ -378,9 +378,9 @@
     "semantic_hash": "de833931a51e263c69f80fd394985adc"
   },
   "ISSUES.md": {
-    "mtime": 1794411200.6659675,
-    "seen": 1794411251.5875645,
-    "ast_hash": "7490ed20c2497b89f78de8f66f2019e3",
+    "mtime": 1794793386.0099702,
+    "seen": 1794793477.50904,
+    "ast_hash": "2652744cfc392ba7d5b84cf61188845c",
     "semantic_hash": ""
   },
   "docs/CAMBIO_DE_ENFOQUE.md": {
@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "scripts/api-tests/README.md": {
-    "mtime": 1794755494.8178108,
-    "seen": 1794755938.7311847,
-    "ast_hash": "4973eef903efaf72bcf047530787527e",
+    "mtime": 1794793466.1314104,
+    "seen": 1794793477.5090654,
+    "ast_hash": "0e04aefbaf248386f6366086170707d7",
     "semantic_hash": ""
   },
   "src/components/FormVehiculo.js": {
@@ -474,10 +474,10 @@
     "semantic_hash": ""
   },
   "src/screens/conductor/EmpresaConductorScreen.js": {
-    "mtime": 1792439899.3266127,
-    "seen": 1792630637.9085047,
-    "ast_hash": "2ca43a4f7df19428f8e1a6de507265f3",
-    "semantic_hash": "2ca43a4f7df19428f8e1a6de507265f3"
+    "mtime": 1794792779.404888,
+    "seen": 1794793477.5087957,
+    "ast_hash": "4591860d67c7af014cc922566a7144bb",
+    "semantic_hash": ""
   },
   "src/screens/conductor/HistorialScreen.js": {
     "mtime": 1792439866.7186108,
@@ -522,9 +522,9 @@
     "semantic_hash": "841a6b3e978274097a01e3d6f82bf8bf"
   },
   "src/services/viajesConductor.js": {
-    "mtime": 1794410410.710149,
-    "seen": 1794411251.5871978,
-    "ast_hash": "35e92d6f9c0050ac84f23dd51e628d54",
+    "mtime": 1794792640.816676,
+    "seen": 1794793477.508849,
+    "ast_hash": "0a6e754bf2bc561de8db2fb67dbede32",
     "semantic_hash": ""
   },
   "src/utils/estados.js": {
@@ -1734,9 +1734,9 @@
     "semantic_hash": ""
   },
   "docs/ARQUITECTURA.md": {
-    "mtime": 1794755932.9439802,
-    "seen": 1794755938.7311666,
-    "ast_hash": "882aa32ddf6a9b728d7663f37ee60774",
+    "mtime": 1794793386.0110445,
+    "seen": 1794793477.5090473,
+    "ast_hash": "fc1f039debcd64587eb42fa81137c9dd",
     "semantic_hash": ""
   },
   "docs/FLUJOS_MOBILE.md": {
@@ -1872,27 +1872,27 @@
     "semantic_hash": ""
   },
   "src/context/EmpresaContext.js": {
-    "mtime": 1793242529.6350763,
-    "seen": 1793243349.849371,
-    "ast_hash": "3b5d3116994a8c971f2558ea7d437ae6",
+    "mtime": 1794792568.145117,
+    "seen": 1794793477.5087602,
+    "ast_hash": "09133a82540a14692398922e53e0ee15",
     "semantic_hash": ""
   },
   "src/navigation/PymeStack.js": {
-    "mtime": 1793241207.3122973,
-    "seen": 1793243349.8493927,
-    "ast_hash": "859d2929a75a266374228499b64a2197",
+    "mtime": 1794792696.9879541,
+    "seen": 1794793477.5087757,
+    "ast_hash": "185e790ef2499e9986301b5d8ce0a7a8",
     "semantic_hash": ""
   },
   "src/screens/empresa/AlertasScreen.js": {
-    "mtime": 1794410342.3331141,
-    "seen": 1794411251.5871298,
-    "ast_hash": "d6be41778471c5b1d04f058eac2d3eb4",
+    "mtime": 1794792828.7141714,
+    "seen": 1794793477.5088055,
+    "ast_hash": "6db4ee1445253fcb425a18ed261b151d",
     "semantic_hash": ""
   },
   "src/screens/empresa/ConductorScreen.js": {
-    "mtime": 1793242522.9612865,
-    "seen": 1793243349.8494515,
-    "ast_hash": "d4118280192518bfd9a83726513b9780",
+    "mtime": 1794792756.179365,
+    "seen": 1794793477.508807,
+    "ast_hash": "f5e48b866298834d4f4dba9402f08e53",
     "semantic_hash": ""
   },
   "src/screens/empresa/ConductoresScreen.js": {
@@ -1902,27 +1902,27 @@
     "semantic_hash": ""
   },
   "src/screens/empresa/DatosEmpresaScreen.js": {
-    "mtime": 1793241658.5243242,
-    "seen": 1793243349.8494542,
-    "ast_hash": "4d29ceb8712faddc4db2505ba2fd22e0",
+    "mtime": 1794792721.3378725,
+    "seen": 1794793477.5088096,
+    "ast_hash": "a8b38e0bbd8a5ec7130f174c0c42f5f3",
     "semantic_hash": ""
   },
   "src/screens/empresa/EquipoScreen.js": {
-    "mtime": 1793241639.9283233,
-    "seen": 1793243349.8494554,
-    "ast_hash": "a63b1ca23cd2e063fa39276054de895b",
+    "mtime": 1794792715.2176483,
+    "seen": 1794793477.5088108,
+    "ast_hash": "eab49eddf4be0a5515d8b73c704824cd",
     "semantic_hash": ""
   },
   "src/screens/empresa/InicioScreen.js": {
-    "mtime": 1793242070.724083,
-    "seen": 1793243349.8494565,
-    "ast_hash": "1ede4d5c5ee49853158185d3fec75e47",
+    "mtime": 1794793075.9843152,
+    "seen": 1794793477.5088124,
+    "ast_hash": "76ed7707d364d1f407f83258ebeb5071",
     "semantic_hash": ""
   },
   "src/screens/empresa/InvitarScreen.js": {
-    "mtime": 1793241543.4363174,
-    "seen": 1793243349.8494582,
-    "ast_hash": "106c649a8ffa96857e7c6b8d129aae69",
+    "mtime": 1794792734.357906,
+    "seen": 1794793477.5088139,
+    "ast_hash": "36f6f473faa62ef2f027366087cb0732",
     "semantic_hash": ""
   },
   "src/screens/empresa/LugarScreen.js": {
@@ -1932,15 +1932,15 @@
     "semantic_hash": ""
   },
   "src/screens/empresa/LugaresScreen.js": {
-    "mtime": 1793241555.2163181,
-    "seen": 1793243349.8494613,
-    "ast_hash": "91d9956b6455f1fef0ce5d315e5668ea",
+    "mtime": 1794792608.461446,
+    "seen": 1794793477.5088165,
+    "ast_hash": "ee0cb27f6405b75c934081b3f7a25d5e",
     "semantic_hash": ""
   },
   "src/screens/empresa/MasScreen.js": {
-    "mtime": 1793241493.1643145,
-    "seen": 1793243349.8494623,
-    "ast_hash": "ff5c333a2568603d9d1e405fe1bef1ae",
+    "mtime": 1794793075.9839828,
+    "seen": 1794793477.5088174,
+    "ast_hash": "b0351a33bc4de530c8cf120eeb84f022",
     "semantic_hash": ""
   },
   "src/screens/empresa/MisDatosScreen.js": {
@@ -1950,33 +1950,33 @@
     "semantic_hash": ""
   },
   "src/screens/empresa/NuevoViajeScreen.js": {
-    "mtime": 1794591055.329843,
-    "seen": 1794591112.8152628,
-    "ast_hash": "a7c5345321d0552838524f2e17baa222",
+    "mtime": 1794792819.032994,
+    "seen": 1794793477.5088215,
+    "ast_hash": "8208f824c12fbff9f3b93ff644c51398",
     "semantic_hash": ""
   },
   "src/screens/empresa/SerieScreen.js": {
-    "mtime": 1794410416.9596708,
-    "seen": 1794411251.5871482,
-    "ast_hash": "10d6c5a085cd4e6cdce14639f8c23490",
+    "mtime": 1794792604.3568082,
+    "seen": 1794793477.5088232,
+    "ast_hash": "ca0cbfc87d4acd40f6a52858dd103e28",
     "semantic_hash": ""
   },
   "src/screens/empresa/SeriesScreen.js": {
-    "mtime": 1794410342.3318338,
-    "seen": 1794411251.5871499,
-    "ast_hash": "23b1d35fedf79341526b0f3bf73f5123",
+    "mtime": 1794792604.3566005,
+    "seen": 1794793477.5088243,
+    "ast_hash": "3424809bfe6b4bc2e30405419b2bb53b",
     "semantic_hash": ""
   },
   "src/screens/empresa/ViajeScreen.js": {
-    "mtime": 1794591055.3301234,
-    "seen": 1794591112.8152666,
-    "ast_hash": "76040a4f684cf9c082ecdcace1c664ec",
+    "mtime": 1794792819.0337012,
+    "seen": 1794793477.5088258,
+    "ast_hash": "29ad9b7f7197b3101a0adc29144ba16b",
     "semantic_hash": ""
   },
   "src/screens/empresa/ViajesScreen.js": {
-    "mtime": 1793241283.980302,
-    "seen": 1793243349.8494694,
-    "ast_hash": "7105efadd17cc51c0d8e56a10ac74462",
+    "mtime": 1794793093.7790844,
+    "seen": 1794793477.5088272,
+    "ast_hash": "ad641c2fa612ca84ea436ee243733c5a",
     "semantic_hash": ""
   },
   "src/services/direcciones.js": {
@@ -1986,15 +1986,15 @@
     "semantic_hash": ""
   },
   "src/services/empresa.js": {
-    "mtime": 1793240995.1463983,
-    "seen": 1793243349.8495047,
-    "ast_hash": "fd597771d12c4d9a93ad076735f9a2e7",
+    "mtime": 1794792640.8160577,
+    "seen": 1794793477.5088377,
+    "ast_hash": "a57750b098e3829f2faf51fd0af1552f",
     "semantic_hash": ""
   },
   "src/services/mockEmpresa.js": {
-    "mtime": 1794591048.8593006,
-    "seen": 1794591112.8153005,
-    "ast_hash": "4793b347936a73cea37199b40410aabd",
+    "mtime": 1794792646.0137644,
+    "seen": 1794793477.5088413,
+    "ast_hash": "1d2fef191f34869593d7ace42db7c404",
     "semantic_hash": ""
   },
   "src/services/viajesEmpresa.js": {
@@ -2022,9 +2022,9 @@
     "semantic_hash": ""
   },
   "docs/PEDIDOS_BACKEND.md": {
-    "mtime": 1794591103.7328954,
-    "seen": 1794591112.8155973,
-    "ast_hash": "8f4cb916b149b30414ebe58ccb4b2164",
+    "mtime": 1794793466.1320298,
+    "seen": 1794793477.5090516,
+    "ast_hash": "349a4192e8b677ff43c2080ef631f592",
     "semantic_hash": ""
   },
   "scripts/api-tests/precio-v2.mjs": {
@@ -2301,6 +2301,30 @@
     "mtime": 1792437685.699245,
     "seen": 1794755938.7311776,
     "ast_hash": "e3bafc4a62b250e0a3260c6e685ca468",
+    "semantic_hash": ""
+  },
+  "scripts/api-tests/permisos.mjs": {
+    "mtime": 1794793323.4916675,
+    "seen": 1794793477.5086927,
+    "ast_hash": "4ae16b74ceef00bdd76519ea54d5fa0a",
+    "semantic_hash": ""
+  },
+  "src/components/empresa/ElegirPermisos.js": {
+    "mtime": 1794792663.9087822,
+    "seen": 1794793477.508718,
+    "ast_hash": "8f411973e76d3e5cf7762643f66da3db",
+    "semantic_hash": ""
+  },
+  "src/screens/empresa/MiembroScreen.js": {
+    "mtime": 1794793323.4910898,
+    "seen": 1794793477.5088186,
+    "ast_hash": "2779ac38df7ced1c477c30bf9a4a9a0c",
+    "semantic_hash": ""
+  },
+  "src/utils/permisos.js": {
+    "mtime": 1794792568.1313787,
+    "seen": 1794793477.5088606,
+    "ast_hash": "aaec8ab51605537236007b0d593d8bda",
     "semantic_hash": ""
   }
 }

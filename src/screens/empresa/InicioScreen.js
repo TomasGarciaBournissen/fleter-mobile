@@ -21,7 +21,7 @@ const NO_SUMAN = ['RECHAZADO', 'VENCIDO', 'CANCELADO'];
 export default function InicioScreen({ navigation }) {
   const { colors } = useTheme();
   const s = useThemedStyles(createStyles);
-  const { organizacion, viajes, recargar } = useEmpresa();
+  const { organizacion, viajes, recargar, puede } = useEmpresa();
   const { socket } = useSocket() ?? {};
   const [refrescando, setRefrescando] = useState(false);
   const [etas, setEtas] = useState({});
@@ -53,7 +53,9 @@ export default function InicioScreen({ navigation }) {
       <Meta style={{ marginTop: 6 }}>{organizacion?.nombre}</Meta>
       <Titulo chico style={{ marginTop: 2 }}>Hoy, {hoyTexto}</Titulo>
 
-      {viajes === null ? <ActivityIndicator color={colors.accent} style={{ marginTop: 40 }} /> : (
+      {!puede('VER_VIAJES') ? (
+        <Vacio icono="lock-outline" titulo="Todavía no ves los viajes" texto="El dueño de la empresa elige qué puede hacer cada persona del equipo. Pedile el permiso «Ver viajes»." />
+      ) : viajes === null ? <ActivityIndicator color={colors.accent} style={{ marginTop: 40 }} /> : (
         <>
           <View style={s.kpis}>
             <Kpi valor={String(deHoy.filter((v) => !NO_SUMAN.includes(v.estado)).length)} label="viajes hoy" />
@@ -84,8 +86,8 @@ export default function InicioScreen({ navigation }) {
           ) : null}
 
           {!enCurso.length && !proximos.length && !terminados.length ? (
-            <Vacio icono="calendar-blank-outline" titulo="Hoy no hay viajes" texto="Cargá uno y asignáselo a un conductor: lo vas a poder seguir acá en vivo.">
-              <View style={{ marginTop: 18, alignSelf: 'stretch' }}><Boton titulo="Cargar un viaje" onPress={() => navigation.navigate('NuevoViaje')} /></View>
+            <Vacio icono="calendar-blank-outline" titulo="Hoy no hay viajes" texto={puede('GESTIONAR_VIAJES') ? 'Cargá uno y asignáselo a un conductor: lo vas a poder seguir acá en vivo.' : 'Cuando el equipo cargue uno, lo vas a poder seguir acá en vivo.'}>
+              {puede('GESTIONAR_VIAJES') ? <View style={{ marginTop: 18, alignSelf: 'stretch' }}><Boton titulo="Cargar un viaje" onPress={() => navigation.navigate('NuevoViaje')} /></View> : null}
             </Vacio>
           ) : null}
         </>

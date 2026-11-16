@@ -19,7 +19,7 @@ import { ESTADO_SERIE, porHacer } from './SeriesScreen';
 export default function SerieScreen({ navigation, route }) {
   const { id, creada } = route.params;
   const { colors } = useTheme();
-  const { idOrg, recargar } = useEmpresa();
+  const { idOrg, recargar, puede } = useEmpresa();
   const [serie, setSerie] = useState(null);
   const [hoja, setHoja] = useState(false);
   const [cargando, setCargando] = useState(false);
@@ -54,7 +54,7 @@ export default function SerieScreen({ navigation, route }) {
   // Las paradas de la serie vienen con lat/lng: se adaptan a la forma de las del viaje
   const paradas = (serie.paradas ?? []).map((p, i) => ({ id_parada: i, direccion: p.lugar?.nombre ? `${p.lugar.nombre}, ${p.direccion}` : p.direccion }));
   const viajes = [...(serie.viajes ?? [])].sort((a, b) => new Date(a.fecha_programada) - new Date(b.fecha_programada));
-  const pie = serie.estado === 'ACTIVA' ? <Boton titulo="Cancelar el viaje repetido" variante="fantasma" onPress={() => setHoja(true)} /> : null;
+  const pie = serie.estado === 'ACTIVA' && puede('GESTIONAR_VIAJES') ? <Boton titulo="Cancelar el viaje repetido" variante="fantasma" onPress={() => setHoja(true)} /> : null;
 
   return (
     <Pantalla onVolver={() => navigation.goBack()} pie={pie} pieConLinea={!!pie}>

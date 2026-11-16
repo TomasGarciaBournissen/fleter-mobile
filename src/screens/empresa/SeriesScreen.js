@@ -33,7 +33,7 @@ export function recorridoSerie(serie) {
 export default function SeriesScreen({ navigation }) {
   const { colors } = useTheme();
   const s = useThemedStyles(createStyles);
-  const { idOrg } = useEmpresa();
+  const { idOrg, puede } = useEmpresa();
   const [series, setSeries] = useState(null);
   const [error, setError] = useState('');
 
@@ -61,7 +61,7 @@ export default function SeriesScreen({ navigation }) {
   };
 
   return (
-    <Pantalla onVolver={() => navigation.goBack()} pie={<Boton titulo="Cargar un viaje repetido" onPress={() => navigation.navigate('NuevoViaje')} />}>
+    <Pantalla onVolver={() => navigation.goBack()} pie={puede('GESTIONAR_VIAJES') ? <Boton titulo="Cargar un viaje repetido" onPress={() => navigation.navigate('NuevoViaje')} /> : null}>
       <Titulo>Viajes repetidos</Titulo>
       {error ? <Nota tipo="error">{error}</Nota> : null}
       {series === null && !error ? <ActivityIndicator color={colors.accent} style={{ marginTop: 40 }} /> : null}

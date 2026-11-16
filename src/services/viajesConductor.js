@@ -67,6 +67,20 @@ export async function misOrganizaciones() {
   return data;
 }
 
+// Vista previa antes de desvincularse: { viajes_a_cancelar, en_curso, series_a_borrar }.
+// null si el backend todavía no la tiene.
+export async function previaDesvincularme(idOrganizacion) {
+  if (DEV_MODE) return { viajes_a_cancelar: [], en_curso: null, series_a_borrar: [] };
+  try {
+    const { data } = await api.get(`/api/choferes/mis-organizaciones/${idOrganizacion}/desvinculacion`);
+    return data;
+  } catch (e) {
+    if (e?.response?.status === 404 && !/vinculo/i.test(e.response.data?.error ?? '')) return null;
+    throw e;
+  }
+}
+
+// Con un viaje en curso con esa empresa responde 409 { error, en_curso }
 export async function desvincularme(idOrganizacion) {
   if (DEV_MODE) {
     mock.organizaciones = mock.organizaciones.filter((o) => o.id_organizacion !== idOrganizacion);

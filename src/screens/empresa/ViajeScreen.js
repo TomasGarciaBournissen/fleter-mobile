@@ -37,7 +37,7 @@ export default function ViajeScreen({ navigation, route }) {
   const { id } = route.params;
   const { colors } = useTheme();
   const s = useThemedStyles(createStyles);
-  const { idOrg, recargar: recargarEmpresa, resolverRechazo } = useEmpresa();
+  const { idOrg, recargar: recargarEmpresa, resolverRechazo, puede } = useEmpresa();
   const { socket } = useSocket() ?? {};
   const [v, setV] = useState(null);
   const [error, setError] = useState('');
@@ -135,7 +135,9 @@ export default function ViajeScreen({ navigation, route }) {
   const actual = paradaActual(v);
   const llegada = vivo.minutos != null ? new Date(Date.now() + vivo.minutos * 60000) : null;
 
-  const pie = enCurso ? (
+  // Sin GESTIONAR_VIAJES se mira, no se toca: solo queda el remito
+  const gestiona = puede('GESTIONAR_VIAJES');
+  const pie = !gestiona && v.estado !== 'FINALIZADO' ? null : enCurso ? (
     <>
       {v.cierre?.cierre_manual_habilitado ? <Boton titulo="Finalizar el viaje" cargando={accion === 'finalizar'} onPress={() => hacer('finalizar', () => finalizarViaje(idOrg, v.id_viaje))} /> : null}
       <Boton titulo="Cancelar el viaje" variante="fantasma" onPress={() => setHoja('cancelar')} />
@@ -156,7 +158,7 @@ export default function ViajeScreen({ navigation, route }) {
   ) : v.estado === 'FINALIZADO' ? (
     <Boton titulo="Ver remito" variante="borde" cargando={accion === 'remito'} onPress={verRemito}
       icono={<MaterialCommunityIcons name="file-document-outline" size={20} color={colors.ink} />} />
-  ) : final ? (
+  ) : final && gestiona ? (
     <Boton titulo="Cargarlo de nuevo" variante="borde" onPress={() => navigation.navigate('NuevoViaje', { copiar: v })} />
   ) : null;
 
@@ -249,7 +251,7 @@ export default function ViajeScreen({ navigation, route }) {
         excluir={v.conductor?.id_conductor}
         cargando={accion === 'asignar'}
         onElegir={elegirConductor}
-        onInvitar={() => { setHoja(null); navigation.navigate('Invitar', { tipo: 'CHOFER' }); }}
+        onInvitar={puede('CHOFERES') ? () => { setHoja(null); navigation.navigate('Invitar', { tipo: 'CHOFER' }); } : undefined}
         onCerrar={() => setHoja(null)}
       />
     </Pantalla>

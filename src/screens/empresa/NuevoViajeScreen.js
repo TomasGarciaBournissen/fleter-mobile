@@ -49,7 +49,7 @@ const desdeViaje = (p) => ({ direccion: p.direccion, lat: Number(p.latitud), lng
 export default function NuevoViajeScreen({ navigation, route }) {
   const { colors } = useTheme();
   const s = useThemedStyles(createStyles);
-  const { idOrg, recargar } = useEmpresa();
+  const { idOrg, recargar, puede } = useEmpresa();
   const editar = route.params?.editar ?? null;
   // `copiar`: cargar de nuevo un rechazado, vencido o cancelado con sus datos
   const base = editar ?? route.params?.copiar ?? null;
@@ -287,7 +287,7 @@ export default function NuevoViajeScreen({ navigation, route }) {
             </View>
           ) : null}
           <Meta style={{ marginTop: 12 }}>El conductor elige con qué vehículo lo hace cuando lo confirma.</Meta>
-          <Enlace onPress={() => navigation.navigate('Invitar', { tipo: 'CHOFER' })} style={{ marginTop: 14 }}>Invitar a un conductor</Enlace>
+          {puede('CHOFERES') ? <Enlace onPress={() => navigation.navigate('Invitar', { tipo: 'CHOFER' })} style={{ marginTop: 14 }}>Invitar a un conductor</Enlace> : null}
         </>
       ) : null}
 

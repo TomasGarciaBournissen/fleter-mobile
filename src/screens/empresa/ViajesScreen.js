@@ -18,7 +18,7 @@ const FILTROS = [
 ];
 const EVENTOS = ['viaje:asignado', 'serie:asignada', 'viaje:editado', 'viaje:confirmado', 'viaje:rechazado', 'viaje:iniciado', 'viaje:estado_cambiado', 'viaje:finalizado', 'viaje:cancelado', 'viaje:vencido'];
 const VACIOS = {
-  activos: ['No hay viajes por hacer', 'Los que cargues aparecen acá hasta que terminan.'],
+  activos: ['No hay viajes por hacer', 'Los que se carguen aparecen acá hasta que terminan.'],
   en_curso: ['Ningún viaje en curso', 'Cuando un conductor inicia un viaje en el origen, lo seguís desde acá.'],
   historial: ['Todavía no terminó ningún viaje', 'Acá quedan los entregados, rechazados, vencidos y cancelados.'],
 };

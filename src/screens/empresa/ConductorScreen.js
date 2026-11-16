@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { useEmpresa } from '../../context/EmpresaContext';
 import { fonts } from '../../theme';
-import { desvincularConductor } from '../../services/empresa';
+import { desvincularConductor, previaDesvinculacion } from '../../services/empresa';
 import { listarSeries } from '../../services/viajesEmpresa';
 import { TIPOS_VEHICULO } from '../../services/vehiculos';
 import { EN_CURSO, FINALES } from '../../utils/estados';
@@ -20,15 +20,19 @@ const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 const MAX_VIAJES = 5;
 
 // Un conductor de la empresa: cómo contactarlo, sus vehículos y sus viajes
-// por hacer. Desvincular avisa antes qué cancela (ISSUES.md #1): todos sus
-// viajes no terminados con la empresa, también uno en curso, y sus series activas.
+// por hacer. Antes de desvincular se pide la vista previa al backend
+// (GET /choferes/:id/desvinculacion): qué viajes se cancelan y qué series se
+// borran. Con un viaje en curso no se puede (409): la hoja lo dice y lleva al
+// viaje. Un backend sin vista previa (producción hasta que se pase) cancela
+// también el viaje en curso: ahí se avisa con lo que la app ya sabe.
 export default function ConductorScreen({ navigation, route }) {
   const { conductor: c } = route.params;
   const { colors } = useTheme();
   const s = useThemedStyles(createStyles);
-  const { idOrg, viajes, recargar } = useEmpresa();
+  const { idOrg, viajes, recargar, puede } = useEmpresa();
   const [series, setSeries] = useState([]);
   const [hoja, setHoja] = useState(false);
+  const [previa, setPrevia] = useState(undefined); // undefined = cargando, null = sin vista previa
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
 
@@ -39,6 +43,12 @@ export default function ConductorScreen({ navigation, route }) {
   const suyos = (viajes ?? []).filter((v) => v.conductor?.id_conductor === c.id_conductor && !FINALES.includes(v.estado))
     .sort((a, b) => new Date(a.fecha_programada) - new Date(b.fecha_programada));
   const enCurso = suyos.find((v) => EN_CURSO.includes(v.estado));
+
+  const abrirHoja = () => {
+    setHoja(true);
+    setPrevia(undefined);
+    previaDesvinculacion(idOrg, c.id_conductor).then(setPrevia).catch(() => setPrevia(null));
+  };
 
   const desvincular = async () => {
     setCargando(true);
@@ -55,13 +65,16 @@ export default function ConductorScreen({ navigation, route }) {
     }
   };
 
+  const bloqueo = previa?.en_curso ?? null; // id del viaje en curso: no se puede desvincular
+  const aCancelar = previa ? previa.viajes_a_cancelar?.length ?? 0 : suyos.length;
+  const aBorrar = previa ? previa.series_a_borrar?.length ?? 0 : series.length;
   const efectos = [
-    suyos.length ? `se cancelan sus ${plural(suyos.length, 'viaje', 'viajes')} por hacer${enCurso ? ', incluido el que está haciendo ahora' : ''}` : null,
-    series.length ? `se borran sus ${plural(series.length, 'viaje repetido', 'viajes repetidos')}` : null,
+    aCancelar ? `se cancelan sus ${plural(aCancelar, 'viaje', 'viajes')} por hacer${!previa && enCurso ? ', incluido el que está haciendo ahora' : ''}` : null,
+    aBorrar ? `se borran sus ${plural(aBorrar, 'viaje repetido', 'viajes repetidos')}` : null,
   ].filter(Boolean);
 
   return (
-    <Pantalla onVolver={() => navigation.goBack()} pie={<Boton titulo="Desvincular de la empresa" variante="peligro" onPress={() => setHoja(true)} />}>
+    <Pantalla onVolver={() => navigation.goBack()} pie={puede('CHOFERES') ? <Boton titulo="Desvincular de la empresa" variante="peligro" onPress={abrirHoja} /> : null}>
       <View style={s.cabeza}>
         <Avatar nombre={nombreConductor(c)} style={s.avatarGrande} />
         <View style={{ flex: 1 }}>
@@ -103,14 +116,20 @@ export default function ConductorScreen({ navigation, route }) {
 
       <HojaInferior
         visible={hoja}
-        titulo={`¿Desvincular a ${c.nombre}?`}
-        bajada={efectos.length
-          ? `Deja de trabajar con la empresa y ${efectos.join(' y ')}. Le llega el aviso al instante. Puede volver más adelante con un código nuevo.`
-          : 'Deja de trabajar con la empresa. No tiene viajes por hacer. Puede volver más adelante con un código nuevo.'}
+        titulo={previa === undefined ? `Desvincular a ${c.nombre}` : bloqueo ? `${c.nombre} está haciendo un viaje` : `¿Desvincular a ${c.nombre}?`}
+        bajada={previa === undefined ? 'Revisando qué viajes se cancelan…'
+          : bloqueo ? `Está haciendo VJ-${bloqueo} ahora. Lo podés desvincular cuando lo termine o si cancelás ese viaje.`
+            : efectos.length
+              ? `Deja de trabajar con la empresa y ${efectos.join(' y ')}. Le llega el aviso al instante. Puede volver más adelante con un código nuevo.`
+              : 'Deja de trabajar con la empresa. No tiene viajes por hacer. Puede volver más adelante con un código nuevo.'}
         onCerrar={() => setHoja(false)}
       >
-        {enCurso ? <Nota tipo="aviso" style={{ marginTop: 0 }}>{c.nombre} está haciendo VJ-{enCurso.id_viaje} ahora: se corta donde está.</Nota> : null}
-        <Boton titulo="Desvincular" variante="peligro" cargando={cargando} onPress={desvincular} />
+        {previa === null && enCurso ? <Nota tipo="aviso" style={{ marginTop: 0 }}>{c.nombre} está haciendo VJ-{enCurso.id_viaje} ahora: se corta donde está.</Nota> : null}
+        {bloqueo ? (
+          <Boton titulo={`Ver VJ-${bloqueo}`} onPress={() => { setHoja(false); navigation.navigate('Viaje', { id: bloqueo }); }} />
+        ) : (
+          <Boton titulo="Desvincular" variante="peligro" cargando={cargando || previa === undefined} onPress={desvincular} />
+        )}
         <Boton titulo="Volver" variante="fantasma" onPress={() => setHoja(false)} />
       </HojaInferior>
     </Pantalla>

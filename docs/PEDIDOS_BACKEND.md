@@ -18,7 +18,7 @@
 | # | Pedido | Prioridad | Bloquea en mobile |
 |---|---|---|---|
 | 1 | Notificaciones push (FCM) | **Alta** | Avisos con la app cerrada, para los dos roles |
-| 2 | Desvincular sin cancelar un viaje en curso, con vista previa | **Alta** | Confirmación segura en Conductores y en el perfil del conductor |
+| 2 | Desvincular sin cancelar un viaje en curso, con vista previa | ✅ Hecho | Resuelto en `develop` (sistema de permisos, 15 nov 2026) |
 | 3 | Historial de alertas por empresa | Media | Pestaña Alertas completa (hoy se pierde lo que pasa con la app cerrada) |
 | 4 | Remito con foto | Media | Foto de la entrega en la última parada |
 | 5 | ETA, desvíos y ventana de inicio también para el conductor | Media | Llegada actualizada y aviso de desvío en Viaje activo |
@@ -62,7 +62,14 @@ la empresa no se entera de un rechazo hasta abrirla. Los viajes vencen sin que n
 
 **Mientras tanto.** Alertas y las listas se actualizan por socket y con REST al volver a la app.
 
-## 2. Desvincular sin cancelar un viaje en curso — alta
+## 2. Desvincular sin cancelar un viaje en curso — hecho
+
+> **Resuelto** en `develop` junto con el sistema de dueño y permisos (15 nov 2026): vista previa
+> `GET …/choferes/:idc/desvinculacion` y `GET /api/choferes/mis-organizaciones/:id/desvinculacion` →
+> `{ viajes_a_cancelar: [ids], en_curso: id | null, series_a_borrar: [ids] }`, y `409 { error, en_curso }` si hay
+> un viaje en curso (para los dos lados). La app ya lo usa. Probado con `scripts/api-tests/permisos.mjs`.
+> Queda abierto lo de las series (se siguen borrando, no quedan para reasignar).
+
 
 **Hoy.** `DELETE /api/organizaciones/:id/choferes/:idc` y `DELETE /api/choferes/mis-organizaciones/:id`
 cancelan **todos** los viajes no finales del conductor con esa empresa, **incluido uno en curso**. También
@@ -170,6 +177,12 @@ Mientras tanto, si no coinciden, igual decide el backend y la app muestra su men
 ---
 
 ## Notas del contrato (no bloquean, para que el `API.md` diga lo que pasa)
+
+- **Analytics «Todo»:** el aviso del sistema de permisos dice «sin `desde` = Todo», pero sin `desde` el backend
+  devuelve el mes en curso (`rango.todo: false`, `desde` = día 1). `?desde=` vacío da 400. Con
+  `desde=2000-01-01` sí trae todo. Hace falta decidir cómo se pide «Todo» (`permisos.mjs`, 16 nov 2026).
+- **Vista previa de desvinculación:** `en_curso` es un id o `null` (no una lista) y la serie se llama
+  `series_a_borrar`. La app usa esa forma.
 
 - **Ventana de inicio:** el `400` de iniciar dice «el viaje solo puede iniciarse a partir de las 12:27»,
   pero la sección de errores de iniciar en `API.md` no tiene ese texto.

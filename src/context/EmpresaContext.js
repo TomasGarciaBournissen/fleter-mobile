@@ -10,9 +10,10 @@ import { finVentanaInicio } from '../utils/ventana';
 import { hora } from '../utils/fechas';
 import { partirDireccion } from '../components/viaje/Recorrido';
 import { MIN_TARDE } from '../components/empresa/TablaParadas';
+import { permisosDe } from '../utils/permisos';
 
 // Estado compartido del lado de la empresa: qué organización es, si el usuario
-// es responsable, y las alertas (pestaña Alertas y su contador en la barra).
+// es el dueño y qué permisos tiene (utils/permisos.js), y las alertas (pestaña Alertas y su contador en la barra).
 //
 // Alertas en dos grupos (prototipo de la fase 3):
 // · «Para resolver»: sale del REST, así sobrevive a reconexiones y reinicios:
@@ -33,11 +34,14 @@ const EVENTOS_REST = [
 const nombreDe = (v) => v?.conductor?.nombre ?? 'El conductor';
 
 export function EmpresaProvider({ children }) {
-  const { user } = useAuth();
+  const { user, refrescarUsuario } = useAuth();
   const { socket } = useSocket() ?? {};
   const organizacion = user?.organizacion ?? null;
   const idOrg = organizacion?.id_organizacion ?? null;
-  const esResponsable = organizacion?.rol === 'RESPONSABLE';
+  const { sistemaNuevo, esDueno, puede } = useMemo(() => permisosDe(organizacion), [organizacion]);
+  const veViajes = puede('VER_VIAJES');
+  // Nombre heredado: «responsable» = dueño (edita la empresa e invita al equipo)
+  const esResponsable = esDueno;
 
   const [viajes, setViajes] = useState(null);
   const [resueltos, setResueltos] = useState([]);
@@ -50,6 +54,8 @@ export function EmpresaProvider({ children }) {
 
   const recargar = useCallback(async () => {
     if (!idOrg) return;
+    // Sin VER_VIAJES el backend responde 403: no hay viajes que mostrar
+    if (!veViajes) { setViajes([]); return; }
     try {
       const lista = await listarViajes(idOrg);
       lista.forEach((v) => porId.current.set(v.id_viaje, v));
@@ -57,9 +63,21 @@ export function EmpresaProvider({ children }) {
     } catch {
       // Sin red: quedan las alertas que ya había; el próximo refetch las corrige
     }
-  }, [idOrg]);
+  }, [idOrg, veViajes]);
 
   useEffect(() => { recargar(); }, [recargar]);
+
+  // El dueño cambió mis permisos, me pasó la empresa o me sacó: se vuelve a
+  // pedir /me y la app se acomoda sola (sin la empresa, vuelve al onboarding)
+  useEffect(() => {
+    if (!socket) return undefined;
+    const h = (d) => {
+      if (d?.id_organizacion != null && Number(d.id_organizacion) !== Number(idOrg)) return;
+      refrescarUsuario().catch(() => {});
+    };
+    socket.on('organizacion:permisos_actualizados', h);
+    return () => socket.off('organizacion:permisos_actualizados', h);
+  }, [socket, idOrg, refrescarUsuario]);
   useEnVivo(EVENTOS_REST, recargar);
 
   // Un rechazo resuelto (se asignó a otro conductor) deja de pedir acción
@@ -132,9 +150,9 @@ export function EmpresaProvider({ children }) {
   const marcarVistas = useCallback(() => setHoy((prev) => (prev.some((x) => x.nueva) ? prev.map((x) => ({ ...x, nueva: false })) : prev)), []);
 
   const value = useMemo(() => ({
-    idOrg, organizacion, esResponsable, viajes, recargar,
+    idOrg, organizacion, esResponsable, esDueno, puede, sistemaNuevo, viajes, recargar,
     pendientes, hoy, marcarVistas, resolverRechazo,
-  }), [idOrg, organizacion, esResponsable, viajes, recargar, pendientes, hoy, marcarVistas, resolverRechazo]);
+  }), [idOrg, organizacion, esResponsable, esDueno, puede, sistemaNuevo, viajes, recargar, pendientes, hoy, marcarVistas, resolverRechazo]);
 
   return <EmpresaContext.Provider value={value}>{children}</EmpresaContext.Provider>;
 }

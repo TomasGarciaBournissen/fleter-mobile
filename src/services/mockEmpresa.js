@@ -33,10 +33,10 @@ const conductorDe = (id) => {
 };
 
 let miembros = [
-  { id_usuario: 1, nombre: 'Ana', apellido: 'Ferreyra', email: 'ana@distribuidoranorte.com.ar', telefono: '+5491144440001', rol: 'RESPONSABLE', fecha_alta: en(-20, 10, 0) },
-  { id_usuario: 7, nombre: 'Diego', apellido: 'Ruiz', email: 'diego@distribuidoranorte.com.ar', telefono: null, rol: 'MIEMBRO', fecha_alta: en(-12, 10, 0) },
-  { id_usuario: 8, nombre: 'Sofía', apellido: 'López', email: 'logistica@distribuidoranorte.com.ar', telefono: null, rol: 'MIEMBRO', fecha_alta: en(-3, 10, 0) },
-];
+  { id_usuario: 1, nombre: 'Ana', apellido: 'Ferreyra', email: 'ana@distribuidoranorte.com.ar', telefono: '+5491144440001', rol: 'RESPONSABLE', es_dueno: true, permisos: ['VER_VIAJES', 'GESTIONAR_VIAJES', 'ANALYTICS', 'CHOFERES'], fecha_alta: en(-20, 10, 0) },
+  { id_usuario: 7, nombre: 'Diego', apellido: 'Ruiz', email: 'diego@distribuidoranorte.com.ar', telefono: null, rol: 'MIEMBRO', es_dueno: false, permisos: ['GESTIONAR_VIAJES', 'CHOFERES'], fecha_alta: en(-12, 10, 0) },
+  { id_usuario: 8, nombre: 'Sofía', apellido: 'López', email: 'logistica@distribuidoranorte.com.ar', telefono: null, rol: 'MIEMBRO', es_dueno: false, permisos: ['VER_VIAJES', 'ANALYTICS'], fecha_alta: en(-3, 10, 0) },
+].map((m) => ({ ...m, permisos_efectivos: m.permisos.includes('GESTIONAR_VIAJES') ? [...new Set(['VER_VIAJES', ...m.permisos])] : m.permisos }));
 
 let invitaciones = [
   { id_invitacion: 3, tipo: 'CHOFER', fecha_creacion: masMin(ahoraIso(), -60 * 20), fecha_vencimiento: masMin(ahoraIso(), 60 * 52), creada_por: { id_usuario: 1, nombre: 'Ana', apellido: 'Ferreyra' } },
@@ -303,13 +303,28 @@ export const mock = {
     m.rol = rol;
     return { mensaje: 'Rol actualizado', id_usuario: m.id_usuario, rol };
   },
+  cambiarPermisos(idUsuario, permisos) {
+    const m = miembros.find((x) => x.id_usuario === Number(idUsuario));
+    if (!m) throw error(404, 'Miembro no encontrado');
+    if (m.es_dueno) throw error(400, 'El dueño tiene todos los permisos');
+    m.permisos = [...permisos];
+    m.permisos_efectivos = permisos.includes('GESTIONAR_VIAJES') ? [...new Set(['VER_VIAJES', ...permisos])] : [...permisos];
+    return { mensaje: 'Permisos actualizados', id_usuario: m.id_usuario, es_dueno: false, permisos: m.permisos, permisos_efectivos: m.permisos_efectivos };
+  },
+  transferir(idUsuario) {
+    const nuevo = miembros.find((x) => x.id_usuario === Number(idUsuario));
+    if (!nuevo) throw error(404, 'Miembro no encontrado');
+    miembros.forEach((x) => { x.es_dueno = x === nuevo; x.rol = x === nuevo ? 'RESPONSABLE' : 'MIEMBRO'; });
+    nuevo.permisos = ['VER_VIAJES', 'GESTIONAR_VIAJES', 'ANALYTICS', 'CHOFERES']; nuevo.permisos_efectivos = ['VER_VIAJES', 'GESTIONAR_VIAJES', 'ANALYTICS', 'CHOFERES'];
+    return { mensaje: 'Propiedad transferida', id_usuario: nuevo.id_usuario };
+  },
   eliminarMiembro(idUsuario) {
     miembros = miembros.filter((x) => x.id_usuario !== Number(idUsuario));
     return { mensaje: 'Miembro eliminado', id_usuario: Number(idUsuario) };
   },
   invitaciones: () => copia(invitaciones),
-  crearInvitacion(tipo) {
-    const inv = { id_invitacion: Date.now() % 100000, tipo, fecha_creacion: ahoraIso(), fecha_vencimiento: masMin(ahoraIso(), 72 * 60), creada_por: { id_usuario: 1, nombre: 'Ana', apellido: 'Ferreyra' } };
+  crearInvitacion(tipo, permisos) {
+    const inv = { id_invitacion: Date.now() % 100000, tipo, ...(tipo === 'MIEMBRO' ? { permisos: permisos ?? ['ANALYTICS', 'VER_VIAJES'] } : {}), fecha_creacion: ahoraIso(), fecha_vencimiento: masMin(ahoraIso(), 72 * 60), creada_por: { id_usuario: 1, nombre: 'Ana', apellido: 'Ferreyra' } };
     invitaciones = [inv, ...invitaciones];
     return { ...copia(inv), codigo: tipo === 'CHOFER' ? 'GZ32F-JNQSR' : 'HK7PM-W4XT9' };
   },
@@ -318,7 +333,22 @@ export const mock = {
     return { mensaje: 'Invitacion revocada', id_invitacion: Number(id) };
   },
   choferes: () => copia(choferes),
+  desvinculacionChofer(idConductor) {
+    const suyos = viajes.filter((v) => v.id_conductor === Number(idConductor) && GRUPOS.activos.includes(v.estado));
+    const curso = suyos.find((v) => ['CARGANDO', 'EN_RUTA', 'DESCARGANDO'].includes(v.estado));
+    return {
+      viajes_a_cancelar: suyos.filter((v) => v !== curso).map((v) => v.id_viaje),
+      en_curso: curso ? curso.id_viaje : null,
+      series_a_borrar: series.filter((s) => s.id_conductor === Number(idConductor) && s.estado === 'ACTIVA').map((s) => s.id_serie),
+    };
+  },
   desvincularChofer(idConductor) {
+    const previa = this.desvinculacionChofer(idConductor);
+    if (previa.en_curso) {
+      const e = error(409, 'El chofer tiene un viaje en curso: cancelalo o esperá a que termine para desvincularlo.');
+      e.response.data.en_curso = previa.en_curso;
+      throw e;
+    }
     const i = choferes.findIndex((x) => x.id_conductor === Number(idConductor));
     if (i === -1) throw error(404, 'No hay un vinculo activo con ese chofer');
     choferes.splice(i, 1);

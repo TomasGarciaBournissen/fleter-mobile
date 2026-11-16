@@ -32,7 +32,7 @@ const TIPOS = {
 // toque; cuando se resuelve, sale solo). Abajo lo que pasó hoy, con un punto
 // en lo que todavía no viste.
 export default function AlertasScreen({ navigation }) {
-  const { pendientes, hoy, marcarVistas, idOrg, recargar, resolverRechazo } = useEmpresa();
+  const { pendientes, hoy, marcarVistas, idOrg, recargar, resolverRechazo, puede } = useEmpresa();
   const [conductores, setConductores] = useState(null);
   const [hoja, setHoja] = useState(null); // { alerta }
   const [accion, setAccion] = useState(null);
@@ -86,6 +86,8 @@ export default function AlertasScreen({ navigation }) {
 
   const acciones = (a) => {
     const ver = { titulo: 'Ver viaje', onPress: () => navigation.navigate('Viaje', { id: a.viaje.id_viaje }) };
+    // Sin GESTIONAR_VIAJES las alertas se miran: solo queda abrir el viaje
+    if (!puede('GESTIONAR_VIAJES')) return [ver];
     if (a.tipo === 'rechazado') return [{ titulo: 'Asignar a otro', primaria: true, onPress: () => abrirHoja(a) }, ver];
     if (a.tipo === 'por_vencer') {
       const tel = a.viaje.conductor?.telefono;
@@ -132,7 +134,7 @@ export default function AlertasScreen({ navigation }) {
         excluir={alerta?.viaje.conductor?.id_conductor}
         cargando={accion === 'asignar'}
         onElegir={asignar}
-        onInvitar={() => { setHoja(null); navigation.navigate('Invitar', { tipo: 'CHOFER' }); }}
+        onInvitar={puede('CHOFERES') ? () => { setHoja(null); navigation.navigate('Invitar', { tipo: 'CHOFER' }); } : undefined}
         onCerrar={() => setHoja(null)}
       />
     </Pantalla>

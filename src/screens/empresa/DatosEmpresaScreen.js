@@ -13,7 +13,7 @@ import { Pantalla, Titulo, Bajada, Campo, Boton, Nota } from '../../components/u
 export default function DatosEmpresaScreen({ navigation }) {
   const { colors } = useTheme();
   const { refrescarUsuario } = useAuth();
-  const { idOrg, esResponsable } = useEmpresa();
+  const { idOrg, esResponsable, sistemaNuevo } = useEmpresa();
   const [f, setF] = useState(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
@@ -55,7 +55,7 @@ export default function DatosEmpresaScreen({ navigation }) {
           <Campo label="CUIT" mono value={f.cuit} onChangeText={cambiar('cuit')} keyboardType="number-pad" editable={esResponsable} />
           <Campo label="Razón social" opcional value={f.razon_social} onChangeText={cambiar('razon_social')} editable={esResponsable} />
           <Campo label="Dirección" opcional value={f.direccion} onChangeText={cambiar('direccion')} editable={esResponsable} />
-          {!esResponsable ? <Nota>Solo un responsable de la empresa puede cambiar estos datos.</Nota> : null}
+          {!esResponsable ? <Nota>Solo {sistemaNuevo ? 'el dueño' : 'un responsable'} de la empresa puede cambiar estos datos.</Nota> : null}
         </>
       ) : null}
       {ok ? <Nota tipo="ok">Listo, guardamos los cambios.</Nota> : null}

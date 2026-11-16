@@ -20,6 +20,7 @@ import LugarScreen from '../screens/empresa/LugarScreen';
 import SeriesScreen from '../screens/empresa/SeriesScreen';
 import SerieScreen from '../screens/empresa/SerieScreen';
 import EquipoScreen from '../screens/empresa/EquipoScreen';
+import MiembroScreen from '../screens/empresa/MiembroScreen';
 import DatosEmpresaScreen from '../screens/empresa/DatosEmpresaScreen';
 import MisDatosScreen from '../screens/empresa/MisDatosScreen';
 
@@ -57,8 +58,12 @@ function IconoTab({ nombre, focused, color }) {
 
 // Pestañas de la empresa: Inicio · Viajes · Nuevo · Alertas · Más (prototipo de
 // la fase 3). Conductores, lugares, viajes repetidos y equipo viven en Más.
+// Sin VER_VIAJES no hay Viajes ni Alertas; sin GESTIONAR_VIAJES no hay «Nuevo».
 function Pestanas() {
   const { colors } = useTheme();
+  const { puede } = useEmpresa();
+  const ve = puede('VER_VIAJES');
+  const gestiona = puede('GESTIONAR_VIAJES');
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -73,16 +78,16 @@ function Pestanas() {
       })}
     >
       <Tab.Screen name="Inicio" component={InicioScreen} />
-      <Tab.Screen name="Viajes" component={ViajesScreen} />
-      <Tab.Screen
+      {ve ? <Tab.Screen name="Viajes" component={ViajesScreen} /> : null}
+      {gestiona ? <Tab.Screen
         name="Nuevo"
         component={SinPantalla}
         options={{ tabBarAccessibilityLabel: 'Nuevo viaje' }}
         listeners={({ navigation }) => ({
           tabPress: (e) => { e.preventDefault(); navigation.navigate('NuevoViaje'); },
         })}
-      />
-      <Tab.Screen name="Alertas" component={AlertasScreen} />
+      /> : null}
+      {ve ? <Tab.Screen name="Alertas" component={AlertasScreen} /> : null}
       <Tab.Screen name="Mas" component={MasScreen} />
     </Tab.Navigator>
   );
@@ -105,6 +110,7 @@ export default function PymeStack() {
         <Stack.Screen name="Series" component={SeriesScreen} />
         <Stack.Screen name="Serie" component={SerieScreen} />
         <Stack.Screen name="Equipo" component={EquipoScreen} />
+        <Stack.Screen name="Miembro" component={MiembroScreen} />
         <Stack.Screen name="DatosEmpresa" component={DatosEmpresaScreen} />
         <Stack.Screen name="MisDatos" component={MisDatosScreen} />
       </Stack.Navigator>

@@ -34,6 +34,22 @@ export async function listarMiembros(idOrg) {
   return data;
 }
 
+// Solo el dueño. permisos: VER_VIAJES | GESTIONAR_VIAJES | ANALYTICS | CHOFERES
+export async function cambiarPermisos(idOrg, idUsuario, permisos) {
+  if (DEV_MODE) return mock.cambiarPermisos(idUsuario, permisos);
+  const { data } = await api.put(`${org(idOrg)}/miembros/${idUsuario}/permisos`, { permisos });
+  return data;
+}
+
+// Solo el dueño: pasa la empresa a otro miembro (queda dueño con todo)
+export async function transferirEmpresa(idOrg, idUsuario) {
+  if (DEV_MODE) return mock.transferir(idUsuario);
+  const { data } = await api.post(`${org(idOrg)}/transferir`, { id_usuario: idUsuario });
+  return data;
+}
+
+// Backend sin el sistema de permisos (producción hasta que se pase): promover
+// o degradar. En develop ya no existe (404).
 export async function cambiarRol(idOrg, idUsuario, rol) {
   if (DEV_MODE) return mock.cambiarRol(idUsuario, rol);
   const { data } = await api.put(`${org(idOrg)}/miembros/${idUsuario}/rol`, { rol });
@@ -54,11 +70,13 @@ export async function salirDeEmpresa(idOrg) {
 }
 
 // ─── Invitaciones ──────────────────────────────────────────────────────────
-// tipo: CHOFER (cualquier miembro) | MIEMBRO (solo responsable).
-// El `codigo` viene solo en esta respuesta: el backend guarda un hash.
-export async function crearInvitacion(idOrg, tipo) {
-  if (DEV_MODE) return mock.crearInvitacion(tipo);
-  const { data } = await api.post(`${org(idOrg)}/invitaciones`, { tipo });
+// tipo: CHOFER (permiso CHOFERES) | MIEMBRO (solo el dueño, con `permisos`;
+// sin ellos entra con VER_VIAJES y ANALYTICS). El `codigo` viene solo en esta
+// respuesta: el backend guarda un hash.
+export async function crearInvitacion(idOrg, tipo, permisos) {
+  if (DEV_MODE) return mock.crearInvitacion(tipo, permisos);
+  const body = tipo === 'MIEMBRO' && permisos ? { tipo, permisos } : { tipo };
+  const { data } = await api.post(`${org(idOrg)}/invitaciones`, body);
   return data;
 }
 
@@ -82,8 +100,22 @@ export async function listarConductores(idOrg) {
   return data;
 }
 
-// Cancela todos sus viajes no finales con la empresa (también uno en curso)
-// y borra sus series activas. Devuelve { viajes_cancelados, series_borradas }.
+// Qué pasaría al desvincularlo: { viajes_a_cancelar: [ids], en_curso: id | null,
+// series_a_borrar: [ids] }. null si el backend no tiene la vista previa.
+export async function previaDesvinculacion(idOrg, idConductor) {
+  if (DEV_MODE) return mock.desvinculacionChofer(idConductor);
+  try {
+    const { data } = await api.get(`${org(idOrg)}/choferes/${idConductor}/desvinculacion`);
+    return data;
+  } catch (e) {
+    if (e?.response?.status === 404 && !/vinculo/i.test(e.response.data?.error ?? '')) return null;
+    throw e;
+  }
+}
+
+// Cancela sus viajes por hacer con la empresa y borra sus series activas.
+// Con un viaje en curso responde 409 { error, en_curso }.
+// Devuelve { viajes_cancelados, series_borradas }.
 export async function desvincularConductor(idOrg, idConductor) {
   if (DEV_MODE) return mock.desvincularChofer(idConductor);
   const { data } = await api.delete(`${org(idOrg)}/choferes/${idConductor}`);

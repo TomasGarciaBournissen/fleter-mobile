@@ -11,7 +11,7 @@ import { Pantalla, Titulo, Bajada, Lista, Fila, Avatar, Vacio, Nota, Boton } fro
 // eligen a un toque al cargar un viaje. El conductor nunca ve el nombre.
 export default function LugaresScreen({ navigation }) {
   const { colors } = useTheme();
-  const { idOrg } = useEmpresa();
+  const { idOrg, puede } = useEmpresa();
   const [lugares, setLugares] = useState(null);
   const [error, setError] = useState('');
 
@@ -20,7 +20,7 @@ export default function LugaresScreen({ navigation }) {
   }, [idOrg]));
 
   return (
-    <Pantalla onVolver={() => navigation.goBack()} pie={<Boton titulo="Agregar un lugar" onPress={() => navigation.navigate('Lugar', {})} />}>
+    <Pantalla onVolver={() => navigation.goBack()} pie={puede('GESTIONAR_VIAJES') ? <Boton titulo="Agregar un lugar" onPress={() => navigation.navigate('Lugar', {})} /> : null}>
       <Titulo>Lugares guardados</Titulo>
       <Bajada>Depósitos, sucursales y clientes de siempre. Al cargar un viaje los elegís sin escribir la dirección.</Bajada>
       {error ? <Nota tipo="error">{error}</Nota> : null}
@@ -29,7 +29,7 @@ export default function LugaresScreen({ navigation }) {
       {lugares?.length ? (
         <Lista style={{ marginTop: 16 }}>
           {lugares.map((l) => (
-            <Fila key={l.id_lugar} izquierda={<Avatar icono="star-outline" />} titulo={l.nombre} sub={l.direccion} chevron onPress={() => navigation.navigate('Lugar', { lugar: l })} />
+            <Fila key={l.id_lugar} izquierda={<Avatar icono="star-outline" />} titulo={l.nombre} sub={l.direccion} chevron={puede('GESTIONAR_VIAJES')} onPress={puede('GESTIONAR_VIAJES') ? () => navigation.navigate('Lugar', { lugar: l }) : undefined} />
           ))}
         </Lista>
       ) : null}

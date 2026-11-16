@@ -16,6 +16,11 @@
 
 ## 1. Desvincular a un conductor cancela viajes en curso
 
+> ✅ **Resuelto en `develop`** (sistema de dueño y permisos, 15 nov 2026): hay vista previa para los dos lados y
+> con un viaje en curso responde `409 { error, en_curso }` en vez de cancelarlo. La app lo usa desde el 16 nov
+> (`ConductorScreen`, `EmpresaConductorScreen`). Las series se siguen borrando al desvincular. Producción sigue con
+> el comportamiento de abajo hasta que se pase el backend.
+
 ### Qué pasa hoy
 Según las pruebas de contrato (`scripts/api-tests/viajes.mjs` y `series.mjs`):
 

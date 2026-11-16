@@ -15,7 +15,7 @@ const DEV_ROL = null; // null = Login, 'CLIENTE', 'CLIENTE_SIN_EMPRESA', 'CONDUC
 const DEV_USERS = {
   CLIENTE: {
     id_usuario: 1, nombre: 'Ana', apellido: 'Ferreyra', email: 'ana@distribuidoranorte.com.ar', rol: 'CLIENTE',
-    organizacion: { id_organizacion: 1, nombre: 'Distribuidora Norte', estado: 'TRIAL', rol: 'RESPONSABLE' },
+    organizacion: { id_organizacion: 1, nombre: 'Distribuidora Norte', estado: 'TRIAL', rol: 'RESPONSABLE', es_dueno: true, mis_permisos: ['VER_VIAJES', 'GESTIONAR_VIAJES', 'ANALYTICS', 'CHOFERES'] },
   },
   CLIENTE_SIN_EMPRESA: {
     id_usuario: 1, nombre: 'Ana', apellido: 'Ferreyra', email: 'ana@distribuidoranorte.com.ar', rol: 'CLIENTE',
