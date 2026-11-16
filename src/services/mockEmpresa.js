@@ -405,7 +405,8 @@ export const mock = {
     return copia([...r].sort((a, b) => new Date(b.fecha_programada) - new Date(a.fecha_programada)));
   },
   obtener: (id) => copia(conRuta(buscar(id))),
-  estimar: ({ paradas, fecha_programada }) => estimarDev(paradas, fecha_programada),
+  // Los lugares guardados llegan solo con su id (como al backend): se resuelven antes de estimar
+  estimar: ({ paradas, fecha_programada }) => estimarDev(resolverParadas(paradas), fecha_programada),
   crear(body) { const v = nuevoViaje(body); viajes.push(v); return copia(v); },
   editar(id, body) {
     const v = buscar(id);

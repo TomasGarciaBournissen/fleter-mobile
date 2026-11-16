@@ -1,7 +1,7 @@
 # Graph Report - fleter-mobile  (2026-11-16)
 
 ## Corpus Check
-- 341 files · ~460,841 words
+- 341 files · ~460,932 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 110 file(s) not represented in the graph (top: .ttf 54, .csv 53, (none) 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `efb97b32`
+- Built from commit: `8b51c1e7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -1037,7 +1037,7 @@ Nodes (5): scripts, android, ios, start, web
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Issue #1: desvincular a un conductor cancela viajes en curso` connect `Pivot a herramienta B2B de gestión de viajes para PyMEs` to `precio-v2.mjs`, `Plan mobile PyME + conductores por fases (0 a 4)`, `Ciclo del viaje interno (ASIGNADO a FINALIZADO)`, `series.mjs`, `conductor/DetalleViajeScreen.js`?**
-  _High betweenness centrality (0.036) - this node is a cross-community bridge._
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `useThemedStyles()` (e.g. with `Toda pantalla en modo claro y oscuro` and `9.1 Principios y reglas fijas del plan`) actually correct?**
   _`useThemedStyles()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `expo-camera`, `expo-crypto`, `expo-status-bar` to the rest of the system?**

@@ -138,9 +138,9 @@
     "semantic_hash": "d33cf6709bc18c233e14b6321735576f"
   },
   "PROGRESO.md": {
-    "mtime": 1794798933.4703717,
-    "seen": 1794798962.034769,
-    "ast_hash": "2193388707fdd74d95df8b5dbb9a44e7",
+    "mtime": 1794803696.224235,
+    "seen": 1794803703.4529517,
+    "ast_hash": "a88d618de0154b6f60163dd84784fac7",
     "semantic_hash": ""
   },
   "UXUI.md": {
@@ -1734,9 +1734,9 @@
     "semantic_hash": ""
   },
   "docs/ARQUITECTURA.md": {
-    "mtime": 1794798954.9893796,
-    "seen": 1794798962.0347772,
-    "ast_hash": "90dacdade9a0a5b45181c76b1fbfa7b8",
+    "mtime": 1794803696.2250578,
+    "seen": 1794803703.452959,
+    "ast_hash": "26ee906306f4ccedcb12804fe879f727",
     "semantic_hash": ""
   },
   "docs/FLUJOS_MOBILE.md": {
@@ -1992,9 +1992,9 @@
     "semantic_hash": ""
   },
   "src/services/mockEmpresa.js": {
-    "mtime": 1794792646.0137644,
-    "seen": 1794793477.5088413,
-    "ast_hash": "1d2fef191f34869593d7ace42db7c404",
+    "mtime": 1794801248.329045,
+    "seen": 1794803703.4526649,
+    "ast_hash": "8deb92fbb622baa9ac533225711d4140",
     "semantic_hash": ""
   },
   "src/services/viajesEmpresa.js": {
