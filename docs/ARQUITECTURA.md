@@ -198,8 +198,8 @@ Lugares, Lugar, Series, Serie, Equipo, DatosEmpresa, MisDatos. Mismo estilo de p
 Toda llamada al backend o a Firebase pasa por acá. Cada función tiene su rama `if (DEV_MODE)` con datos de ejemplo.
 
 **`api.js`** — Instancia de axios con `baseURL = EXPO_PUBLIC_API_URL` y timeout de 30 s. Sin la variable, en
-desarrollo (`__DEV__`) usa staging y en un build de producción no tiene valor por defecto (avisa en consola); ya no cae
-a `http://localhost:3000`. Un interceptor pide el
+desarrollo (`__DEV__`) usa staging y en un build de producción usa el backend de producción
+(`https://nombre-proyecto-back-production.up.railway.app`). Ya no cae a `http://localhost:3000`. Un interceptor pide el
 ID token de Firebase en **cada** request (`getIdToken()`; Firebase lo renueva solo) y lo manda como `Bearer`.
 
 **`firebase.js`** — Inicializa Firebase con las variables `EXPO_PUBLIC_FIREBASE_*` (sin clave usa una falsa para
@@ -265,7 +265,7 @@ backend los calcula el servidor.
 `LocationPickerModal`): `buscarDirecciones(texto)` → sugerencias, `resolverDireccion(sug)` → `{ direccion, lat, lng }`.
 Sin `EXPO_PUBLIC_GOOGLE_PLACES_KEY`, en DEV busca en una lista de ejemplo.
 
-**`socket.js`** — `conectarSocket()` abre socket.io contra `EXPO_PUBLIC_API_URL` con el token de Firebase
+**`socket.js`** — `conectarSocket()` abre socket.io contra el mismo backend que el REST (`baseURL` de `api.js`) con el token de Firebase
 (`auth: { token: 'Bearer …' }`). Los cortes de red los reintenta socket.io solo; un **rechazo del handshake**
 no (API.md → «Socket.io — handshake»), así que `reintentar()` lo hace a mano: `RATE_LIMIT` → espera
 `err.data.retryAfter` + un poco de azar; `Token invalido` / `Token no proporcionado` → refresca el token
@@ -664,6 +664,7 @@ Piezas nuevas que sostienen la fase 3: `context/EmpresaContext.js`, `navigation/
 | 27 oct 2026 | Versión inicial: fases 0, 1 y 2 completas, archivo por archivo. |
 | 29 oct 2026 | Fase 3 (en curso): utilidades `dinero.js` y `series.js`. |
 | 29 oct 2026 | Fase 3 completa: `PymeStack`, `EmpresaContext`, servicios de empresa (`viajesEmpresa`, `empresa`, `mockEmpresa`, `direcciones`), `components/empresa/`, `Listas` y `HojaHora` en el kit, 16 pantallas en `screens/empresa/`, flujos 5.7 a 5.9, endpoints y eventos de la empresa. Sección 9 nueva: cómo se cumple el plan, fase por fase y archivo por archivo. |
+| 16 nov 2026 | `api.js`: los builds de producción van al backend de producción por defecto; exporta `baseURL` y `socket.js` la usa (el socket todavía caía a `http://localhost:3000` sin `.env`). |
 | 16 nov 2026 | Dueño y permisos (backend develop): `utils/permisos.js`, `EmpresaContext` con `esDueno` / `puede` / `sistemaNuevo` y el evento `organizacion:permisos_actualizados`; pestañas, Inicio, Más, Viaje, Alertas, Series, Lugares y Nuevo viaje según el permiso; `MiembroScreen` y `ElegirPermisos` nuevos; Equipo e Invitar con permisos; desvincular (empresa y conductor) con la vista previa del backend y el 409 del viaje en curso. Todo funciona igual contra un backend sin permisos. `Opcion` suma `multiple`. |
 | 15 nov 2026 | Marketplace a `legacy/marketplace/` (fuera del bundle; `RootNavigator` sin `FleteroStack` ni `GerenteStack`); `DEV_MODE` apagado por defecto; `api.js` sin caída a localhost; sesión persistente con `persistenciaSesion.js` (SecureStore en el teléfono, `browserLocalPersistence` en web); dependencia `expo-secure-store`. |
 | 13 nov 2026 | Precio v2 del backend: `estimarViaje` pasa a `POST /api/organizaciones/:id/viajes/estimar-precio` (antes usaba el `estimar-costo` del marketplace, que daba $1.276 para un viaje que en v2 cuesta $84.000); Nuevo viaje y el detalle de la empresa muestran el rango. `scripts/api-tests/precio-v2.mjs` nuevo (54/54 contra staging). |

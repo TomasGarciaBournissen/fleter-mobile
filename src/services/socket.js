@@ -1,5 +1,6 @@
 import { io } from 'socket.io-client';
 import { auth } from './firebase';
+import { baseURL } from './api';
 
 let socket = null;
 let timer = null;
@@ -12,7 +13,8 @@ export async function conectarSocket() {
   if (!currentUser) return;
 
   // Mismo Firebase ID token que usa el interceptor de axios
-  socket = io(process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000', {
+  // Mismo backend que el REST (api.js): staging en desarrollo, producción en el build
+  socket = io(baseURL, {
     auth: { token: await tokenBearer() },
     transports: ['websocket'],
   });

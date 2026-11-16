@@ -90,9 +90,9 @@
     "semantic_hash": "084a2e70452c9a24c57611cd02f19231"
   },
   "src/services/api.js": {
-    "mtime": 1794755798.4048517,
-    "seen": 1794755938.7309363,
-    "ast_hash": "0e24fdbe93e2c17260ce585d3062b12f",
+    "mtime": 1794798933.4679232,
+    "seen": 1794798962.0343735,
+    "ast_hash": "eeb18abb1bf86e211789a20829cd83c9",
     "semantic_hash": ""
   },
   "src/services/auth.js": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/services/socket.js": {
-    "mtime": 1794410428.4892473,
-    "seen": 1794411251.5871952,
-    "ast_hash": "5c1818f18eeb8c17ff7bc0b12a47a00a",
+    "mtime": 1794798933.4683504,
+    "seen": 1794798962.0344007,
+    "ast_hash": "bdf24c877aac2578f3212660695b4d1a",
     "semantic_hash": ""
   },
   "src/tasks/locationTask.js": {
@@ -138,9 +138,9 @@
     "semantic_hash": "d33cf6709bc18c233e14b6321735576f"
   },
   "PROGRESO.md": {
-    "mtime": 1794793466.133435,
-    "seen": 1794793477.5090432,
-    "ast_hash": "d7b95af923e2bcc4daff6a91cf2a6a3b",
+    "mtime": 1794798933.4703717,
+    "seen": 1794798962.034769,
+    "ast_hash": "2193388707fdd74d95df8b5dbb9a44e7",
     "semantic_hash": ""
   },
   "UXUI.md": {
@@ -1734,9 +1734,9 @@
     "semantic_hash": ""
   },
   "docs/ARQUITECTURA.md": {
-    "mtime": 1794793386.0110445,
-    "seen": 1794793477.5090473,
-    "ast_hash": "fc1f039debcd64587eb42fa81137c9dd",
+    "mtime": 1794798954.9893796,
+    "seen": 1794798962.0347772,
+    "ast_hash": "90dacdade9a0a5b45181c76b1fbfa7b8",
     "semantic_hash": ""
   },
   "docs/FLUJOS_MOBILE.md": {

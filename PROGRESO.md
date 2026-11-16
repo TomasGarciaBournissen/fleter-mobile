@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-11-16  
-> Branch: staging | Commits totales: 99
+> Branch: staging | Commits totales: 100
 
 ---
 
@@ -95,7 +95,9 @@
 | `a8097cb` | 15 Nov 2026 | Test — `seguridad.mjs` (49/52 contra staging: IDOR, roles, campos forzados, entradas, cabeceras; fallan coordenadas imposibles → 503, CORS `*` en staging y el 429 no medible por el proxy) y `carga.mjs` (listas y detalles 2,3–2,5 s de a uno, crear viaje 6 s, sin errores con 40 a la vez) |
 | `e01b7fd` | 15 Nov 2026 | Chore/Fix — decisiones del dueño: el código del marketplace se guarda en `legacy/marketplace/` (fuera del bundle, con su LEEME para volver a ponerlo), `DEV_MODE` apagado por defecto (solo `EXPO_PUBLIC_DEV_MODE=true`), `api.js` sin caída a localhost y la sesión de Firebase guardada en el llavero con `expo-secure-store` (`persistenciaSesion.js`), así no pide login cada vez que se abre la app. Bundles de Android y web OK; la web arranca en el login real |
 | — | 16 Nov 2026 | Release — `main` avanzado a `e01b7fd` (fast-forward) a pedido del dueño: producción del mobile con el marketplace guardado, `DEV_MODE` apagado, sesión persistente y precio v2. Lo de permisos queda solo en `staging` |
-| (este commit) | 16 Nov 2026 | Feat — dueño y permisos de la empresa (backend develop): `utils/permisos.js`, `EmpresaContext` con `esDueno` / `puede` y el evento `organizacion:permisos_actualizados` (se ve sin recargar), pestañas y acciones según el permiso, `MiembroScreen` (permisos, pasar la empresa, sacar), Invitar miembro eligiendo permisos, desvincular con la vista previa del backend y el 409 del viaje en curso (empresa y conductor; pedido 2 al backend resuelto). Compatible con el backend sin permisos (producción). `scripts/api-tests/permisos.mjs`: 85/86 contra staging. Primera prueba de la app compilada (web) contra staging: login, permisos en vivo y sesión al recargar |
+| `efb97b3` | 16 Nov 2026 | Feat — dueño y permisos de la empresa (backend develop): `utils/permisos.js`, `EmpresaContext` con `esDueno` / `puede` y el evento `organizacion:permisos_actualizados` (se ve sin recargar), pestañas y acciones según el permiso, `MiembroScreen` (permisos, pasar la empresa, sacar), Invitar miembro eligiendo permisos, desvincular con la vista previa del backend y el 409 del viaje en curso (empresa y conductor; pedido 2 al backend resuelto). Compatible con el backend sin permisos (producción). `scripts/api-tests/permisos.mjs`: 85/86 contra staging. Primera prueba de la app compilada (web) contra staging: login, permisos en vivo y sesión al recargar |
+| — | 16 Nov 2026 | Release — `main` avanzado a `efb97b3` (fast-forward) a pedido del dueño: producción del mobile con dueño y permisos |
+| (este commit) | 16 Nov 2026 | Config — los builds de producción usan por defecto el backend de producción (`https://nombre-proyecto-back-production.up.railway.app`); desarrollo sigue en staging. `EXPO_PUBLIC_API_URL` en el `.env` manda sobre los dos. Fix: el socket usa la misma dirección (sin `.env` caía a `http://localhost:3000`) |
 
 ---
 
