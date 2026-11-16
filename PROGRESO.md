@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-11-16  
-> Branch: staging | Commits totales: 102
+> Branch: staging | Commits totales: 103
 
 ---
 
@@ -99,7 +99,8 @@
 | — | 16 Nov 2026 | Release — `main` avanzado a `efb97b3` (fast-forward) a pedido del dueño: producción del mobile con dueño y permisos |
 | `8b51c1e` | 16 Nov 2026 | Config — los builds de producción usan por defecto el backend de producción (`https://nombre-proyecto-back-production.up.railway.app`); desarrollo sigue en staging. `EXPO_PUBLIC_API_URL` en el `.env` manda sobre los dos. Fix: el socket usa la misma dirección (sin `.env` caía a `http://localhost:3000`) |
 | `2a2f9a9` | 16 Nov 2026 | Fix — modo desarrollo: la estimación de prueba no resolvía los lugares guardados (llegan solo con su id) y Nuevo viaje mostraba «No pudimos calcular el precio». Solo afectaba al modo de prueba. Encontrado al sacar las capturas de las 67 pantallas |
-| (este commit) | 16 Nov 2026 | Fix — iPhone: al tocar «Agregar el origen» la hoja de dirección quedaba detrás del teclado (solo se veía el fondo oscuro). `HojaInferior` sube con el teclado y se limita al 90 % de la pantalla; `HojaParada` desplaza sugerencias y lugares y se eligen al primer toque. Falta confirmarlo en el teléfono |
+| `175e582` | 16 Nov 2026 | Fix — iPhone: al tocar «Agregar el origen» la hoja de dirección quedaba detrás del teclado (solo se veía el fondo oscuro). `HojaInferior` sube con el teclado y se limita al 90 % de la pantalla; `HojaParada` desplaza sugerencias y lugares y se eligen al primer toque. Falta confirmarlo en el teléfono |
+| (este commit) | 16 Nov 2026 | Fix — hoja de dirección: alta fija (campo arriba, lista con scroll, «Cancelar» al pie) para que la caja no se recorte; tocar afuera solo baja el teclado y no cierra la hoja; «Buscar» del teclado elige la primera sugerencia. Probado en web a la altura que deja el teclado; falta confirmarlo en el iPhone |
 
 ---
 

@@ -138,9 +138,9 @@
     "semantic_hash": "d33cf6709bc18c233e14b6321735576f"
   },
   "PROGRESO.md": {
-    "mtime": 1794845909.3839498,
-    "seen": 1794845919.7636337,
-    "ast_hash": "efcc3b65f4d12fe94e6c5892132549d0",
+    "mtime": 1794846118.057036,
+    "seen": 1794846123.7538216,
+    "ast_hash": "a277540830c4df21fd124f8b29a9fe2f",
     "semantic_hash": ""
   },
   "UXUI.md": {
@@ -414,9 +414,9 @@
     "semantic_hash": "2d2d937ea59e290909b0ac967655d461"
   },
   "src/components/ui/HojaInferior.js": {
-    "mtime": 1794845677.1197333,
-    "seen": 1794845919.7633595,
-    "ast_hash": "c6d99c6243c1627ace7cba46def25841",
+    "mtime": 1794845975.9096677,
+    "seen": 1794846123.753535,
+    "ast_hash": "15d737779ad97f8b3011f7082e17504b",
     "semantic_hash": ""
   },
   "src/components/viaje/ChipEstado.js": {
@@ -1734,9 +1734,9 @@
     "semantic_hash": ""
   },
   "docs/ARQUITECTURA.md": {
-    "mtime": 1794845909.3826501,
-    "seen": 1794845919.7636373,
-    "ast_hash": "49605dd3568d9ff82b8fd12cf07e2b8f",
+    "mtime": 1794846118.0554729,
+    "seen": 1794846123.753825,
+    "ast_hash": "ab37798c4ab23cc0bd1270c81a5be232",
     "semantic_hash": ""
   },
   "docs/FLUJOS_MOBILE.md": {
@@ -1842,9 +1842,9 @@
     "semantic_hash": ""
   },
   "src/components/empresa/HojaParada.js": {
-    "mtime": 1794845691.523553,
-    "seen": 1794845919.7633471,
-    "ast_hash": "b37e118ec847e286b47bf5ccbd3706e8",
+    "mtime": 1794845975.9123304,
+    "seen": 1794846123.7535226,
+    "ast_hash": "2856db1352d7612bbc3428e5fad17c93",
     "semantic_hash": ""
   },
   "src/components/empresa/TablaParadas.js": {

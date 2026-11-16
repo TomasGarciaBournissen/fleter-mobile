@@ -4,11 +4,14 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { fonts } from '../../theme';
 import { buscarDirecciones, resolverDireccion, BUSQUEDA_DISPONIBLE } from '../../services/direcciones';
-import { Campo, Etiqueta, HojaInferior, Lista, Fila, Nota } from '../ui';
+import { Campo, Etiqueta, HojaInferior, Lista, Fila, Nota, Boton } from '../ui';
 
 // Hoja para elegir una dirección: búsqueda con Places y, si se pasan, los
 // lugares guardados de la empresa a un toque. Devuelve
 // { direccion, lat, lng, id_lugar?, nombre? } con onElegir.
+// La hoja es alta y tocar afuera no la cierra (solo baja el teclado): se sale
+// eligiendo una dirección —tocándola o con «Buscar» del teclado, que toma la
+// primera sugerencia— o con «Cancelar».
 export default function HojaParada({ visible, titulo = 'Agregar parada', lugares = [], onElegir, onCerrar }) {
   const { colors } = useTheme();
   const s = useThemedStyles(createStyles);
@@ -51,7 +54,7 @@ export default function HojaParada({ visible, titulo = 'Agregar parada', lugares
   };
 
   return (
-    <HojaInferior visible={visible} titulo={titulo} onCerrar={onCerrar}>
+    <HojaInferior visible={visible} titulo={titulo} onCerrar={onCerrar} alta cerrarConFondo={false}>
       {BUSQUEDA_DISPONIBLE ? (
         <Campo
           icono="map-marker-outline"
@@ -60,12 +63,14 @@ export default function HojaParada({ visible, titulo = 'Agregar parada', lugares
           onChangeText={escribir}
           autoFocus
           autoCorrect={false}
+          returnKeyType="search"
+          onSubmitEditing={() => { if (sugerencias[0]) elegir(sugerencias[0]); }}
           accessibilityLabel="Buscar dirección"
           style={{ marginTop: 0 }}
         />
       ) : <Nota tipo="aviso">La búsqueda de direcciones no está configurada en esta versión.</Nota>}
       {/* Con el teclado abierto, «handled» deja elegir una sugerencia al primer toque */}
-      <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ gap: 10 }} keyboardShouldPersistTaps="handled">
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 10, paddingBottom: 4 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         {buscando ? <ActivityIndicator color={colors.accent} /> : null}
         {error ? <Nota tipo="error">{error}</Nota> : null}
         {sugerencias.length ? (
@@ -96,6 +101,7 @@ export default function HojaParada({ visible, titulo = 'Agregar parada', lugares
           </>
         ) : null}
       </ScrollView>
+      <Boton titulo="Cancelar" variante="fantasma" onPress={onCerrar} />
     </HojaInferior>
   );
 }
