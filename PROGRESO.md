@@ -1,7 +1,7 @@
 # Fleter Mobile — Registro de Progreso
 
 > Última actualización: 2026-11-16  
-> Branch: staging | Commits totales: 105
+> Branch: staging | Commits totales: 106
 
 ---
 
@@ -102,7 +102,8 @@
 | `175e582` | 16 Nov 2026 | Fix — iPhone: al tocar «Agregar el origen» la hoja de dirección quedaba detrás del teclado (solo se veía el fondo oscuro). `HojaInferior` sube con el teclado y se limita al 90 % de la pantalla; `HojaParada` desplaza sugerencias y lugares y se eligen al primer toque. Falta confirmarlo en el teléfono |
 | `0e69644` | 16 Nov 2026 | Fix — hoja de dirección: alta fija (campo arriba, lista con scroll, «Cancelar» al pie) para que la caja no se recorte; tocar afuera solo baja el teclado y no cierra la hoja; «Buscar» del teclado elige la primera sugerencia. Probado en web a la altura que deja el teclado; falta confirmarlo en el iPhone |
 | `5666f3b` | 16 Nov 2026 | Fix — elegir dirección pasa a pantalla completa: X para cerrar arriba, campo de búsqueda justo debajo (el teclado no lo tapa) y la dirección elegida se confirma con «Usar esta dirección». En el iPhone del dueño la hoja seguía quedando abajo, tapada por el teclado |
-| (este commit) | 16 Nov 2026 | Chore — `scripts/demo/datos-demo.mjs`: arma en staging una empresa demo (Distribuidora del Sur) con dos conductores, 4 lugares guardados, 6 viajes entregados de verdad (3 con precio pagado), uno en ruta, uno cancelado, uno rechazado, viajes por hacer y un viaje repetido de 10 días. Corrido el 16 nov 2026 (empresa 538) |
+| `30b4d17` | 16 Nov 2026 | Chore — `scripts/demo/datos-demo.mjs`: arma en staging una empresa demo (Distribuidora del Sur) con dos conductores, 4 lugares guardados, 6 viajes entregados de verdad (3 con precio pagado), uno en ruta, uno cancelado, uno rechazado, viajes por hacer y un viaje repetido de 10 días. Corrido el 16 nov 2026 (empresa 538) |
+| (este commit) | 16 Nov 2026 | Chore — el script de demo suma dos personas al equipo con permisos distintos (Diego: viajes y conductores; Sofía: solo ver viajes) y un código de equipo sin usar; con `SOLO_EQUIPO` + `ORG` lo agrega a una empresa ya creada. Agregado a la empresa demo 538 |
 
 ---
 

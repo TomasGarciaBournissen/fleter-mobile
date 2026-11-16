@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Datos de demo en staging: una empresa con dos conductores vinculados, lugares guardados,
+// Datos de demo en staging: una empresa con dos conductores vinculados, dos personas en el equipo
+// con permisos distintos (y un código de equipo sin usar), lugares guardados,
 // viajes entregados (con precio pagado en algunos), uno en curso, uno cancelado, uno rechazado,
 // viajes por hacer y un viaje repetido. Sirve para recorrer la app con datos que parecen reales.
 //
@@ -82,6 +83,26 @@ const D = {
   avellaneda:{ direccion: 'Av. Mitre 750, Avellaneda, Buenos Aires', lat: -34.6620, lng: -58.3650 },
 };
 
+// Dos personas en el equipo (una que gestiona viajes y conductores, otra que solo mira)
+// y un código de equipo sin usar, para que se vea la pantalla de permisos
+async function sumarEquipo(E, O, s) {
+  const gente = [
+    { nombre: 'Diego', apellido: 'Ruiz', email: `fleterdemo.diego.${s}@example.com`, telefono: '+5491133332222', permisos: ['VER_VIAJES', 'GESTIONAR_VIAJES', 'CHOFERES'], que: 'carga viajes y maneja conductores' },
+    { nombre: 'Sofía', apellido: 'López', email: `fleterdemo.sofia.${s}@example.com`, telefono: '+5491122221111', permisos: ['VER_VIAJES'], que: 'solo ve viajes' },
+  ];
+  const listos = [];
+  for (const g of gente) {
+    const u = await cuenta('CLIENTE', { nombre: g.nombre, apellido: g.apellido, email: g.email, telefono: g.telefono });
+    const inv = ok(await api(E, 'POST', `${O}/invitaciones`, { tipo: 'MIEMBRO', permisos: g.permisos }), `código para ${g.nombre}`, 201);
+    ok(await api(u, 'POST', '/api/invitaciones/canjear', { codigo: inv.codigo }), `${g.nombre} se suma`, 200);
+    listos.push({ ...g });
+    log(`  ${g.nombre} ${g.apellido}: ${g.que}`);
+  }
+  ok(await api(E, 'POST', `${O}/invitaciones`, { tipo: 'MIEMBRO', permisos: ['VER_VIAJES', 'ANALYTICS'] }), 'código de equipo pendiente', 201);
+  log('  y un código de equipo sin usar');
+  return listos;
+}
+
 async function main() {
   const s = seg();
   log('▸ Cuentas');
@@ -105,6 +126,9 @@ async function main() {
   C.idc = choferes.find((c) => c.id_usuario === C.me.id_usuario).id_conductor;
   M.veh = vehM.id_vehiculo; C.veh = vehC.id_vehiculo;
   log('  Martín y Lucía vinculados, con vehículo');
+
+  log('▸ Equipo con permisos distintos');
+  const equipo = await sumarEquipo(E, O, s);
 
   log('▸ Lugares guardados');
   const lugar = {};
@@ -188,6 +212,16 @@ async function main() {
   console.log(`  Empresa (Laura, dueña de Distribuidora del Sur): ${E.email}`);
   console.log(`  Conductor (Martín Gómez, Ford Transit):          ${M.email}`);
   console.log(`  Conductora (Lucía Fernández, Iveco Daily):        ${C.email}`);
+  for (const m of equipo) console.log(`  Equipo (${m.nombre} ${m.apellido}, ${m.que}): ${m.email}`);
 }
 
-main().catch((e) => { console.error('\n✘', e.message); process.exit(1); });
+// SOLO_EQUIPO=<email del dueño> ORG=<id>: suma el equipo a una empresa demo ya creada
+async function soloEquipo() {
+  const E = { email: process.env.SOLO_EQUIPO };
+  E.token = await login(E.email);
+  const equipo = await sumarEquipo(E, `/api/organizaciones/${process.env.ORG}`, seg());
+  console.log('\n✔ Listo. Contraseña:', PASS);
+  for (const m of equipo) console.log(`  ${m.nombre} ${m.apellido} (${m.que}): ${m.email}`);
+}
+
+(process.env.SOLO_EQUIPO ? soloEquipo() : main()).catch((e) => { console.error('\n✘', e.message); process.exit(1); });
